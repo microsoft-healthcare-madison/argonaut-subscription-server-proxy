@@ -26,7 +26,7 @@ When you submit a pull request, a CLA-bot will automatically determine whether y
 a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
 
-There are many other ways to contribute to FHIR Server for Azure.
+There are many other ways to contribute:
 * [Submit bugs](https://github.com/microsoft-healthcare-madison/argonaut-subscription-server-proxy/issues) and help us verify fixes as they are checked in.
 * Review the [source code changes](https://github.com/microsoft-healthcare-madison/argonaut-subscription-server-proxy/pulls).
 * Engage with users and developers on [Official FHIR Zulip](https://chat.fhir.org/)
