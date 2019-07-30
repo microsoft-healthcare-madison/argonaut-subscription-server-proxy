@@ -34,9 +34,9 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 // **** return appropriate code to the caller ****
 
-                switch (context.Request.Method.ToLower())
+                switch (context.Request.Method.ToUpper())
                 {
-                    case "get":
+                    case "GET":
 
                         // *** success ****
 
@@ -46,7 +46,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         break;
 
-                    case "put":
+                    case "PUT":
 
                         // *** success ****
 
@@ -54,7 +54,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         break;
 
-                    case "post":
+                    case "POST":
 
                         // **** grab the message body to look at ****
 
@@ -69,7 +69,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         break;
 
-                    case "delete":
+                    case "DELETE":
 
                         // *** success ****
 

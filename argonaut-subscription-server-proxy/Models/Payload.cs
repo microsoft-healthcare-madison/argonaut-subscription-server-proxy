@@ -14,7 +14,8 @@ namespace argonaut_subscription_server_proxy.Models
         /// <value>The type of the content.</value>
         ///-------------------------------------------------------------------------------------------------
 
-        public Code contentType { get; set; }
+        //public Code contentType { get; set; }
+        public string contentType { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Payload type to send:  empty | id-only | full-resource</summary>
@@ -22,6 +23,7 @@ namespace argonaut_subscription_server_proxy.Models
         /// <value>The content.</value>
         ///-------------------------------------------------------------------------------------------------
 
-        public Code content { get; set; }
+        //public Code content { get; set; }
+        public string content { get; set; }
     }
 }

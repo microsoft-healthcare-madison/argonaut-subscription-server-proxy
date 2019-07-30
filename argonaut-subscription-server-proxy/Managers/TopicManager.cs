@@ -106,6 +106,14 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._nameTopicDict[name];
         }
 
+        public static string UrlForTopicName(string name)
+        {
+            return (new Uri(
+                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
+                new Uri($"Topic/{name}", UriKind.Relative))
+                ).ToString();
+        }
+
 
         #endregion Class Interface . . .
 

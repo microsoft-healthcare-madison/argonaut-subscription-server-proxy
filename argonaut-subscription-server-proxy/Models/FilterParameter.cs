@@ -16,7 +16,8 @@ namespace argonaut_subscription_server_proxy.Models
         /// <value>The type of the match.</value>
         ///-------------------------------------------------------------------------------------------------
 
-        public Code matchType { get; set; }
+        //public Code matchType { get; set; }
+        public string matchType { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Literal value or resource path</summary>

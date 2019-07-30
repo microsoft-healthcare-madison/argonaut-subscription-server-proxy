@@ -35,21 +35,24 @@ namespace argonaut_subscription_server_proxy.Models
         /// <value>The status.</value>
         ///-------------------------------------------------------------------------------------------------
 
-        public Code status { get; set; }
+        //public Code status { get; set; }
+        public string status { get; set; }
 
         public List<ContactPoint> contact { get; set; }
 
-        public Instant end { get; set; }
+        //public Instant end { get; set; }
+        public string end { get; set; }
 
         public string reason { get; set; }
 
-        public string topic { get; set; }
+        public ResourceReference topic { get; set; }
 
         public List<FilterParameter> filterBy { get; set; }
 
         public List<CodeableConcept> error { get; set; }
 
-        public PositiveInt eventCount { get; set; }
+        //public PositiveInt eventCount { get; set; }
+        public int eventCount { get; set; }
 
         public Channel channel { get; set; }
     }

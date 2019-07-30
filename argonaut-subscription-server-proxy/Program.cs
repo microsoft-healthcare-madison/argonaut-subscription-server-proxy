@@ -4,6 +4,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace argonaut_subscription_server_proxy
@@ -20,6 +21,14 @@ namespace argonaut_subscription_server_proxy
         ///-------------------------------------------------------------------------------------------------
 
         public static IConfiguration Configuration { get; set; }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets or sets the REST client.</summary>
+        ///
+        /// <value>The REST client.</value>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static HttpClient RestClient { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Main entry-point for this application.</summary>
@@ -44,6 +53,10 @@ namespace argonaut_subscription_server_proxy
             Regex regex = new Regex(_regexBaseUrlMatch);
             Match match = regex.Match(Configuration["Server_Listen_Url"]);
             Configuration["Server_Listen_Url"] = match.ToString();
+
+            // **** create our REST client ****
+
+            RestClient = new HttpClient();
 
             // **** initialize managers ****
 

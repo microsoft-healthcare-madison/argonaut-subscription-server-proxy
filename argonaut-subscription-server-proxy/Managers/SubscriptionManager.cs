@@ -4,7 +4,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
+using System.Security.Policy;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace argonaut_subscription_server_proxy.Managers
@@ -27,6 +30,8 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of subscriptions, by ID.</summary>
         private Dictionary<string, Subscription> _idSubscriptionDict;
 
+        private Random _rand;
+
         #endregion Instance Variables . . .
 
         #region Constructors . . .
@@ -36,6 +41,7 @@ namespace argonaut_subscription_server_proxy.Managers
             // **** create our index objects ****
 
             _idSubscriptionDict = new Dictionary<string, Subscription>();
+            _rand = new Random();
         }
 
         #endregion Constructors . . .
@@ -108,6 +114,14 @@ namespace argonaut_subscription_server_proxy.Managers
             _instance._HandlePost(content, out subscription);
         }
 
+        public static string UrlForSubscription(string subscriptionId)
+        {
+            return (new Uri(
+                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
+                new Uri($"Subscription/{subscriptionId}", UriKind.Relative))
+                ).ToString();
+        }
+
         #endregion Class Interface . . .
 
         #region Instance Interface . . .
@@ -115,6 +129,15 @@ namespace argonaut_subscription_server_proxy.Managers
         #endregion Instance Interface . . .
 
         #region Internal Functions . . .
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Handles the post.</summary>
+        ///
+        /// <remarks>Gino Canessa, 7/30/2019.</remarks>
+        ///
+        /// <param name="content">     The content.</param>
+        /// <param name="subscription">[out] The subscription.</param>
+        ///-------------------------------------------------------------------------------------------------
 
         private void _HandlePost(string content, out Subscription subscription)
         {
@@ -124,6 +147,8 @@ namespace argonaut_subscription_server_proxy.Managers
             
             try
             {
+                //Hl7.Fhir.Serialization.FhirJsonSerializer parser = new Hl7.Fhir.Serialization.FhirJsonSerializer();
+
                 // **** parse the subscription ****
 
                 subscription = JsonConvert.DeserializeObject<Subscription>(content);
@@ -139,12 +164,29 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (string.IsNullOrEmpty(subscription.id))
                 {
-                    subscription.id = $"Sub-{DateTime.Now.ToString("yyyyMMddHHmmss")}";
+                    subscription.id = $"S-{_rand.Next(100, 999)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}";
                 }
 
                 // **** add or update internally ****
 
                 _AddOrUpdate(subscription);
+
+                // **** check for rest-hook ****
+
+                if (subscription.channel.type.text == "rest-hook")
+                {
+                    string id = subscription.id;
+
+                    // **** attempt to validate the endpoint ****
+
+                    _ = Task.Run((Action)(() => HandshakeRestHook(id)));
+                }
+                else
+                {
+                    // **** just mark active ****
+
+                    _idSubscriptionDict[subscription.id].status = "active"; // new Hl7.Fhir.Model.Code("active");
+                }
             }
             catch (Exception ex)
             {
@@ -192,6 +234,129 @@ namespace argonaut_subscription_server_proxy.Managers
                 _DumpNode(child);
             }
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Handshake REST hook.</summary>
+        ///
+        /// <remarks>Gino Canessa, 7/30/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        ///
+        /// <returns>An asynchronous result that yields true if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private bool HandshakeRestHook(string subscriptionId)
+        {
+            // **** sanity checks ****
+
+            if ((string.IsNullOrEmpty(subscriptionId)) ||
+                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            {
+                return false;
+            }
+
+            Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+            if ((subscription.channel == null) ||
+                (subscription.channel.endpoint == null) ||
+                (string.IsNullOrEmpty(subscription.channel.endpoint.ToString())))
+            {
+                // **** nothing to do ****
+
+                _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+
+                return false;
+            }
+
+            // **** create a bundle to send the handshake message ****
+
+            Hl7.Fhir.Model.Bundle handshake = new Hl7.Fhir.Model.Bundle()
+            {
+                Identifier = new Hl7.Fhir.Model.Identifier("GUID", Guid.NewGuid().ToString()),
+                Type = Hl7.Fhir.Model.Bundle.BundleType.History,
+                Timestamp = new DateTimeOffset(DateTime.Now),
+                Meta = new Hl7.Fhir.Model.Meta()
+            };
+
+            // **** setup our extensions for the bundle ****
+
+            handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
+            {
+                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
+                Value = new Hl7.Fhir.Model.PositiveInt(0)
+            });
+
+            handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
+            {
+                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionStatus",
+                Value = new Hl7.Fhir.Model.FhirString(subscription.status)
+            });
+
+            handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
+            {
+                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionTopicUrl",
+                Value = new Hl7.Fhir.Model.FhirString(subscription.topic.Reference)
+            });
+
+            handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
+            {
+                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionUrl",
+                Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.id))
+            });
+
+            // **** send the request to the endpoint ****
+
+            try
+            {
+                HttpResponseMessage response = Program.RestClient.PostAsync(
+                    subscription.channel.endpoint,
+                    new StringContent(JsonConvert.SerializeObject(handshake), Encoding.UTF8, "application/fhir+json")
+                    ).Result;
+
+                // **** check the status code ****
+
+                if ((response.StatusCode != System.Net.HttpStatusCode.OK) &&
+                    (response.StatusCode != System.Net.HttpStatusCode.Accepted) &&
+                    (response.StatusCode != System.Net.HttpStatusCode.NoContent))
+                {
+                    // **** failure ****
+
+                    Console.WriteLine($"SubscriptionManager.HandshakeRestHook <<<" +
+                        $" request to {subscription.channel.endpoint}" +
+                        $" returned: {response.StatusCode}");
+
+                    // **** done ****
+
+                    _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SubscriptionManager.HandshakeRestHook <<<" +
+                    $" request to {subscription.channel.endpoint}" + 
+                    $" caused exception: {ex.Message}");
+
+                _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+
+                return false;
+            }
+
+            // **** update in the manager ****
+
+            _idSubscriptionDict[subscriptionId].status = "active";      // new Hl7.Fhir.Model.Code("active");
+
+            // **** tell the user ****
+
+            Console.WriteLine($" Subscription {subscription.id} set to active!");
+
+            // **** done ****
+
+            return true;
+        }
+
+
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Check or create instance.</summary>
