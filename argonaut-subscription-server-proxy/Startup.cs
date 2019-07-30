@@ -29,7 +29,7 @@ namespace argonaut_subscription_server_proxy
                 app.UseDeveloperExceptionPage();
             }
 
-            string fhirServerUrl = Program.Configuration.GetValue<string>("FHIR_Server_Url");
+            string fhirServerUrl = Program.Configuration.GetValue<string>("Server_FHIR_Url");
 
             // **** handle specific routes we want to intercept ****
 

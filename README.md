@@ -10,7 +10,7 @@ implement the Server portion of Subscription handling.
 An implementer may choose to take a similar approach (of proxying calls), or may
 use a modified server directly.  Either option should result in the same behavior.
 
-# Usage
+## Usage
 
 - Coming Soon
 
