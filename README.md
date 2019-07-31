@@ -15,7 +15,7 @@ use a modified server directly.  Either option should result in the same behavio
 - Coming Soon
 
 ## To Do:
-
+- Swap to Firely API after August 11 (Connectathon snapshot)
 
 ## Contributing
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

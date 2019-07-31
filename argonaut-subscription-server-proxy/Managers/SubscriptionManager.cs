@@ -164,7 +164,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (string.IsNullOrEmpty(subscription.id))
                 {
-                    subscription.id = $"S-{_rand.Next(100, 999)}-{DateTime.Now.ToString("yyyyMMddHHmmss")}";
+                    subscription.id = $"S-{DateTime.Now.ToString("yyyyMMddHHmmss")}-{_rand.Next(100, 999)}";
                 }
 
                 // **** add or update internally ****
@@ -284,7 +284,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
                 Value = new Hl7.Fhir.Model.PositiveInt(0)
-            });
+            }); ;
 
             handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
@@ -308,9 +308,15 @@ namespace argonaut_subscription_server_proxy.Managers
 
             try
             {
+                // **** serialize using the Firely serialization engine ****
+
+                Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
+
+                // **** end the request ****
+
                 HttpResponseMessage response = Program.RestClient.PostAsync(
                     subscription.channel.endpoint,
-                    new StringContent(JsonConvert.SerializeObject(handshake), Encoding.UTF8, "application/fhir+json")
+                    new StringContent(serializer.SerializeToString(handshake), Encoding.UTF8, "application/fhir+json")
                     ).Result;
 
                 // **** check the status code ****
