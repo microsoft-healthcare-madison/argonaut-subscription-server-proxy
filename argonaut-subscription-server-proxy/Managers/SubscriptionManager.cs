@@ -1,5 +1,4 @@
-﻿using argonaut_subscription_server_proxy.Models;
-using Hl7.Fhir.ElementModel;
+﻿using Hl7.Fhir.ElementModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -28,7 +27,7 @@ namespace argonaut_subscription_server_proxy.Managers
         #region Instance Variables . . .
 
         /// <summary>Dictionary of subscriptions, by ID.</summary>
-        private Dictionary<string, Subscription> _idSubscriptionDict;
+        private Dictionary<string, fhir.Subscription> _idSubscriptionDict;
 
         private Random _rand;
 
@@ -40,7 +39,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** create our index objects ****
 
-            _idSubscriptionDict = new Dictionary<string, Subscription>();
+            _idSubscriptionDict = new Dictionary<string, fhir.Subscription>();
             _rand = new Random();
         }
 
@@ -69,11 +68,11 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The Subscription list.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static List<Subscription> GetSubscriptionList()
+        public static List<fhir.Subscription> GetSubscriptionList()
         {
             // **** return our list of known subscriptions ****
 
-            return _instance._idSubscriptionDict.Values.ToList<Subscription>();
+            return _instance._idSubscriptionDict.Values.ToList<fhir.Subscription>();
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -84,7 +83,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void AddOrUpdate(Subscription subscription)
+        public static void AddOrUpdate(fhir.Subscription subscription)
         {
             _instance._AddOrUpdate(subscription);
         }
@@ -99,7 +98,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The subscription.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static Subscription GetSubscription(string id)
+        public static fhir.Subscription GetSubscription(string id)
         {
             if ((string.IsNullOrEmpty(id)) || (!_instance._idSubscriptionDict.ContainsKey(id)))
             {
@@ -109,7 +108,7 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._idSubscriptionDict[id];
         }
 
-        public static void HandlePost(string content, out Subscription subscription)
+        public static void HandlePost(string content, out fhir.Subscription subscription)
         {
             _instance._HandlePost(content, out subscription);
         }
@@ -139,7 +138,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">[out] The subscription.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _HandlePost(string content, out Subscription subscription)
+        private void _HandlePost(string content, out fhir.Subscription subscription)
         {
             subscription = null;
 
@@ -147,11 +146,9 @@ namespace argonaut_subscription_server_proxy.Managers
             
             try
             {
-                //Hl7.Fhir.Serialization.FhirJsonSerializer parser = new Hl7.Fhir.Serialization.FhirJsonSerializer();
-
                 // **** parse the subscription ****
 
-                subscription = JsonConvert.DeserializeObject<Subscription>(content);
+                subscription = JsonConvert.DeserializeObject<fhir.Subscription>(content);
 
                 // **** check for no result ****
 
@@ -162,9 +159,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** create an id (if necessary) ****
 
-                if (string.IsNullOrEmpty(subscription.id))
+                if (string.IsNullOrEmpty(subscription.Id))
                 {
-                    subscription.id = $"S-{DateTime.Now.ToString("yyyyMMddHHmmss")}-{_rand.Next(100, 999)}";
+                    subscription.Id = $"S-{DateTime.Now.ToString("yyyyMMddHHmmss")}-{_rand.Next(100, 999)}";
                 }
 
                 // **** add or update internally ****
@@ -173,9 +170,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** check for rest-hook ****
 
-                if (subscription.channel.type.text == "rest-hook")
+                if (subscription.Channel.Type.Text == "rest-hook")
                 {
-                    string id = subscription.id;
+                    string id = subscription.Id;
 
                     // **** attempt to validate the endpoint ****
 
@@ -185,7 +182,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** just mark active ****
 
-                    _idSubscriptionDict[subscription.id].status = "active"; // new Hl7.Fhir.Model.Code("active");
+                    _idSubscriptionDict[subscription.Id].Status = "active";
                 }
             }
             catch (Exception ex)
@@ -202,20 +199,20 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _AddOrUpdate(Subscription subscription)
+        private void _AddOrUpdate(fhir.Subscription subscription)
         {
             // **** check for an existing topic (may need to remove URL for cleanup) ****
 
-            if (_idSubscriptionDict.ContainsKey(subscription.id))
+            if (_idSubscriptionDict.ContainsKey(subscription.Id))
             {
                 // **** remove from the main dict ****
 
-                _idSubscriptionDict.Remove(subscription.id);
+                _idSubscriptionDict.Remove(subscription.Id);
             }
 
             // **** add to the main dictionary ****
 
-            _idSubscriptionDict.Add(subscription.id, subscription);
+            _idSubscriptionDict.Add(subscription.Id, subscription);
         }
 
 
@@ -255,15 +252,15 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
+            fhir.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
-            if ((subscription.channel == null) ||
-                (subscription.channel.endpoint == null) ||
-                (string.IsNullOrEmpty(subscription.channel.endpoint.ToString())))
+            if ((subscription.Channel == null) ||
+                (subscription.Channel.Endpoint == null) ||
+                (string.IsNullOrEmpty(subscription.Channel.Endpoint)))
             {
                 // **** nothing to do ****
 
-                _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+                _idSubscriptionDict[subscription.Id].Status = "error";      // new Hl7.Fhir.Model.Code("error");
 
                 return false;
             }
@@ -289,19 +286,19 @@ namespace argonaut_subscription_server_proxy.Managers
             handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscriptionStatus",
-                Value = new Hl7.Fhir.Model.FhirString(subscription.status)
+                Value = new Hl7.Fhir.Model.FhirString(subscription.Status)
             });
 
             handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscriptionTopicUrl",
-                Value = new Hl7.Fhir.Model.FhirString(subscription.topic.Reference)
+                Value = new Hl7.Fhir.Model.FhirString(subscription.Topic.reference)
             });
 
             handshake.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscriptionUrl",
-                Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.id))
+                Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.Id))
             });
 
             // **** send the request to the endpoint ****
@@ -315,7 +312,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // **** end the request ****
 
                 HttpResponseMessage response = Program.RestClient.PostAsync(
-                    subscription.channel.endpoint,
+                    subscription.Channel.Endpoint,
                     new StringContent(serializer.SerializeToString(handshake), Encoding.UTF8, "application/fhir+json")
                     ).Result;
 
@@ -328,12 +325,12 @@ namespace argonaut_subscription_server_proxy.Managers
                     // **** failure ****
 
                     Console.WriteLine($"SubscriptionManager.HandshakeRestHook <<<" +
-                        $" request to {subscription.channel.endpoint}" +
+                        $" request to {subscription.Channel.Endpoint}" +
                         $" returned: {response.StatusCode}");
 
                     // **** done ****
 
-                    _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+                    _idSubscriptionDict[subscription.Id].Status = "error";      // new Hl7.Fhir.Model.Code("error");
 
                     return false;
                 }
@@ -341,21 +338,21 @@ namespace argonaut_subscription_server_proxy.Managers
             catch (Exception ex)
             {
                 Console.WriteLine($"SubscriptionManager.HandshakeRestHook <<<" +
-                    $" request to {subscription.channel.endpoint}" + 
+                    $" request to {subscription.Channel.Endpoint}" + 
                     $" caused exception: {ex.Message}");
 
-                _idSubscriptionDict[subscription.id].status = "error";      // new Hl7.Fhir.Model.Code("error");
+                _idSubscriptionDict[subscription.Id].Status = "error";      // new Hl7.Fhir.Model.Code("error");
 
                 return false;
             }
 
             // **** update in the manager ****
 
-            _idSubscriptionDict[subscriptionId].status = "active";      // new Hl7.Fhir.Model.Code("active");
+            _idSubscriptionDict[subscriptionId].Status = "active";      // new Hl7.Fhir.Model.Code("active");
 
             // **** tell the user ****
 
-            Console.WriteLine($" Subscription {subscription.id} set to active!");
+            Console.WriteLine($" Subscription {subscription.Id} set to active!");
 
             // **** done ****
 

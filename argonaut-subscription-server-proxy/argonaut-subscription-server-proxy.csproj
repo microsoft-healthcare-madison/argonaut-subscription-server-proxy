@@ -7,6 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Channel.cs" />
+    <Compile Remove="Models\CodeableConcept.cs" />
+    <Compile Remove="Models\Coding.cs" />
+    <Compile Remove="Models\Criteria.cs" />
+    <Compile Remove="Models\CriteriaByQuery.cs" />
+    <Compile Remove="Models\FilterParameter.cs" />
+    <Compile Remove="Models\FilterSpecification.cs" />
+    <Compile Remove="Models\Payload.cs" />
+    <Compile Remove="Models\ResourceReference.cs" />
+    <Compile Remove="Models\ResourceTrigger.cs" />
+    <Compile Remove="Models\Subscription.cs" />
+    <Compile Remove="Models\Topic.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Hl7.Fhir.R4" Version="1.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.6" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />

@@ -1,5 +1,4 @@
 ﻿using argonaut_subscription_server_proxy.Managers;
-using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

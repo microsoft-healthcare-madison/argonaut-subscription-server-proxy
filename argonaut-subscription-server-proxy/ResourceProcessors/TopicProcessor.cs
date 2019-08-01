@@ -40,7 +40,15 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         // *** success ****
 
-                        response.Content = new StringContent(JsonConvert.SerializeObject(TopicManager.GetTopicList()));
+                        response.Content = new StringContent(
+                            JsonConvert.SerializeObject(
+                                TopicManager.GetTopicList(),
+                                new JsonSerializerSettings()
+                                {
+                                    NullValueHandling = NullValueHandling.Ignore
+                                }
+                                )
+                            );
                         response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                         response.StatusCode = System.Net.HttpStatusCode.OK;
 

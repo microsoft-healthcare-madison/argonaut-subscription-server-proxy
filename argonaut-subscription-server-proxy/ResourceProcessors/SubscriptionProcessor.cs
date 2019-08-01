@@ -1,5 +1,4 @@
 ﻿using argonaut_subscription_server_proxy.Managers;
-using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using ProxyKit;
@@ -34,7 +33,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     // *** success ****
 
-                    response.Content = new StringContent(JsonConvert.SerializeObject(SubscriptionManager.GetSubscriptionList()));
+                    response.Content = new StringContent(
+                        JsonConvert.SerializeObject(
+                            SubscriptionManager.GetSubscriptionList(),
+                            new JsonSerializerSettings()
+                            {
+                                NullValueHandling = NullValueHandling.Ignore,
+                            })
+                        );
                     response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                     response.StatusCode = System.Net.HttpStatusCode.OK;
 
@@ -57,11 +63,18 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     // **** check to see if the manager does anything with this text ****
 
-                    SubscriptionManager.HandlePost(requestContent, out Subscription subscription);
+                    SubscriptionManager.HandlePost(requestContent, out fhir.Subscription subscription);
 
                     // **** serialize our response ****
 
-                    response.Content = new StringContent(JsonConvert.SerializeObject(subscription));
+                    response.Content = new StringContent(
+                        JsonConvert.SerializeObject(
+                            subscription,
+                            new JsonSerializerSettings()
+                            {
+                                NullValueHandling = NullValueHandling.Ignore
+                            })
+                        );
                     response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                     response.StatusCode = System.Net.HttpStatusCode.OK;
 

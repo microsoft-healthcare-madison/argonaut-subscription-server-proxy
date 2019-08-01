@@ -1,4 +1,4 @@
-﻿using argonaut_subscription_server_proxy.Models;
+﻿using fhir;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
 using System;
@@ -30,7 +30,7 @@ namespace argonaut_subscription_server_proxy.Managers
         #region Instance Variables . . .
 
         /// <summary>Dictionary of topic names to indicies in _topics.</summary>
-        private Dictionary<string, Topic> _nameTopicDict;
+        private Dictionary<string, fhir.Topic> _nameTopicDict;
         private Dictionary<string, string> _urlNameDict;
         private Dictionary<string, string> _idNameDict;
 
@@ -42,7 +42,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** create our index objects ****
 
-            _nameTopicDict = new Dictionary<string, Topic>();
+            _nameTopicDict = new Dictionary<string, fhir.Topic>();
             _urlNameDict = new Dictionary<string, string>();
             _idNameDict = new Dictionary<string, string>();
         }
@@ -76,11 +76,11 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The topic list.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static List<Topic> GetTopicList()
+        public static List<fhir.Topic> GetTopicList()
         {
             // **** return our list of known topics ****
 
-            return _instance._nameTopicDict.Values.ToList<Topic>();
+            return _instance._nameTopicDict.Values.ToList<fhir.Topic>();
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -91,12 +91,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void AddOrUpdate(Topic topic)
+        public static void AddOrUpdate(fhir.Topic topic)
         {
             _instance._AddOrUpdate(topic);
         }
 
-        public static Topic GetTopic(string name)
+        public static fhir.Topic GetTopic(string name)
         {
             if ((string.IsNullOrEmpty(name)) || (!_instance._nameTopicDict.ContainsKey(name)))
             {
@@ -131,76 +131,76 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _AddOrUpdate(Topic topic)
+        private void _AddOrUpdate(fhir.Topic topic)
         {
             // **** check for an existing topic (may need to remove URL for cleanup) ****
 
-            if (_nameTopicDict.ContainsKey(topic.title))
+            if (_nameTopicDict.ContainsKey(topic.Title))
             {
                 // **** look for the old URL ****
 
-                if (_urlNameDict.ContainsKey(_nameTopicDict[topic.title].url.ToString()))
+                if (_urlNameDict.ContainsKey(_nameTopicDict[topic.Title].Url.ToString()))
                 {
                     // **** remove ****
 
-                    _urlNameDict.Remove(_nameTopicDict[topic.title].url.ToString());
+                    _urlNameDict.Remove(_nameTopicDict[topic.Title].Url.ToString());
                 }
 
-                if (_idNameDict.ContainsKey(_nameTopicDict[topic.title].id))
+                if (_idNameDict.ContainsKey(_nameTopicDict[topic.Title].Id))
                 {
                     // **** remove ****
 
-                    _idNameDict.Remove(_nameTopicDict[topic.title].id);
+                    _idNameDict.Remove(_nameTopicDict[topic.Title].Id);
                 }
 
                 // **** remove from the main dict ****
 
-                _nameTopicDict.Remove(topic.title);
+                _nameTopicDict.Remove(topic.Title);
             }
 
             // **** check for this new url already existing ****
 
-            if (_urlNameDict.ContainsKey(topic.url.ToString()))
+            if (_urlNameDict.ContainsKey(topic.Url.ToString()))
             {
                 // **** check for the old URL's record in the main dict ****
 
-                if (_nameTopicDict.ContainsKey(_urlNameDict[topic.url.ToString()]))
+                if (_nameTopicDict.ContainsKey(_urlNameDict[topic.Url.ToString()]))
                 {
-                    _nameTopicDict.Remove(_urlNameDict[topic.url.ToString()]);
+                    _nameTopicDict.Remove(_urlNameDict[topic.Url.ToString()]);
                 }
 
                 // **** remove from URL dictionary ****
 
-                _urlNameDict.Remove(topic.url.ToString());
+                _urlNameDict.Remove(topic.Url.ToString());
             }
 
             // **** check for this id already existing ****
 
-            if (_idNameDict.ContainsKey(topic.id))
+            if (_idNameDict.ContainsKey(topic.Id))
             {
                 // **** check for the old id's record in the main dict ****
 
-                if (_nameTopicDict.ContainsKey(_idNameDict[topic.id]))
+                if (_nameTopicDict.ContainsKey(_idNameDict[topic.Id]))
                 {
-                    _nameTopicDict.Remove(_idNameDict[topic.id]);
+                    _nameTopicDict.Remove(_idNameDict[topic.Id]);
                 }
 
                 // **** remove from id dictionary ****
 
-                _idNameDict.Remove(topic.url.ToString());
+                _idNameDict.Remove(topic.Url.ToString());
             }
 
             // **** add to the main dictionary ****
 
-            _nameTopicDict.Add(topic.title, topic);
+            _nameTopicDict.Add(topic.Title, topic);
 
             // **** add to url dictionary ****
 
-            _urlNameDict.Add(topic.url.ToString(), topic.title);
+            _urlNameDict.Add(topic.Url.ToString(), topic.Title);
 
             // **** add to id dictionary ****
 
-            _idNameDict.Add(topic.id, topic.title);
+            _idNameDict.Add(topic.Id, topic.Title);
         }
 
 
@@ -236,37 +236,34 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** create our known topics ****
 
-            Topic topic = new Topic()
+            fhir.Topic topic = new fhir.Topic()
             {
-                title = "admissions",
-                id = "1",
-                url = new Hl7.Fhir.Model.FhirUri("http://argonautproject.org/subscription-ig/Topic/admission"),
-                version = "0.2",
-                status = new Code("draft"),
-                experimental = true,
-                description = "Admissions Topic for testing framework and behavior",
-                date = new FhirDateTime(2019, 07, 01, 0, 0, 0, TimeSpan.Zero),
-                resourceTrigger = new ResourceTrigger()
+                Title = "admissions",
+                Id = "1",
+                Url = "http://argonautproject.org/subscription-ig/Topic/admission",
+                Version = "0.2",
+                Status = "draft",
+                Experimental = true,
+                Description = "Admissions Topic for testing framework and behavior",
+                Date = "2019-07-01",
+                ResourceTrigger = new fhir.TopicResourceTrigger()
                 {
-                    description = "Beginning of a clinical encounter",
-                    resourceType = new List<Code>() { new Code("Encounter") },
-                    criteria = new Criteria()
+                    Description = "Beginning of a clinical encounter",
+                    ResourceType = new string[] {"Encounter"},
+                    QueryCriteria = new TopicResourceTriggerQueryCriteria()
                     {
-                        queryCriteria = new CriteriaByQuery()
-                        {
-                            previous = "status:not=in-progress",
-                            current = "status:in-progress",
-                            requireBoth = true
-                        },
-                        fhirPathCriteria = "%previous.status!='in-progress' and %current.status='in-progress'"
-                    }
+                        Previous = "status:not=in-progress",
+                        Current = "status:in-progress",
+                        RequireBoth = true,
+                    },
+                    FhirPathCriteria = "%previous.status!='in-progress' and %current.status='in-progress'",
                 },
-                canFilterBy = new List<FilterSpecification>()
+                CanFilterBy = new TopicCanFilterBy[]
                 {
-                    new FilterSpecification() {name = "patient", documentation = "Patient involved in the encounter"},
-                    new FilterSpecification() {name = "practitioner", documentation ="Practitioner"},
-                    new FilterSpecification() {name = "patient.birthDate", documentation="Birthdate of admitted patient"}
-                }
+                    new TopicCanFilterBy() {Name = "Patient", Documentation = "Patient involved in the encounter"},
+                    new TopicCanFilterBy() {Name = "Practitioner", Documentation ="Practitioner"},
+                    new TopicCanFilterBy() {Name = "patient.birthDate", Documentation="Birthdate of admitted patient"}
+                },
             };
 
             // **** add this topic ****
