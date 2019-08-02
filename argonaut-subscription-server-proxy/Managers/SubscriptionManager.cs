@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -365,13 +366,37 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     foreach (string resourceName in topic.ResourceTrigger.ResourceType)
                     {
-                        // **** all events on this resource ****
+                        // **** check for no value ****
 
-                        TrackSubscriptionFilter($"{resourceName}:{filterBy.Name}:{filterBy.Value}", subscription);
+                        if (string.IsNullOrEmpty(filterBy.Value))
+                        {
+                            // **** all events on this resource ****
 
-                        // **** flag tracking this resource ****
+                            TrackSubscriptionFilter($"{resourceName}:{filterBy.Name}:*", subscription);
 
-                        TrackResource(resourceName);
+                            // **** flag tracking this resource ****
+
+                            TrackResource(resourceName);
+
+                            // **** go to next loop ****
+
+                            continue;
+                        }
+                        
+                        // **** split possible values ****
+
+                        string[] filterValues = filterBy.Value.Split(',');
+                        
+                        foreach (string filterValue in filterValues)
+                        {
+                            // **** all events on this resource ****
+
+                            TrackSubscriptionFilter($"{resourceName}:{filterBy.Name}:{filterValue}", subscription);
+
+                            // **** flag tracking this resource ****
+
+                            TrackResource(resourceName);
+                        }
                     }
                 }
             }
@@ -414,6 +439,8 @@ namespace argonaut_subscription_server_proxy.Managers
             // **** add our subscription ****
 
             _filterSubscriptionListDict[key].Add(subscription);
+
+            Console.WriteLine($" <<< tracking {key} for {subscription.Id}");
         }
 
         private void DumpNode(ISourceNode node)
@@ -476,7 +503,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** tell the user ****
 
-            Console.WriteLine($" Subscription {subscription.Id} set to active!");
+            Console.WriteLine($" <<< Subscription {subscription.Id} set to active!");
 
             // **** done ****
 
@@ -608,12 +635,48 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
 
-                // **** end the request ****
+                // **** build our request ****
 
-                HttpResponseMessage response = Program.RestClient.PostAsync(
-                    subscription.Channel.Endpoint,
-                    new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
-                    ).Result;
+                HttpRequestMessage request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(subscription.Channel.Endpoint),
+                    Content = new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
+                };
+
+                // **** check for additional headers ****
+
+                if ((subscription.Channel.Header != null) && (subscription.Channel.Header.Length > 0))
+                {
+                    // **** add headers ****
+
+                    foreach (string header in subscription.Channel.Header)
+                    {
+                        // **** parse the existing header ****
+
+                        int seperatorLoc = header.IndexOf(':');
+
+                        if (seperatorLoc < 1)
+                        {
+                            continue;
+                        }
+
+                        // **** add this header (skip the seperator and the following space) ****
+
+                        request.Headers.Add(header.Substring(0, seperatorLoc), header.Substring(seperatorLoc + 2));
+                    }
+                }
+
+                // **** send our request ****
+
+                HttpResponseMessage response = Program.RestClient.SendAsync(request).Result;
+
+                //// **** send the request ****
+
+                //HttpResponseMessage response = Program.RestClient.PostAsync(
+                //    subscription.Channel.Endpoint,
+                //    new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
+                //    ).Result;
 
                 // **** check the status code ****
 
@@ -623,8 +686,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** failure ****
 
-                    Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<<" +
-                        $" request to {subscription.Channel.Endpoint}" +
+                    Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<< request to" +
+                        $" {subscription.Channel.Endpoint}" +
                         $" returned: {response.StatusCode}");
 
                     // **** done ****
@@ -636,8 +699,8 @@ namespace argonaut_subscription_server_proxy.Managers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<<" +
-                    $" request to {subscription.Channel.Endpoint}" +
+                Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<< request to" +
+                    $" {subscription.Channel.Endpoint}" +
                     $" caused exception: {ex.Message}");
 
                 _idSubscriptionDict[subscription.Id].Status = "error";
@@ -651,14 +714,14 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
 
-                Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<<" +
-                   $" sent {subscription.Id} ({subscription.Channel.Endpoint})" +
-                   $" a {messageType} message");
+                Console.WriteLine($" <<< sent" +
+                    $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                    $" a {messageType} message");
             }
             else
             {
-                Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<<" +
-                    $" sent {subscription.Id} ({subscription.Channel.Endpoint})" +
+                Console.WriteLine($" <<< sent" +
+                    $" {subscription.Id} ({subscription.Channel.Endpoint})" +
                     $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
             }
 
