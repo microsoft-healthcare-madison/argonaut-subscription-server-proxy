@@ -69,17 +69,21 @@ namespace argonaut_subscription_server_proxy
             // **** handle specific routes we want to intercept ****
 
             app.UseWhen(
-                context => context.Request.Path.StartsWithSegments("/baseR4/Topic"),
-                appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
-                )
+                    context => context.Request.Path.StartsWithSegments("/baseR4/Topic"),
+                    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
                 //.UseWhen(
                 //context => context.Request.Path.StartsWithSegments("/baseR4/Patient"),
                 //appInner => ProcessPatientRequest.ProcessRequest(appInner)
                 //)
                 .UseWhen(
-                context => context.Request.Path.StartsWithSegments("/baseR4/Subscription"),
-                appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
-                )
+                    context => context.Request.Path.StartsWithSegments("/baseR4/Subscription"),
+                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments("/baseR4/Encounter"),
+                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
                 ;
 
             // **** default to proxying all other requests ****

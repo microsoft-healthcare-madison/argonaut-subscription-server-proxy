@@ -30,9 +30,10 @@ namespace argonaut_subscription_server_proxy.Managers
         #region Instance Variables . . .
 
         /// <summary>Dictionary of topic names to indicies in _topics.</summary>
-        private Dictionary<string, fhir.Topic> _nameTopicDict;
-        private Dictionary<string, string> _urlNameDict;
-        private Dictionary<string, string> _idNameDict;
+        private Dictionary<string, fhir.Topic> _titleTopicDict;
+        private Dictionary<string, fhir.Topic> _canonicalUrlTopicDict;
+        private Dictionary<string, fhir.Topic> _localUrlTopicDict;
+        private Dictionary<string, fhir.Topic> _idTopicDict;
 
         #endregion Instance Variables . . .
 
@@ -42,9 +43,10 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** create our index objects ****
 
-            _nameTopicDict = new Dictionary<string, fhir.Topic>();
-            _urlNameDict = new Dictionary<string, string>();
-            _idNameDict = new Dictionary<string, string>();
+            _titleTopicDict = new Dictionary<string, fhir.Topic>();
+            _canonicalUrlTopicDict = new Dictionary<string, fhir.Topic>();
+            _localUrlTopicDict = new Dictionary<string, Topic>();
+            _idTopicDict = new Dictionary<string, fhir.Topic>();
         }
 
         #endregion Constructors . . .
@@ -80,7 +82,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** return our list of known topics ****
 
-            return _instance._nameTopicDict.Values.ToList<fhir.Topic>();
+            return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -96,24 +98,47 @@ namespace argonaut_subscription_server_proxy.Managers
             _instance._AddOrUpdate(topic);
         }
 
-        public static fhir.Topic GetTopic(string name)
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets a topic.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
+        ///
+        /// <param name="key">The key (Title, ID, URL)</param>
+        ///
+        /// <returns>The topic.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static fhir.Topic GetTopic(string key)
         {
-            if ((string.IsNullOrEmpty(name)) || (!_instance._nameTopicDict.ContainsKey(name)))
+            if (string.IsNullOrEmpty(key))
             {
                 return null;
             }
 
-            return _instance._nameTopicDict[name];
-        }
+            if (_instance._localUrlTopicDict.ContainsKey(key))
+            {
+                return _instance._localUrlTopicDict[key];
+            }
 
-        public static string UrlForTopicName(string name)
-        {
-            return (new Uri(
-                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
-                new Uri($"Topic/{name}", UriKind.Relative))
-                ).ToString();
-        }
+            if (_instance._titleTopicDict.ContainsKey(key))
+            {
+                return _instance._titleTopicDict[key];
+            }
 
+            if (_instance._idTopicDict.ContainsKey(key))
+            {
+                return _instance._idTopicDict[key];
+            }
+
+            if (_instance._canonicalUrlTopicDict.ContainsKey(key))
+            {
+                return _instance._canonicalUrlTopicDict[key];
+            }
+
+            // **** not found ****
+
+            return null;
+        }
 
         #endregion Class Interface . . .
 
@@ -133,74 +158,99 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private void _AddOrUpdate(fhir.Topic topic)
         {
-            // **** check for an existing topic (may need to remove URL for cleanup) ****
+            string localUrl = Program.UrlForResourceId("Topic", topic.Title);
 
-            if (_nameTopicDict.ContainsKey(topic.Title))
+            // **** check for local url already existing ****
+
+            if (_localUrlTopicDict.ContainsKey(localUrl))
             {
-                // **** look for the old URL ****
+                fhir.Topic oldTopic = _localUrlTopicDict[localUrl];
 
-                if (_urlNameDict.ContainsKey(_nameTopicDict[topic.Title].Url.ToString()))
-                {
-                    // **** remove ****
+                // **** remove if this topic exists in other dictionaries ****
 
-                    _urlNameDict.Remove(_nameTopicDict[topic.Title].Url.ToString());
-                }
+                RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
+                RemoveIfExists(_titleTopicDict, localUrl);
+                RemoveIfExists(_idTopicDict, oldTopic.Title);
 
-                if (_idNameDict.ContainsKey(_nameTopicDict[topic.Title].Id))
-                {
-                    // **** remove ****
+                // **** remove from this dict ****
 
-                    _idNameDict.Remove(_nameTopicDict[topic.Title].Id);
-                }
-
-                // **** remove from the main dict ****
-
-                _nameTopicDict.Remove(topic.Title);
+                _localUrlTopicDict.Remove(topic.Title);
             }
 
-            // **** check for this new url already existing ****
+            // **** check for this canonical url already existing ****
 
-            if (_urlNameDict.ContainsKey(topic.Url.ToString()))
+            if (_canonicalUrlTopicDict.ContainsKey(topic.Url))
             {
-                // **** check for the old URL's record in the main dict ****
+                fhir.Topic oldTopic = _canonicalUrlTopicDict[topic.Url];
 
-                if (_nameTopicDict.ContainsKey(_urlNameDict[topic.Url.ToString()]))
-                {
-                    _nameTopicDict.Remove(_urlNameDict[topic.Url.ToString()]);
-                }
+                // **** remove if this topic exists in other dictionaries ****
 
-                // **** remove from URL dictionary ****
+                RemoveIfExists(_localUrlTopicDict, localUrl);
+                RemoveIfExists(_titleTopicDict, oldTopic.Url);
+                RemoveIfExists(_idTopicDict, oldTopic.Title);
 
-                _urlNameDict.Remove(topic.Url.ToString());
+                // **** remove from this dict ****
+
+                _canonicalUrlTopicDict.Remove(topic.Url);
+            }
+
+            // **** check for title already existing ****
+
+            if (_titleTopicDict.ContainsKey(topic.Title))
+            {
+                fhir.Topic oldTopic = _titleTopicDict[topic.Title];
+
+                // **** remove if this topic exists in other dictionaries ****
+
+                RemoveIfExists(_localUrlTopicDict, localUrl);
+                RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
+                RemoveIfExists(_idTopicDict, oldTopic.Title);
+
+                // **** remove from this dict ****
+
+                _titleTopicDict.Remove(topic.Title);
             }
 
             // **** check for this id already existing ****
 
-            if (_idNameDict.ContainsKey(topic.Id))
+            if (_idTopicDict.ContainsKey(topic.Id))
             {
-                // **** check for the old id's record in the main dict ****
+                fhir.Topic oldTopic = _idTopicDict[topic.Id];
 
-                if (_nameTopicDict.ContainsKey(_idNameDict[topic.Id]))
-                {
-                    _nameTopicDict.Remove(_idNameDict[topic.Id]);
-                }
+                // **** remove if this topic exists in other dictionaries ****
 
-                // **** remove from id dictionary ****
+                RemoveIfExists(_localUrlTopicDict, localUrl);
+                RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
+                RemoveIfExists(_titleTopicDict, oldTopic.Title);
 
-                _idNameDict.Remove(topic.Url.ToString());
+                // **** remove from this dict ****
+
+                _idTopicDict.Remove(topic.Id);
             }
 
-            // **** add to the main dictionary ****
+            // **** add to local url dictionary ***
 
-            _nameTopicDict.Add(topic.Title, topic);
+            _localUrlTopicDict.Add(localUrl, topic);
 
-            // **** add to url dictionary ****
+            // **** add to canonical url dictionary ****
 
-            _urlNameDict.Add(topic.Url.ToString(), topic.Title);
+            _canonicalUrlTopicDict.Add(topic.Url, topic);
+
+            // **** add to the title dictionary ****
+
+            _titleTopicDict.Add(topic.Title, topic);
 
             // **** add to id dictionary ****
 
-            _idNameDict.Add(topic.Id, topic.Title);
+            _idTopicDict.Add(topic.Id, topic);
+        }
+
+        private void RemoveIfExists(Dictionary<string, fhir.Topic> dict, string key)
+        {
+            if (dict.ContainsKey(key))
+            {
+                dict.Remove(key);
+            }
         }
 
 
@@ -230,9 +280,9 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** make sure our lists are clear ****
 
-            _nameTopicDict.Clear();
-            _urlNameDict.Clear();
-            _idNameDict.Clear();
+            _titleTopicDict.Clear();
+            _canonicalUrlTopicDict.Clear();
+            _idTopicDict.Clear();
 
             // **** create our known topics ****
 
@@ -241,11 +291,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 Title = "admissions",
                 Id = "1",
                 Url = "http://argonautproject.org/subscription-ig/Topic/admission",
-                Version = "0.2",
+                Version = "0.3",
                 Status = "draft",
                 Experimental = true,
                 Description = "Admissions Topic for testing framework and behavior",
-                Date = "2019-07-01",
+                Date = "2019-08-01",
                 ResourceTrigger = new fhir.TopicResourceTrigger()
                 {
                     Description = "Beginning of a clinical encounter",
@@ -261,8 +311,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 CanFilterBy = new TopicCanFilterBy[]
                 {
                     new TopicCanFilterBy() {Name = "Patient", Documentation = "Patient involved in the encounter"},
-                    new TopicCanFilterBy() {Name = "Practitioner", Documentation ="Practitioner"},
-                    new TopicCanFilterBy() {Name = "patient.birthDate", Documentation="Birthdate of admitted patient"}
+                    //new TopicCanFilterBy() {Name = "Practitioner", Documentation ="Practitioner"},
                 },
             };
 

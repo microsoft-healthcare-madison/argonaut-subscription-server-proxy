@@ -83,5 +83,24 @@ namespace argonaut_subscription_server_proxy
                 .UseKestrel()
                 .UseStartup<Startup>()
                 ;
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>URL for resource identifier.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
+        ///
+        /// <param name="resource">The resource.</param>
+        /// <param name="id">      The identifier.</param>
+        ///
+        /// <returns>A string.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static string UrlForResourceId(string resource, string id)
+        {
+            return (new Uri(
+                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
+                new Uri($"baseR4/{resource}/{id}", UriKind.Relative))
+                ).ToString();
+        }
     }
 }

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using argonaut_subscription_server_proxy.Managers;
+using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using ProxyKit;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -21,71 +23,46 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            //// **** run the proxy for this request ****
+            // **** run the proxy for this request ****
 
-            //appInner.RunProxy(async context => {
-            //    // **** grab a formatted copy of this request for proxying ****
+            appInner.RunProxy(async context =>
+            {
+                // **** proxy this call ****
 
-            //    //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+                ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-            //    HttpResponseMessage response = new HttpResponseMessage();
+                // **** send to server and await response ****
 
-            //    // **** return appropriate code to the caller ****
+                HttpResponseMessage response = await proxiedContext.Send();
 
-            //    switch (context.Request.Method.ToUpper())
-            //    {
-            //        case "GET":
+                // **** get copies of data when we care ****
 
-            //            // *** success ****
+                switch (context.Request.Method.ToUpper())
+                {
+                    case "PUT":
+                    case "POST":
 
-            //            response.Content = new StringContent(JsonConvert.SerializeObject(TopicManager.GetTopicList()));
-            //            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            //            response.StatusCode = System.Net.HttpStatusCode.OK;
+                        // **** grab the message body to look at ****
+                        
+                        string responseContent = await response.Content.ReadAsStringAsync();
 
-            //            break;
+                        // **** run this Encounter through our Subscription Manager ****
 
-            //        case "PUT":
+                        SubscriptionManager.ProcessEncounter(responseContent);
 
-            //            // *** success ****
+                        break;
 
-            //            response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
+                    default:
 
-            //            break;
+                        // **** ignore ****
 
-            //        case "POST":
+                        break;
+                }
 
-            //            // **** grab the message body to look at ****
+                // **** return the results of the proxied call ****
 
-            //            System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
-            //            string requestContent = requestReader.ReadToEnd();
-
-            //            response.Content = new StringContent(requestContent);
-
-            //            // *** not implemented yet ****
-
-            //            response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
-            //            break;
-
-            //        case "DELETE":
-
-            //            // *** success ****
-
-            //            response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
-            //            break;
-
-            //        default:
-
-            //            // **** tell client we didn't understand ****
-
-            //            response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
-            //            break;
-            //    }
-
-            //    return response;
-            //});
+                return response;
+            });
         }
     }
 }
