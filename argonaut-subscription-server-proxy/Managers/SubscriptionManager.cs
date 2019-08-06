@@ -617,9 +617,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (subscription.Channel.Payload.Content == "id-only")
                 {
-                    // TODO(ginoc): Need to create bundle with just ID ****
+                    // TODO(ginoc): Need to create bundle with just ID
 
-                    bundle.AddResourceEntry(content, Program.UrlForResourceId(content.TypeName, content.Id));
+                    bundle.AddResourceEntry(null, Program.UrlForResourceId(content.TypeName, content.Id));
                 }
                 else
                 {

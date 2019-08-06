@@ -76,7 +76,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             })
                         );
                     response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                    response.StatusCode = System.Net.HttpStatusCode.OK;
+                    response.StatusCode = System.Net.HttpStatusCode.Created;
 
                     break;
 
