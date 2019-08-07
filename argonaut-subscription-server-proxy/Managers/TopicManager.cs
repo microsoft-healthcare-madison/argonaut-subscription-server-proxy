@@ -288,8 +288,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Topic topic = new fhir.Topic()
             {
-                Title = "admissions",
-                Id = "1",
+                ResourceType = "Topic",
+                Title = "admission",
+                Id = "636b348b-e2fa-4b76-98d3-0375ba1e886b",
                 Url = "http://argonautproject.org/subscription-ig/Topic/admission",
                 Version = "0.3",
                 Status = "draft",

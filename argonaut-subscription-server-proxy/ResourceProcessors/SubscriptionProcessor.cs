@@ -1,6 +1,7 @@
 ﻿using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using ProxyKit;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     public class SubscriptionProcessor
     {
 
+        private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Process the request.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/7/2019.</remarks>
+        ///
+        /// <param name="appInner">     The application inner.</param>
+        /// <param name="fhirServerUrl">URL of the fhir server.</param>
+        ///-------------------------------------------------------------------------------------------------
 
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
@@ -39,6 +50,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             new JsonSerializerSettings()
                             {
                                 NullValueHandling = NullValueHandling.Ignore,
+                                ContractResolver = _contractResolver,
                             })
                         );
                     response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");

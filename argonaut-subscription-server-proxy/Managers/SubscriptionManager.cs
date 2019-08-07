@@ -251,7 +251,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (string.IsNullOrEmpty(subscription.Id))
                 {
-                    subscription.Id = $"S-{DateTime.Now.ToString("yyyyMMddHHmmss")}-{_rand.Next(100, 999)}";
+                    subscription.Id = Guid.NewGuid().ToString();
                 }
 
                 // **** add or update internally ****
@@ -572,7 +572,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             Hl7.Fhir.Model.Bundle bundle = new Hl7.Fhir.Model.Bundle()
             {
-                Identifier = new Hl7.Fhir.Model.Identifier("GUID", Guid.NewGuid().ToString()),
+                Identifier = new Hl7.Fhir.Model.Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
                 Type = Hl7.Fhir.Model.Bundle.BundleType.History,
                 Timestamp = new DateTimeOffset(DateTime.Now),
                 Meta = new Hl7.Fhir.Model.Meta()

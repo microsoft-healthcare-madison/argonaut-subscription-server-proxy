@@ -7,11 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Serialization;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     public class TopicProcessor
     {
+        private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
+
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the request described by appInner.</summary>
         ///
@@ -45,7 +48,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 TopicManager.GetTopicList(),
                                 new JsonSerializerSettings()
                                 {
-                                    NullValueHandling = NullValueHandling.Ignore
+                                    NullValueHandling = NullValueHandling.Ignore,
+                                    ContractResolver = _contractResolver,
                                 }
                                 )
                             );

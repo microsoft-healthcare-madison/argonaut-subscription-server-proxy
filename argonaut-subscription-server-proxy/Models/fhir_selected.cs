@@ -1288,6 +1288,7 @@ namespace fhir
     ///<source-file>resource-spreadsheet.xml</source-file>
     public class Resource
     {
+        public string ResourceType { get; set; }
         ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes</summary>
         public string Id { get; set; }
         ///<summary>May contain extended information for property: 'Id'</summary>
