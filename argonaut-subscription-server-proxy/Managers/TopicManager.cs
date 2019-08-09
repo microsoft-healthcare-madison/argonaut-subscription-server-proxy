@@ -311,7 +311,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 },
                 CanFilterBy = new TopicCanFilterBy[]
                 {
-                    new TopicCanFilterBy() {Name = "Patient", Documentation = "Patient involved in the encounter"},
+                    new TopicCanFilterBy() {Name = "patient", Documentation = "Exact match to a patient resource (reference)"},
                     //new TopicCanFilterBy() {Name = "Practitioner", Documentation ="Practitioner"},
                 },
             };

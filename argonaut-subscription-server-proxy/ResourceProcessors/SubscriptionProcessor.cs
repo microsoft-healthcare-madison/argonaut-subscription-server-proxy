@@ -84,7 +84,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             subscription,
                             new JsonSerializerSettings()
                             {
-                                NullValueHandling = NullValueHandling.Ignore
+                                NullValueHandling = NullValueHandling.Ignore,
+                                ContractResolver = _contractResolver,
                             })
                         );
                     response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
