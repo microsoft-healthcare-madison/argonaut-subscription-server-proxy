@@ -156,7 +156,7 @@ namespace argonaut_subscription_server_proxy.Managers
         public static string UrlForSubscription(string subscriptionId)
         {
             return (new Uri(
-                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
+                new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"Subscription/{subscriptionId}", UriKind.Relative))
                 ).ToString();
         }
