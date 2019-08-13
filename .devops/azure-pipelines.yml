@@ -10,9 +10,28 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
-  solutionFile: 'solutions/argonaut-subscription-server-proxy.sln'
+  - group: argonaut-variables
+  - name: server_proxy_tag
+    value: argonautcontainerregistry.azurecr.io/subscriptions/server-proxy:$(Build.BuildNumber)
+  - name: buildConfiguration
+    value: 'Release'
+  - name: solutionFile
+    value: 'solutions/argonaut-subscription-server-proxy.sln'
 
 steps:
 - script: dotnet build --configuration $(buildConfiguration) $(solutionFile)
-  displayName: 'dotnet build $(buildConfiguration)' 
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- bash: docker build -t $(server_proxy_tag) -f .devops/Dockerfile .
+  name: build
+
+- bash: |
+    az login --service-principal --username $(appId) --password $(password) --tenant $(tenant)
+    az aks get-credentials --resource-group $(aks_resource_group) --name $(aks_cluster_name)
+    az acr login --name $(acr_registry_name)
+    docker push $(server_proxy_tag)
+    kubectl -n $(k8s_namespace) patch deployment server-proxy  \
+      --type json \
+      --patch "[{ \"op\" : \"replace\" , \"path\" : \"/spec/template/spec/containers/0/image\" , \"value\" : \"$(server_proxy_tag)\"}]"
+  name: deploy
+  condition: "and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))"
