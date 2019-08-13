@@ -1,5 +1,7 @@
 # argonaut-subscription-server-proxy
 
+[![Build Status](https://dev.azure.com/fhir-build/argonaut/_apis/build/status/microsoft-healthcare-madison.argonaut-subscription-server-proxy?branchName=master)](https://dev.azure.com/fhir-build/argonaut/_build/latest?definitionId=7&branchName=master)
+
 A .Net Core application to work with the proposed Argonaut Subscription changes.
 
 This system sits in front of a FHIR R4 Server and intercepts all calls relating 
