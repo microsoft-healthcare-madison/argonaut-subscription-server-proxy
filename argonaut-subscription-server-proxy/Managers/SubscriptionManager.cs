@@ -588,7 +588,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
+                Url = "http://hl7.org/fhir/StructureDefinition/bundleEventCount",
                 Value = new Hl7.Fhir.Model.UnsignedInt(content == null ? 0 : 1)
             });
 

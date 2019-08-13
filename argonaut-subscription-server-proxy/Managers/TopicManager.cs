@@ -160,7 +160,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 Type = "searchset",
                 Total = _titleTopicDict.Count,
                 Meta = new fhir.Meta() {
-                    LastUpdated = (new DateTimeOffset(DateTime.Now)).ToString()
+                    LastUpdated = string.Format("{0:s}", DateTime.Now)
                 },
                 Entry = new BundleEntry[_idTopicDict.Count]
             };
