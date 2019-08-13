@@ -50,8 +50,12 @@ namespace argonaut_subscription_server_proxy
             // **** update configuration to make sure listen url is properly formatted ****
 
             Regex regex = new Regex(_regexBaseUrlMatch);
-            Match match = regex.Match(Configuration["Server_Listen_Url"]);
-            Configuration["Server_Listen_Url"] = match.ToString();
+            Match match = regex.Match(Configuration["Server_Public_Url"]);
+            Configuration["Server_Public_Url"] = match.ToString();
+
+            match = regex.Match(Configuration["Internal_Listen_Url"]);
+            Configuration["Internal_Listen_Url"] = match.ToString();
+
 
             // **** create our REST client ****
 
@@ -79,7 +83,7 @@ namespace argonaut_subscription_server_proxy
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseUrls(Configuration["Server_Listen_Url"])
+                .UseUrls(Configuration["Internal_Listen_URL"])
                 .UseKestrel()
                 .UseStartup<Startup>()
                 ;
@@ -98,7 +102,7 @@ namespace argonaut_subscription_server_proxy
         public static string UrlForResourceId(string resource, string id)
         {
             return (new Uri(
-                new Uri(Program.Configuration["Server_Listen_Url"], UriKind.Absolute),
+                new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"baseR4/{resource}/{id}", UriKind.Relative))
                 ).ToString();
         }
