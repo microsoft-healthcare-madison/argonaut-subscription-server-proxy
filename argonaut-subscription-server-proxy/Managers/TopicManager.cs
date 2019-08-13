@@ -85,6 +85,11 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
         }
 
+        public static fhir.Bundle GetTopicsBundle()
+        {
+            return _instance._GetTopicsBundle();
+        }
+
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Adds or updates a Topic</summary>
         ///
@@ -147,6 +152,40 @@ namespace argonaut_subscription_server_proxy.Managers
         #endregion Instance Interface . . .
 
         #region Internal Functions . . .
+
+        private fhir.Bundle _GetTopicsBundle()
+        {
+            fhir.Bundle bundle = new fhir.Bundle()
+            {
+                Type = "searchset",
+                Total = _titleTopicDict.Count,
+                Meta = new fhir.Meta() {
+                    LastUpdated = (new DateTimeOffset(DateTime.Now)).ToString()
+                },
+                Entry = new BundleEntry[_idTopicDict.Count]
+            };
+
+            fhir.Topic[] topics = _idTopicDict.Values.ToArray<fhir.Topic>();
+
+            for (int index = 0; index < topics.Length; index++)
+            {
+                // **** add this topic ****
+
+                bundle.Entry[index] = new BundleEntry()
+                {
+                    FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
+                    Resource = topics[index],
+                    Search = new BundleEntrySearch() { Mode = "match"},
+                    Response = new BundleEntryResponse() { Status = "201 Created"}
+                };
+                
+            }
+
+            // **** return our bundle ****
+
+            return bundle;
+        }
+
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Adds or updates a Topic</summary>
@@ -288,14 +327,13 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Topic topic = new fhir.Topic()
             {
-                ResourceType = "Topic",
                 Title = "admission",
-                Id = "636b348b-e2fa-4b76-98d3-0375ba1e886b",
+                Id = "1",
                 Url = "http://argonautproject.org/subscription-ig/Topic/admission",
-                Version = "0.3",
+                Version = "0.4",
                 Status = "draft",
                 Experimental = true,
-                Description = "Admissions Topic for testing framework and behavior",
+                Description = "Admission Topic for testing framework and behavior",
                 Date = "2019-08-01",
                 ResourceTrigger = new fhir.TopicResourceTrigger()
                 {
@@ -311,8 +349,12 @@ namespace argonaut_subscription_server_proxy.Managers
                 },
                 CanFilterBy = new TopicCanFilterBy[]
                 {
-                    new TopicCanFilterBy() {Name = "patient", Documentation = "Exact match to a patient resource (reference)"},
-                    //new TopicCanFilterBy() {Name = "Practitioner", Documentation ="Practitioner"},
+                    new TopicCanFilterBy()
+                    {
+                        Name = "patient", 
+                        Documentation = "Exact match to a patient resource (reference)", 
+                        MatchType = new string[] { "=", "in", "not-in" }
+                    },
                 },
             };
 

@@ -45,7 +45,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         response.Content = new StringContent(
                             JsonConvert.SerializeObject(
-                                TopicManager.GetTopicList(),
+                                TopicManager.GetTopicsBundle(),          // TopicManager.GetTopicList(),
                                 new JsonSerializerSettings()
                                 {
                                     NullValueHandling = NullValueHandling.Ignore,

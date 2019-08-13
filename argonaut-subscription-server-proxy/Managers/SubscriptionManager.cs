@@ -572,7 +572,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             Hl7.Fhir.Model.Bundle bundle = new Hl7.Fhir.Model.Bundle()
             {
-                Identifier = new Hl7.Fhir.Model.Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
+                //Identifier = new Hl7.Fhir.Model.Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
                 Type = Hl7.Fhir.Model.Bundle.BundleType.History,
                 Timestamp = new DateTimeOffset(DateTime.Now),
                 Meta = new Hl7.Fhir.Model.Meta()
@@ -583,9 +583,14 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
-                Value = new Hl7.Fhir.Model.PositiveInt(eventCount)
+                Value = new Hl7.Fhir.Model.UnsignedInt(eventCount)
             });
-            ;
+
+            bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
+            {
+                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
+                Value = new Hl7.Fhir.Model.UnsignedInt(content == null ? 0 : 1)
+            });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
@@ -617,12 +622,14 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (subscription.Channel.Payload.Content == "id-only")
                 {
-                    // TODO(ginoc): Need to create bundle with just ID
+                    // **** add the URL, but no resource ****
 
                     bundle.AddResourceEntry(null, Program.UrlForResourceId(content.TypeName, content.Id));
                 }
                 else
                 {
+                    // **** add the URL and the resource ****
+
                     bundle.AddResourceEntry(content, Program.UrlForResourceId(content.TypeName, content.Id));
                 }
             }
