@@ -313,7 +313,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** get the topic for this subscription ****
 
-            fhir.Topic topic = TopicManager.GetTopic(subscription.Topic.reference);
+            fhir.Topic topic = TopicManager.GetTopic(Program.ResourceIdFromReference(subscription.Topic.reference));
 
             // **** check for unknown topic ****
 

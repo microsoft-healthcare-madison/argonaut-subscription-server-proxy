@@ -106,5 +106,34 @@ namespace argonaut_subscription_server_proxy
                 new Uri($"baseR4/{resource}/{id}", UriKind.Relative))
                 ).ToString();
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Resource identifier from reference.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/14/2019.</remarks>
+        ///
+        /// <param name="reference">The reference.</param>
+        ///
+        /// <returns>A string.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static string ResourceIdFromReference(string reference)
+        {
+            if (string.IsNullOrEmpty(reference))
+            {
+                return "";
+            }
+
+            // **** check for URL ****
+
+            if (reference.Contains('/'))
+            {
+                return reference.Substring(reference.LastIndexOf('/') + 1);
+            }
+
+            // **** assume this is the reference ****
+
+            return reference;
+        }
     }
 }

@@ -120,11 +120,6 @@ namespace argonaut_subscription_server_proxy.Managers
                 return null;
             }
 
-            if (_instance._localUrlTopicDict.ContainsKey(key))
-            {
-                return _instance._localUrlTopicDict[key];
-            }
-
             if (_instance._titleTopicDict.ContainsKey(key))
             {
                 return _instance._titleTopicDict[key];
@@ -133,6 +128,11 @@ namespace argonaut_subscription_server_proxy.Managers
             if (_instance._idTopicDict.ContainsKey(key))
             {
                 return _instance._idTopicDict[key];
+            }
+
+            if (_instance._localUrlTopicDict.ContainsKey(key))
+            {
+                return _instance._localUrlTopicDict[key];
             }
 
             if (_instance._canonicalUrlTopicDict.ContainsKey(key))
