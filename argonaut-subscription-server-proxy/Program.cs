@@ -3,7 +3,10 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace argonaut_subscription_server_proxy
@@ -47,14 +50,49 @@ namespace argonaut_subscription_server_proxy
                 .Build()
                 ;
 
+            // **** ****
+
+            {
+                // **** create a basic tuple to return ****
+
+                Dictionary<string, string> information = new Dictionary<string, string>();
+
+                information.Add("Application", AppDomain.CurrentDomain.FriendlyName);
+                information.Add("Runtime", Environment.Version.ToString());
+
+                // **** get the file version of the assembly that launched us ****
+
+                information.Add("Version", FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString());
+
+                // **** add the list of configuration keys and values ****
+
+                IEnumerable<IConfigurationSection> configItems = Configuration.GetChildren();
+
+                foreach (IConfigurationSection configItem in configItems)
+                {
+                    if (configItem.Key.StartsWith("Server", StringComparison.Ordinal))
+                    {
+                        information.Add(configItem.Key, configItem.Value);
+                    }
+                }
+
+                // **** dump ****
+
+                foreach (KeyValuePair<string, string> kvp in information)
+                {
+                    Console.WriteLine($" <<< {kvp.Key} : {kvp.Value}");
+                }
+            }
+
+
             // **** update configuration to make sure listen url is properly formatted ****
 
             Regex regex = new Regex(_regexBaseUrlMatch);
             Match match = regex.Match(Configuration["Server_Public_Url"]);
             Configuration["Server_Public_Url"] = match.ToString();
 
-            match = regex.Match(Configuration["Internal_Listen_Url"]);
-            Configuration["Internal_Listen_Url"] = match.ToString();
+            match = regex.Match(Configuration["Server_Internal_Url"]);
+            Configuration["Server_Internal_Url"] = match.ToString();
 
 
             // **** create our REST client ****
@@ -83,7 +121,7 @@ namespace argonaut_subscription_server_proxy
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseUrls(Configuration["Internal_Listen_URL"])
+                .UseUrls(Configuration["Server_Internal_Url"])
                 .UseKestrel()
                 .UseStartup<Startup>()
                 ;
