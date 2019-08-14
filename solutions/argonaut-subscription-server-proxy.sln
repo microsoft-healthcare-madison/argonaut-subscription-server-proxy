@@ -11,7 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\THIRDPARTYNOTICES.md = ..\THIRDPARTYNOTICES.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "argonaut-subscription-server-proxy", "..\argonaut-subscription-server-proxy\argonaut-subscription-server-proxy.csproj", "{16FBE99B-5F8B-41A8-935A-44AAEFC28DCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "argonaut-subscription-server-proxy", "..\argonaut-subscription-server-proxy\argonaut-subscription-server-proxy.csproj", "{16FBE99B-5F8B-41A8-935A-44AAEFC28DCC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevOps", "DevOps", "{639E60EE-159E-40DA-9C75-554FC725AED8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.devops\azure-pipelines.yml = ..\.devops\azure-pipelines.yml
+		..\.devops\Dockerfile = ..\.devops\Dockerfile
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

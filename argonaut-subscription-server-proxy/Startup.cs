@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ namespace argonaut_subscription_server_proxy
 {
     public class Startup
     {
+
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Configure services.</summary>
         ///
@@ -65,31 +67,39 @@ namespace argonaut_subscription_server_proxy
                 );
 
             string fhirServerUrl = Program.Configuration.GetValue<string>("Server_FHIR_Url");
+            Uri fhirServerUri = new Uri(fhirServerUrl);
+            string basePath = fhirServerUri.AbsolutePath;
+            string fhirServerForwardBase = fhirServerUrl.Replace(basePath, "");
+            
+            if (!basePath.EndsWith('/'))
+            {
+                basePath += "/";
+            }
 
             // **** handle specific routes we want to intercept ****
 
             app.UseWhen(
-                    context => context.Request.Path.StartsWithSegments("/baseR4/Topic"),
-                    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Topic"),
+                    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 //.UseWhen(
                 //context => context.Request.Path.StartsWithSegments("/baseR4/Patient"),
                 //appInner => ProcessPatientRequest.ProcessRequest(appInner)
                 //)
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments("/baseR4/Subscription"),
-                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Subscription"),
+                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments("/baseR4/Encounter"),
-                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Encounter"),
+                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 ;
 
             // **** default to proxying all other requests ****
 
             app.RunProxy(context => context
-                .ForwardTo(fhirServerUrl)
+                .ForwardTo(fhirServerForwardBase)
                 .Send());
         }
     }

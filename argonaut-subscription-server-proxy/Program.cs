@@ -52,37 +52,37 @@ namespace argonaut_subscription_server_proxy
 
             // **** ****
 
-            {
-                // **** create a basic tuple to return ****
+            //{
+            //    // **** create a basic tuple to return ****
 
-                Dictionary<string, string> information = new Dictionary<string, string>();
+            //    Dictionary<string, string> information = new Dictionary<string, string>();
 
-                information.Add("Application", AppDomain.CurrentDomain.FriendlyName);
-                information.Add("Runtime", Environment.Version.ToString());
+            //    information.Add("Application", AppDomain.CurrentDomain.FriendlyName);
+            //    information.Add("Runtime", Environment.Version.ToString());
 
-                // **** get the file version of the assembly that launched us ****
+            //    // **** get the file version of the assembly that launched us ****
 
-                information.Add("Version", FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString());
+            //    information.Add("Version", FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString());
 
-                // **** add the list of configuration keys and values ****
+            //    // **** add the list of configuration keys and values ****
 
-                IEnumerable<IConfigurationSection> configItems = Configuration.GetChildren();
+            //    IEnumerable<IConfigurationSection> configItems = Configuration.GetChildren();
 
-                foreach (IConfigurationSection configItem in configItems)
-                {
-                    if (configItem.Key.StartsWith("Server", StringComparison.Ordinal))
-                    {
-                        information.Add(configItem.Key, configItem.Value);
-                    }
-                }
+            //    foreach (IConfigurationSection configItem in configItems)
+            //    {
+            //        if (configItem.Key.StartsWith("Server", StringComparison.Ordinal))
+            //        {
+            //            information.Add(configItem.Key, configItem.Value);
+            //        }
+            //    }
 
-                // **** dump ****
+            //    // **** dump ****
 
-                foreach (KeyValuePair<string, string> kvp in information)
-                {
-                    Console.WriteLine($" <<< {kvp.Key} : {kvp.Value}");
-                }
-            }
+            //    foreach (KeyValuePair<string, string> kvp in information)
+            //    {
+            //        Console.WriteLine($" <<< {kvp.Key} : {kvp.Value}");
+            //    }
+            //}
 
 
             // **** update configuration to make sure listen url is properly formatted ****
