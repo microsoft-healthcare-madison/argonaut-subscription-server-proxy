@@ -85,10 +85,6 @@ namespace argonaut_subscription_server_proxy
                     appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 //.UseWhen(
-                //    context => context.Request.Path.StartsWithSegments($"/Topic"),
-                //    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                //    )
-                //.UseWhen(
                 //context => context.Request.Path.StartsWithSegments("/baseR4/Patient"),
                 //appInner => ProcessPatientRequest.ProcessRequest(appInner)
                 //)
@@ -99,7 +95,7 @@ namespace argonaut_subscription_server_proxy
                     )
                 .UseWhen(
                     context => (context.Request.Path.StartsWithSegments($"{basePath}Encounter") ||
-                                context.Request.Path.StartsWithSegments($"{basePath}Encounter")),
+                                context.Request.Path.StartsWithSegments($"/Encounter")),
                     appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 ;
