@@ -199,7 +199,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** build our filter match key ****
 
-                string matchKey = $"Encounter:Patient:{encounter.Subject.Reference}";
+                string matchKey = $"Encounter:patient:{encounter.Subject.Reference}";
 
                 // **** check for matching filter subscriptions ****
 

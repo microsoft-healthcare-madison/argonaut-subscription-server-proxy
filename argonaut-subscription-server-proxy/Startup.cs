@@ -81,23 +81,28 @@ namespace argonaut_subscription_server_proxy
 
             app
                 .UseWhen(
-                    context => (context.Request.Path.StartsWithSegments($"{basePath}Topic") ||
-                                context.Request.Path.StartsWithSegments($"/Topic")),
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Topic"),
                     appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
-                //.UseWhen(
-                //context => context.Request.Path.StartsWithSegments("/baseR4/Patient"),
-                //appInner => ProcessPatientRequest.ProcessRequest(appInner)
-                //)
                 .UseWhen(
-                    context => (context.Request.Path.StartsWithSegments($"{basePath}Subscription") ||
-                                context.Request.Path.StartsWithSegments($"/Subscription")),
+                    context => context.Request.Path.StartsWithSegments($"/Topic"),
+                    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Subscription"),
                     appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerForwardBase)
                     )
                 .UseWhen(
-                    context => (context.Request.Path.StartsWithSegments($"{basePath}Encounter") ||
-                                context.Request.Path.StartsWithSegments($"/Encounter")),
+                    context => context.Request.Path.StartsWithSegments($"/Subscription"),
+                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"{basePath}Encounter"),
                     appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
+                    )
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/Encounter"),
+                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments(basePath),
