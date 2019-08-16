@@ -60,7 +60,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 case "PUT":
 
-                    // *** success ****
+                    // *** not implemented ****
 
                     response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
@@ -95,9 +95,18 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 case "DELETE":
 
-                    // *** success ****
+                    // **** ask the subscription manager to deal with this ***
 
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
+                    if (SubscriptionManager.HandleDelete(context.Request))
+                    {
+                        response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                    }
+                    else
+                    {
+                        // *** failed ****
+
+                        response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                    }
 
                     break;
 

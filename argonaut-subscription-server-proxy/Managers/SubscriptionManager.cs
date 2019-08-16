@@ -135,7 +135,20 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             _instance._HandlePost(content, out subscription);
         }
-        
+
+        public static bool HandleDelete(HttpRequest request)
+        {
+            return _instance._HandleDelete(request);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Process the encounter described by content.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/16/2019.</remarks>
+        ///
+        /// <param name="content">The content.</param>
+        ///-------------------------------------------------------------------------------------------------
+
         public static void ProcessEncounter(string content)
         {
             // **** run this async and return immediately, we don't care about results ****
@@ -168,6 +181,132 @@ namespace argonaut_subscription_server_proxy.Managers
         #endregion Instance Interface . . .
 
         #region Internal Functions . . .
+
+        private bool _HandleDelete(HttpRequest request)
+        {
+            // **** pull the URL components out of the request ****
+
+            string[] components = request.Path.ToUriComponent().Split('/');
+
+            bool foundSubscriptionComponent = false;
+
+            // **** traverse components ****
+
+            for (int componentIndex = 0; componentIndex < components.Length; componentIndex++)
+            {
+                // **** grab this component ****
+
+                string component = components[componentIndex];
+
+                // **** make sure that we hit a 'Subscription' component ****
+
+                if (component.Equals("subscription", StringComparison.OrdinalIgnoreCase))
+                {
+                    foundSubscriptionComponent = true;
+                    continue;
+                }
+
+                // **** only look for a GUID AFTER we have the subscription part ****
+
+                if (foundSubscriptionComponent)
+                {
+                    // **** attempt to parse ****
+
+                    if (Guid.TryParse(component, out _))
+                    {
+                        // **** remove this entry ****
+
+                        return Remove(component);
+                    }
+                }
+            }
+
+            // **** still here is failure ****
+
+            return false;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Removes the subscription specified by ID.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/16/2019.</remarks>
+        ///
+        /// <param name="id">The identifier.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private bool Remove(string id)
+        {
+            if ((string.IsNullOrEmpty(id)) || (!_idSubscriptionDict.ContainsKey(id)))
+            {
+                return false;
+            }
+
+            // **** grab this object ****
+
+            fhir.Subscription subscription = _idSubscriptionDict[id];
+
+            // **** remove from tracking ****
+
+            string[] filterKeys = _filterSubscriptionListDict.Keys.ToArray<string>();
+
+            foreach (string filterKey in filterKeys)
+            {
+                // **** check to see if this filter key has this subscription ****
+
+                if (_filterSubscriptionListDict[filterKey].Contains(subscription))
+                {
+                    // **** check for this being the ONLY filter ****
+
+                    if (_filterSubscriptionListDict[filterKey].Count == 1)
+                    {
+                        // **** remove from the filter dictionary ****
+
+                        _filterSubscriptionListDict.Remove(filterKey);
+
+                        Console.WriteLine($" <<< no longer tracking: {filterKey}");
+
+                        // **** continue checking ****
+
+                        continue;
+                    }
+
+                    // **** remove this subscription from the list ****
+
+                    _filterSubscriptionListDict[filterKey].Remove(subscription);
+
+                    Console.WriteLine($" <<< stopped tracking: {filterKey} for {id}");
+                }
+            }
+
+            // **** remove from the main dictionary ****
+
+            _idSubscriptionDict.Remove(id);
+
+            // **** remove from the lock dictionary ****
+
+            if (_idLockDict.ContainsKey(id))
+            {
+                _idLockDict.Remove(id);
+            }
+
+            // **** log this addition ****
+
+            Console.WriteLine($" <<< removed Subscription: {id}");
+
+            // **** success ****
+
+            return true;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Process the encounter described by content.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/15/2019.</remarks>
+        ///
+        /// <param name="content">The content.</param>
+        ///-------------------------------------------------------------------------------------------------
 
         private void _ProcessEncounter(string content)
         {
@@ -311,6 +450,14 @@ namespace argonaut_subscription_server_proxy.Managers
 
             _idSubscriptionDict.Add(subscription.Id, subscription);
 
+            // **** log this addition ****
+
+            Console.WriteLine($" <<< added Subscription:" +
+                $" {subscription.Id}" +
+                $" ({subscription.Channel.Type.Text}," +
+                $" {subscription.Channel.Payload.Content})"
+                );
+            
             // **** get the topic for this subscription ****
 
             fhir.Topic topic = TopicManager.GetTopic(Program.ResourceIdFromReference(subscription.Topic.reference));
@@ -415,6 +562,8 @@ namespace argonaut_subscription_server_proxy.Managers
             if (!_trackedResources.Contains(resourceName))
             {
                 _trackedResources.Add(resourceName);
+
+                Console.WriteLine($" <<< now tracking resource: {resourceName}");
             }
         }
 

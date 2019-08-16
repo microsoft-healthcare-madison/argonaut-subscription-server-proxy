@@ -1,4 +1,4 @@
-/** GENERATED FILE on: 8/12/2019 4:07:19 PM **/
+/** GENERATED FILE on: 8/16/2019 11:00:39 AM **/
 
 using System;
 using System.Collections.Generic;
@@ -23,14 +23,6 @@ namespace fhir
         public string District { get; set; }
         ///<summary>May contain extended information for property: 'District'</summary>
         public Element _District { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>This component contains the house number, apartment number, street name, street direction,  P.O. Box number, delivery hints, and similar address information.</summary>
         public string[] Line { get; set; }
         ///<summary>May contain extended information for property: 'Line'</summary>
@@ -66,34 +58,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\age.profile.canonical.json</source-file>
     public class Age : Quantity
     {
-        ///<summary>A computer processable form of the unit in some unit representation system.</summary>
-        public string Code { get; set; }
-        ///<summary>May contain extended information for property: 'Code'</summary>
-        public Element _Code { get; set; }
-        ///<summary>How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is "<" , then the real value is < stated value.</summary>
-        public string Comparator { get; set; }
-        ///<summary>May contain extended information for property: 'Comparator'</summary>
-        public Element _Comparator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>The identification of the system that provides the coded form of the unit.</summary>
-        public string System { get; set; }
-        ///<summary>May contain extended information for property: 'System'</summary>
-        public Element _System { get; set; }
-        ///<summary>A human-readable form of the unit.</summary>
-        public string Unit { get; set; }
-        ///<summary>May contain extended information for property: 'Unit'</summary>
-        public Element _Unit { get; set; }
-        ///<summary>The value of the measured amount. The value includes an implicit precision in the presentation of the value.</summary>
-        public decimal Value { get; set; }
-        ///<summary>May contain extended information for property: 'Value'</summary>
-        public Element _Value { get; set; }
     }
     ///<summary>
     ///Base StructureDefinition for Annotation Type: A  text note which also  contains information about who made the statement and when.
@@ -109,14 +73,6 @@ namespace fhir
         public string AuthorString { get; set; }
         ///<summary>May contain extended information for property: 'AuthorString'</summary>
         public Element _AuthorString { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The text of the annotation in markdown format.</summary>
         public string Text { get; set; }
         ///<summary>May contain extended information for property: 'Text'</summary>
@@ -144,18 +100,10 @@ namespace fhir
         public string Data { get; set; }
         ///<summary>May contain extended information for property: 'Data'</summary>
         public Element _Data { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The calculated hash of the data using SHA-1. Represented using base64.</summary>
         public string Hash { get; set; }
         ///<summary>May contain extended information for property: 'Hash'</summary>
         public Element _Hash { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The human language of the content. The value can be any valid value according to BCP 47.</summary>
         public string Language { get; set; }
         ///<summary>May contain extended information for property: 'Language'</summary>
@@ -179,14 +127,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\backboneelement.profile.canonical.json</source-file>
     public class BackboneElement : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
         /// 
         /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
@@ -206,30 +146,14 @@ namespace fhir
         public BundleEntry[] Entry { get; set; }
         ///<summary>May contain extended information for property: 'Entry'</summary>
         public Element[] _Entry { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A persistent identifier for the bundle that won't change as a bundle is copied from server to server.</summary>
         public Identifier Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
         ///<summary>A series of links that provide context to this bundle.</summary>
         public BundleLink[] Link { get; set; }
         ///<summary>May contain extended information for property: 'Link'</summary>
         public Element[] _Link { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
         ///<summary>Digital Signature - base64 encoded. XML-DSig or a JWT.</summary>
         public Signature Signature { get; set; }
         ///<summary>May contain extended information for property: 'Signature'</summary>
@@ -253,30 +177,16 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\bundle.profile.canonical.json</source-file>
     public class BundleEntry : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The Absolute URL for the resource.  The fullUrl SHALL NOT disagree with the id in the resource - i.e. if the fullUrl is not a urn:uuid, the URL shall be version-independent URL consistent with the Resource.id. The fullUrl is a version independent reference to the resource. The fullUrl element SHALL have a value except that: 
         /// * fullUrl can be empty on a POST (although it does not need to when specifying a temporary id for reference in the bundle)
         /// * Results from operations might involve resources that are not identified.</summary>
         public string FullUrl { get; set; }
         ///<summary>May contain extended information for property: 'FullUrl'</summary>
         public Element _FullUrl { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A series of links that provide context to this entry.</summary>
         public BundleLink[] Link { get; set; }
         ///<summary>May contain extended information for property: 'Link'</summary>
         public Element[] _Link { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Additional information about how this entry should be processed as part of a transaction or batch.  For history, it shows how the entry was processed to create the version contained in the entry.</summary>
         public BundleEntryRequest Request { get; set; }
         ///<summary>May contain extended information for property: 'Request'</summary>
@@ -300,14 +210,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\bundle.profile.canonical.json</source-file>
     public class BundleEntryRequest : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Only perform the operation if the Etag value matches. For more information, see the API section ["Managing Resource Contention"](http.html#concurrency).</summary>
         public string IfMatch { get; set; }
         ///<summary>May contain extended information for property: 'IfMatch'</summary>
@@ -328,12 +230,6 @@ namespace fhir
         public string Method { get; set; }
         ///<summary>May contain extended information for property: 'Method'</summary>
         public Element _Method { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The URL for this entry, relative to the root (the address to which the request is posted).</summary>
         public string Url { get; set; }
         ///<summary>May contain extended information for property: 'Url'</summary>
@@ -349,14 +245,6 @@ namespace fhir
         public string Etag { get; set; }
         ///<summary>May contain extended information for property: 'Etag'</summary>
         public Element _Etag { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The date/time that the resource was modified on the server.</summary>
         public string LastModified { get; set; }
         ///<summary>May contain extended information for property: 'LastModified'</summary>
@@ -365,12 +253,6 @@ namespace fhir
         public string Location { get; set; }
         ///<summary>May contain extended information for property: 'Location'</summary>
         public Element _Location { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>An OperationOutcome containing hints and warnings produced as part of processing this entry in a batch or transaction.</summary>
         public Resource Outcome { get; set; }
         ///<summary>May contain extended information for property: 'Outcome'</summary>
@@ -386,24 +268,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\bundle.profile.canonical.json</source-file>
     public class BundleEntrySearch : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Why this entry is in the result set - whether it's included as a match or because of an _include requirement, or to convey information or warning information about the search process.</summary>
         public string Mode { get; set; }
         ///<summary>May contain extended information for property: 'Mode'</summary>
         public Element _Mode { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>When searching, the server's search ranking score for the entry.</summary>
         public decimal Score { get; set; }
         ///<summary>May contain extended information for property: 'Score'</summary>
@@ -415,20 +283,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\bundle.profile.canonical.json</source-file>
     public class BundleLink : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>A name which details the functional use for this link - see [http://www.iana.org/assignments/link-relations/link-relations.xhtml#link-relations-1](http://www.iana.org/assignments/link-relations/link-relations.xhtml#link-relations-1).</summary>
         public string Relation { get; set; }
         ///<summary>May contain extended information for property: 'Relation'</summary>
@@ -448,14 +302,6 @@ namespace fhir
         public Coding[] Coding { get; set; }
         ///<summary>May contain extended information for property: 'Coding'</summary>
         public Element[] _Coding { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A human language representation of the concept as seen/selected/uttered by the user who entered the data and/or which represents the intended meaning of the user.</summary>
         public string Text { get; set; }
         ///<summary>May contain extended information for property: 'Text'</summary>
@@ -475,14 +321,6 @@ namespace fhir
         public string Display { get; set; }
         ///<summary>May contain extended information for property: 'Display'</summary>
         public Element _Display { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The identification of the code system that defines the meaning of the symbol in the code.</summary>
         public string System { get; set; }
         ///<summary>May contain extended information for property: 'System'</summary>
@@ -502,14 +340,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\contactdetail.profile.canonical.json</source-file>
     public class ContactDetail : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The name of an individual to contact.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -525,14 +355,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\contactpoint.profile.canonical.json</source-file>
     public class ContactPoint : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Time period when the contact point was/is in use.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -564,14 +386,6 @@ namespace fhir
         public ContactDetail[] Contact { get; set; }
         ///<summary>May contain extended information for property: 'Contact'</summary>
         public Element[] _Contact { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The name of the individual or organization responsible for the contribution.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -587,34 +401,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\count.profile.canonical.json</source-file>
     public class Count : Quantity
     {
-        ///<summary>A computer processable form of the unit in some unit representation system.</summary>
-        public string Code { get; set; }
-        ///<summary>May contain extended information for property: 'Code'</summary>
-        public Element _Code { get; set; }
-        ///<summary>How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is "<" , then the real value is < stated value.</summary>
-        public string Comparator { get; set; }
-        ///<summary>May contain extended information for property: 'Comparator'</summary>
-        public Element _Comparator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>The identification of the system that provides the coded form of the unit.</summary>
-        public string System { get; set; }
-        ///<summary>May contain extended information for property: 'System'</summary>
-        public Element _System { get; set; }
-        ///<summary>A human-readable form of the unit.</summary>
-        public string Unit { get; set; }
-        ///<summary>May contain extended information for property: 'Unit'</summary>
-        public Element _Unit { get; set; }
-        ///<summary>The value of the measured amount. The value includes an implicit precision in the presentation of the value.</summary>
-        public decimal Value { get; set; }
-        ///<summary>May contain extended information for property: 'Value'</summary>
-        public Element _Value { get; set; }
     }
     ///<summary>
     ///Base StructureDefinition for DataRequirement Type: Describes a required data item for evaluation in terms of the type of data, and optional code or date-based filters of the data.
@@ -630,14 +416,6 @@ namespace fhir
         public DataRequirementDateFilter[] DateFilter { get; set; }
         ///<summary>May contain extended information for property: 'DateFilter'</summary>
         public Element[] _DateFilter { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Specifies a maximum number of results that are required (uses the _count search parameter).</summary>
         public decimal Limit { get; set; }
         ///<summary>May contain extended information for property: 'Limit'</summary>
@@ -679,14 +457,6 @@ namespace fhir
         public Coding[] Code { get; set; }
         ///<summary>May contain extended information for property: 'Code'</summary>
         public Element[] _Code { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The code-valued attribute of the filter. The specified path SHALL be a FHIRPath resolveable on the specified type of the DataRequirement, and SHALL consist only of identifiers, constant indexers, and .resolve(). The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements (see the [Simple FHIRPath Profile](fhirpath.html#simple) for full details). Note that the index must be an integer constant. The path must resolve to an element of type code, Coding, or CodeableConcept.</summary>
         public string Path { get; set; }
         ///<summary>May contain extended information for property: 'Path'</summary>
@@ -706,14 +476,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\datarequirement.profile.canonical.json</source-file>
     public class DataRequirementDateFilter : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The date-valued attribute of the filter. The specified path SHALL be a FHIRPath resolveable on the specified type of the DataRequirement, and SHALL consist only of identifiers, constant indexers, and .resolve(). The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements (see the [Simple FHIRPath Profile](fhirpath.html#simple) for full details). Note that the index must be an integer constant. The path must resolve to an element of type date, dateTime, Period, Schedule, or Timing.</summary>
         public string Path { get; set; }
         ///<summary>May contain extended information for property: 'Path'</summary>
@@ -745,14 +507,6 @@ namespace fhir
         public string Direction { get; set; }
         ///<summary>May contain extended information for property: 'Direction'</summary>
         public Element _Direction { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The attribute of the sort. The specified path must be resolvable from the type of the required data. The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements. Note that the index must be an integer constant.</summary>
         public string Path { get; set; }
         ///<summary>May contain extended information for property: 'Path'</summary>
@@ -764,34 +518,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\distance.profile.canonical.json</source-file>
     public class Distance : Quantity
     {
-        ///<summary>A computer processable form of the unit in some unit representation system.</summary>
-        public string Code { get; set; }
-        ///<summary>May contain extended information for property: 'Code'</summary>
-        public Element _Code { get; set; }
-        ///<summary>How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is "<" , then the real value is < stated value.</summary>
-        public string Comparator { get; set; }
-        ///<summary>May contain extended information for property: 'Comparator'</summary>
-        public Element _Comparator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>The identification of the system that provides the coded form of the unit.</summary>
-        public string System { get; set; }
-        ///<summary>May contain extended information for property: 'System'</summary>
-        public Element _System { get; set; }
-        ///<summary>A human-readable form of the unit.</summary>
-        public string Unit { get; set; }
-        ///<summary>May contain extended information for property: 'Unit'</summary>
-        public Element _Unit { get; set; }
-        ///<summary>The value of the measured amount. The value includes an implicit precision in the presentation of the value.</summary>
-        public decimal Value { get; set; }
-        ///<summary>May contain extended information for property: 'Value'</summary>
-        public Element _Value { get; set; }
     }
     ///<summary>
     ///A resource that includes narrative, extensions, and contained resources.
@@ -807,22 +533,6 @@ namespace fhir
         public Extension[] Extension { get; set; }
         ///<summary>May contain extended information for property: 'Extension'</summary>
         public Element[] _Extension { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
         ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
         /// 
         /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
@@ -856,14 +566,6 @@ namespace fhir
         public DosageDoseAndRate[] DoseAndRate { get; set; }
         ///<summary>May contain extended information for property: 'DoseAndRate'</summary>
         public Element[] _DoseAndRate { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Upper limit on medication per administration.</summary>
         public Quantity MaxDosePerAdministration { get; set; }
         ///<summary>May contain extended information for property: 'MaxDosePerAdministration'</summary>
@@ -880,12 +582,6 @@ namespace fhir
         public CodeableConcept Method { get; set; }
         ///<summary>May contain extended information for property: 'Method'</summary>
         public Element _Method { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Instructions in terms that are understood by the patient or consumer.</summary>
         public string PatientInstruction { get; set; }
         ///<summary>May contain extended information for property: 'PatientInstruction'</summary>
@@ -925,14 +621,6 @@ namespace fhir
         public Range DoseRange { get; set; }
         ///<summary>May contain extended information for property: 'DoseRange'</summary>
         public Element _DoseRange { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Amount of medication per unit of time.</summary>
         public Quantity RateQuantity { get; set; }
         ///<summary>May contain extended information for property: 'RateQuantity'</summary>
@@ -956,34 +644,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\duration.profile.canonical.json</source-file>
     public class Duration : Quantity
     {
-        ///<summary>A computer processable form of the unit in some unit representation system.</summary>
-        public string Code { get; set; }
-        ///<summary>May contain extended information for property: 'Code'</summary>
-        public Element _Code { get; set; }
-        ///<summary>How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is "<" , then the real value is < stated value.</summary>
-        public string Comparator { get; set; }
-        ///<summary>May contain extended information for property: 'Comparator'</summary>
-        public Element _Comparator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>The identification of the system that provides the coded form of the unit.</summary>
-        public string System { get; set; }
-        ///<summary>May contain extended information for property: 'System'</summary>
-        public Element _System { get; set; }
-        ///<summary>A human-readable form of the unit.</summary>
-        public string Unit { get; set; }
-        ///<summary>May contain extended information for property: 'Unit'</summary>
-        public Element _Unit { get; set; }
-        ///<summary>The value of the measured amount. The value includes an implicit precision in the presentation of the value.</summary>
-        public decimal Value { get; set; }
-        ///<summary>May contain extended information for property: 'Value'</summary>
-        public Element _Value { get; set; }
     }
     ///<summary>
     ///Base StructureDefinition for Element Type: Base definition for all elements in a resource.
@@ -1028,10 +688,6 @@ namespace fhir
         public EncounterClassHistory[] ClassHistory { get; set; }
         ///<summary>May contain extended information for property: 'ClassHistory'</summary>
         public Element[] _ClassHistory { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
         ///<summary>The list of diagnosis relevant to this encounter.</summary>
         public EncounterDiagnosis[] Diagnosis { get; set; }
         ///<summary>May contain extended information for property: 'Diagnosis'</summary>
@@ -1040,30 +696,14 @@ namespace fhir
         public Reference[] EpisodeOfCare { get; set; }
         ///<summary>May contain extended information for property: 'EpisodeOfCare'</summary>
         public Element[] _EpisodeOfCare { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>Details about the admission to a healthcare service.</summary>
         public EncounterHospitalization Hospitalization { get; set; }
         ///<summary>May contain extended information for property: 'Hospitalization'</summary>
         public Element _Hospitalization { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Identifier(s) by which this encounter is known.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
         ///<summary>Quantity of time the encounter lasted. This excludes the time during leaves of absence.</summary>
         public Duration Length { get; set; }
         ///<summary>May contain extended information for property: 'Length'</summary>
@@ -1072,16 +712,6 @@ namespace fhir
         public EncounterLocation[] Location { get; set; }
         ///<summary>May contain extended information for property: 'Location'</summary>
         public Element[] _Location { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The list of people responsible for providing the service.</summary>
         public EncounterParticipant[] Participant { get; set; }
         ///<summary>May contain extended information for property: 'Participant'</summary>
@@ -1130,10 +760,6 @@ namespace fhir
         public CodeableConcept SubjectStatus { get; set; }
         ///<summary>May contain extended information for property: 'SubjectStatus'</summary>
         public Element _SubjectStatus { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
         ///<summary>Specific type of encounter (e.g. e-mail consultation, surgical day-care, skilled nursing, rehabilitation).</summary>
         public CodeableConcept[] Type { get; set; }
         ///<summary>May contain extended information for property: 'Type'</summary>
@@ -1149,20 +775,6 @@ namespace fhir
         public Coding Class { get; set; }
         ///<summary>May contain extended information for property: 'Class'</summary>
         public Element _Class { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The time that the episode was in the specified class.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1178,20 +790,6 @@ namespace fhir
         public Reference Condition { get; set; }
         ///<summary>May contain extended information for property: 'Condition'</summary>
         public Element _Condition { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Ranking of the diagnosis (for each role type).</summary>
         public decimal Rank { get; set; }
         ///<summary>May contain extended information for property: 'Rank'</summary>
@@ -1223,20 +821,6 @@ namespace fhir
         public CodeableConcept DischargeDisposition { get; set; }
         ///<summary>May contain extended information for property: 'DischargeDisposition'</summary>
         public Element _DischargeDisposition { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The location/organization from which the patient came before admission.</summary>
         public Reference Origin { get; set; }
         ///<summary>May contain extended information for property: 'Origin'</summary>
@@ -1264,24 +848,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\encounter.profile.canonical.json</source-file>
     public class EncounterLocation : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The location where the encounter takes place.</summary>
         public Reference Location { get; set; }
         ///<summary>May contain extended information for property: 'Location'</summary>
         public Element _Location { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Time period during which the patient was present at the location.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1301,24 +871,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\encounter.profile.canonical.json</source-file>
     public class EncounterParticipant : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Persons involved in the encounter other than the patient.</summary>
         public Reference Individual { get; set; }
         ///<summary>May contain extended information for property: 'Individual'</summary>
         public Element _Individual { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The period of time that the specified participant participated in the encounter. These can overlap or be sub-sets of the overall encounter's period.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1334,20 +890,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\encounter.profile.canonical.json</source-file>
     public class EncounterStatusHistory : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The time that the episode was in the specified status.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1371,14 +913,6 @@ namespace fhir
         public string expression { get; set; }
         ///<summary>May contain extended information for property: 'expression'</summary>
         public Element _expression { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The media type of the language for the expression.</summary>
         public string Language { get; set; }
         ///<summary>May contain extended information for property: 'Language'</summary>
@@ -1398,14 +932,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\extension.profile.canonical.json</source-file>
     public class Extension : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] extension { get; set; }
-        ///<summary>May contain extended information for property: 'extension'</summary>
-        public Element[] _extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Source of the definition for the extension code - a logical name or a URL.</summary>
         public string Url { get; set; }
         ///<summary>May contain extended information for property: 'Url'</summary>
@@ -1617,10 +1143,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\humanname.profile.canonical.json</source-file>
     public class HumanName : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The part of a name that links to the genealogy. In some cultures (e.g. Eritrea) the family name of a son is the first name of his father.</summary>
         public string Family { get; set; }
         ///<summary>May contain extended information for property: 'Family'</summary>
@@ -1629,10 +1151,6 @@ namespace fhir
         public string[] Given { get; set; }
         ///<summary>May contain extended information for property: 'Given'</summary>
         public Element[] _Given { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Indicates the period of time when this name was valid for the named person.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1664,14 +1182,6 @@ namespace fhir
         public Reference Assigner { get; set; }
         ///<summary>May contain extended information for property: 'Assigner'</summary>
         public Element _Assigner { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Time period during which identifier is/was valid for use.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -1699,14 +1209,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\meta.profile.canonical.json</source-file>
     public class Meta : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>When the resource last changed - e.g. when the version changed.</summary>
         public string LastUpdated { get; set; }
         ///<summary>May contain extended information for property: 'LastUpdated'</summary>
@@ -1742,14 +1244,6 @@ namespace fhir
         public string Currency { get; set; }
         ///<summary>May contain extended information for property: 'Currency'</summary>
         public Element _Currency { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Numerical value (with implicit precision).</summary>
         public decimal Value { get; set; }
         ///<summary>May contain extended information for property: 'Value'</summary>
@@ -1765,14 +1259,6 @@ namespace fhir
         public string Div { get; set; }
         ///<summary>May contain extended information for property: 'Div'</summary>
         public Element _Div { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The status of the narrative - whether it's entirely generated (from just the defined data or the extensions too), or whether a human authored it and it may contain additional data.</summary>
         public string Status { get; set; }
         ///<summary>May contain extended information for property: 'Status'</summary>
@@ -1806,10 +1292,6 @@ namespace fhir
         public ObservationComponent[] Component { get; set; }
         ///<summary>May contain extended information for property: 'Component'</summary>
         public Element[] _Component { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
         ///<summary>Provides a reason why the expected value in the element Observation.value[x] is missing.</summary>
         public CodeableConcept DataAbsentReason { get; set; }
         ///<summary>May contain extended information for property: 'DataAbsentReason'</summary>
@@ -1842,10 +1324,6 @@ namespace fhir
         public Reference Encounter { get; set; }
         ///<summary>May contain extended information for property: 'Encounter'</summary>
         public Element _Encounter { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The actual focus of an observation when it is not the patient of record representing something or someone associated with the patient such as a spouse, parent, fetus, or donor. For example, fetus observations in a mother's record.  The focus of an observation could also be an existing condition,  an intervention, the subject's diet,  another observation of the subject,  or a body structure such as tumor or implanted device.   An example use case would be using the Observation resource to capture whether the mother is trained to change her child's tracheostomy tube. In this example, the child is the patient of record and the mother is the focus.</summary>
         public Reference[] Focus { get; set; }
         ///<summary>May contain extended information for property: 'Focus'</summary>
@@ -1854,18 +1332,10 @@ namespace fhir
         public Reference[] HasMember { get; set; }
         ///<summary>May contain extended information for property: 'HasMember'</summary>
         public Element[] _HasMember { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A unique identifier assigned to this observation.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
         ///<summary>A categorical assessment of an observation value.  For example, high, low, normal.</summary>
         public CodeableConcept[] Interpretation { get; set; }
         ///<summary>May contain extended information for property: 'Interpretation'</summary>
@@ -1874,24 +1344,10 @@ namespace fhir
         public string Issued { get; set; }
         ///<summary>May contain extended information for property: 'Issued'</summary>
         public Element _Issued { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
         ///<summary>Indicates the mechanism used to perform the observation.</summary>
         public CodeableConcept Method { get; set; }
         ///<summary>May contain extended information for property: 'Method'</summary>
         public Element _Method { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Comments about the observation or the results.</summary>
         public Annotation[] Note { get; set; }
         ///<summary>May contain extended information for property: 'Note'</summary>
@@ -1920,10 +1376,6 @@ namespace fhir
         public Reference Subject { get; set; }
         ///<summary>May contain extended information for property: 'Subject'</summary>
         public Element _Subject { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
         ///<summary>The information determined as a result of making the observation, if the information has a simple value.</summary>
         public bool ValueBoolean { get; set; }
         ///<summary>May contain extended information for property: 'ValueBoolean'</summary>
@@ -1983,24 +1435,10 @@ namespace fhir
         public CodeableConcept DataAbsentReason { get; set; }
         ///<summary>May contain extended information for property: 'DataAbsentReason'</summary>
         public Element _DataAbsentReason { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A categorical assessment of an observation value.  For example, high, low, normal.</summary>
         public CodeableConcept[] Interpretation { get; set; }
         ///<summary>May contain extended information for property: 'Interpretation'</summary>
         public Element[] _Interpretation { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Guidance on how to interpret the value by comparison to a normal or recommended range.</summary>
         public ObservationReferenceRange[] ReferenceRange { get; set; }
         ///<summary>May contain extended information for property: 'ReferenceRange'</summary>
@@ -2064,28 +1502,14 @@ namespace fhir
         public CodeableConcept[] AppliesTo { get; set; }
         ///<summary>May contain extended information for property: 'AppliesTo'</summary>
         public Element[] _AppliesTo { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The value of the high bound of the reference range.  The high bound of the reference range endpoint is inclusive of the value (e.g.  reference range is >=5 - <=9). If the high bound is omitted,  it is assumed to be meaningless (e.g. reference range is >= 2.3).</summary>
         public Quantity High { get; set; }
         ///<summary>May contain extended information for property: 'High'</summary>
         public Element _High { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The value of the low bound of the reference range.  The low bound of the reference range endpoint is inclusive of the value (e.g.  reference range is >=5 - <=9). If the low bound is omitted,  it is assumed to be meaningless (e.g. reference range is <=2.3).</summary>
         public Quantity Low { get; set; }
         ///<summary>May contain extended information for property: 'Low'</summary>
         public Element _Low { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Text based reference range in an observation which may be used when a quantitative range is not appropriate for an observation.  An example would be a reference value of "Negative" or a list or table of "normals".</summary>
         public string Text { get; set; }
         ///<summary>May contain extended information for property: 'Text'</summary>
@@ -2105,14 +1529,6 @@ namespace fhir
         public string Documentation { get; set; }
         ///<summary>May contain extended information for property: 'Documentation'</summary>
         public Element _Documentation { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The maximum number of times this element is permitted to appear in the request or response.</summary>
         public string Max { get; set; }
         ///<summary>May contain extended information for property: 'Max'</summary>
@@ -2171,10 +1587,6 @@ namespace fhir
         public PatientContact[] Contact { get; set; }
         ///<summary>May contain extended information for property: 'Contact'</summary>
         public Element[] _Contact { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
         ///<summary>Indicates if the individual is deceased or not.</summary>
         public bool DeceasedBoolean { get; set; }
         ///<summary>May contain extended information for property: 'DeceasedBoolean'</summary>
@@ -2183,10 +1595,6 @@ namespace fhir
         public string DeceasedDateTime { get; set; }
         ///<summary>May contain extended information for property: 'DeceasedDateTime'</summary>
         public Element _DeceasedDateTime { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>Administrative Gender - the gender that the patient is considered to have for administration and record keeping purposes.</summary>
         public string Gender { get; set; }
         ///<summary>May contain extended information for property: 'Gender'</summary>
@@ -2195,22 +1603,10 @@ namespace fhir
         public Reference[] GeneralPractitioner { get; set; }
         ///<summary>May contain extended information for property: 'GeneralPractitioner'</summary>
         public Element[] _GeneralPractitioner { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>An identifier for this patient.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
         ///<summary>Link to another patient resource that concerns the same actual patient.</summary>
         public PatientLink[] Link { get; set; }
         ///<summary>May contain extended information for property: 'Link'</summary>
@@ -2223,16 +1619,6 @@ namespace fhir
         public CodeableConcept MaritalStatus { get; set; }
         ///<summary>May contain extended information for property: 'MaritalStatus'</summary>
         public Element _MaritalStatus { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Indicates whether the patient is part of a multiple (boolean) or indicates the actual birth order (integer).</summary>
         public bool MultipleBirthBoolean { get; set; }
         ///<summary>May contain extended information for property: 'MultipleBirthBoolean'</summary>
@@ -2253,10 +1639,6 @@ namespace fhir
         public ContactPoint[] Telecom { get; set; }
         ///<summary>May contain extended information for property: 'Telecom'</summary>
         public Element[] _Telecom { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
     }
     ///<summary>
     ///A language which may be used to communicate with the patient about his or her health.
@@ -2264,24 +1646,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\patient.profile.canonical.json</source-file>
     public class PatientCommunication : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The ISO-639-1 alpha 2 code in lower case for the language, optionally followed by a hyphen and the ISO-3166-1 alpha 2 code for the region in upper case; e.g. "en" for English, or "en-US" for American English versus "en-EN" for England English.</summary>
         public CodeableConcept Language { get; set; }
         ///<summary>May contain extended information for property: 'Language'</summary>
         public Element _Language { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Indicates whether or not the patient prefers this language (over other languages he masters up a certain level).</summary>
         public bool Preferred { get; set; }
         ///<summary>May contain extended information for property: 'Preferred'</summary>
@@ -2297,24 +1665,10 @@ namespace fhir
         public Address Address { get; set; }
         ///<summary>May contain extended information for property: 'Address'</summary>
         public Element _Address { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>Administrative Gender - the gender that the contact person is considered to have for administration and record keeping purposes.</summary>
         public string Gender { get; set; }
         ///<summary>May contain extended information for property: 'Gender'</summary>
         public Element _Gender { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>A name associated with the contact person.</summary>
         public HumanName Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -2342,20 +1696,6 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\patient.profile.canonical.json</source-file>
     public class PatientLink : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The other patient resource that the link refers to.</summary>
         public Reference Other { get; set; }
         ///<summary>May contain extended information for property: 'Other'</summary>
@@ -2375,14 +1715,6 @@ namespace fhir
         public string End { get; set; }
         ///<summary>May contain extended information for property: 'End'</summary>
         public Element _End { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The start of the period. The boundary is inclusive.</summary>
         public string Start { get; set; }
         ///<summary>May contain extended information for property: 'Start'</summary>
@@ -2400,8 +1732,7 @@ namespace fhir
         public bool Active { get; set; }
         ///<summary>May contain extended information for property: 'Active'</summary>
         public Element _Active { get; set; }
-        ///<summary>Address(es) of the practitioner that are not role specific (typically home address). 
-        /// Work addresses are not typically entered in this property as they are usually role dependent.</summary>
+        ///<summary>Address(es) of the practitioner that are not role specific (typically home address). Work addresses are not typically entered in this property as they are usually role dependent.</summary>
 		public Address[] Address { get; set; }
         ///<summary>May contain extended information for property: 'Address'</summary>
         public Element[] _Address { get; set; }
@@ -2413,44 +1744,14 @@ namespace fhir
         public CodeableConcept[] Communication { get; set; }
         ///<summary>May contain extended information for property: 'Communication'</summary>
         public Element[] _Communication { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>Administrative Gender - the gender that the person is considered to have for administration and record keeping purposes.</summary>
         public string Gender { get; set; }
         ///<summary>May contain extended information for property: 'Gender'</summary>
         public Element _Gender { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>An identifier that applies to this person in this role.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The name(s) associated with the practitioner.</summary>
         public HumanName[] Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -2467,10 +1768,6 @@ namespace fhir
         public ContactPoint[] Telecom { get; set; }
         ///<summary>May contain extended information for property: 'Telecom'</summary>
         public Element[] _Telecom { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
     }
     ///<summary>
     ///The official certifications, training, and licenses that authorize or otherwise pertain to the provision of care by the practitioner.  For example, a medical license issued by a medical board authorizing the practitioner to practice medicine within a certian locality.
@@ -2482,14 +1779,6 @@ namespace fhir
         public CodeableConcept Code { get; set; }
         ///<summary>May contain extended information for property: 'Code'</summary>
         public Element _Code { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>An identifier that applies to this person's qualification in this role.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
@@ -2498,12 +1787,6 @@ namespace fhir
         public Reference Issuer { get; set; }
         ///<summary>May contain extended information for property: 'Issuer'</summary>
         public Element _Issuer { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Period during which the qualification is valid.</summary>
         public Period Period { get; set; }
         ///<summary>May contain extended information for property: 'Period'</summary>
@@ -2523,14 +1806,6 @@ namespace fhir
         public string Comparator { get; set; }
         ///<summary>May contain extended information for property: 'Comparator'</summary>
         public Element _Comparator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The identification of the system that provides the coded form of the unit.</summary>
         public string System { get; set; }
         ///<summary>May contain extended information for property: 'System'</summary>
@@ -2550,18 +1825,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\range.profile.canonical.json</source-file>
     public class Range : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The high limit. The boundary is inclusive.</summary>
         public Quantity High { get; set; }
         ///<summary>May contain extended information for property: 'High'</summary>
         public Element _High { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The low limit. The boundary is inclusive.</summary>
         public Quantity Low { get; set; }
         ///<summary>May contain extended information for property: 'Low'</summary>
@@ -2577,14 +1844,6 @@ namespace fhir
         public Quantity Denominator { get; set; }
         ///<summary>May contain extended information for property: 'Denominator'</summary>
         public Element _Denominator { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The value of the numerator.</summary>
         public Quantity Numerator { get; set; }
         ///<summary>May contain extended information for property: 'Numerator'</summary>
@@ -2600,14 +1859,6 @@ namespace fhir
         public string Display { get; set; }
         ///<summary>May contain extended information for property: 'Display'</summary>
         public Element _Display { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>An identifier for the target resource. This is used when there is no way to reference the other resource directly, either because the entity it represents is not available through a FHIR server, or because there is no way for the author of the resource to convert a known identifier to an actual location. There is no requirement that a Reference.identifier point to something that is actually exposed as a FHIR instance, but it SHALL point to a business concept that would be expected to be exposed as a FHIR instance, and that instance would need to be of a FHIR resource type allowed by the reference.</summary>
         public Identifier Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
@@ -2641,14 +1892,6 @@ namespace fhir
         public Attachment Document { get; set; }
         ///<summary>May contain extended information for property: 'Document'</summary>
         public Element _Document { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A short label that can be used to reference the citation from elsewhere in the containing artifact, such as a footnote index.</summary>
         public string Label { get; set; }
         ///<summary>May contain extended information for property: 'Label'</summary>
@@ -2703,18 +1946,10 @@ namespace fhir
         public decimal Dimensions { get; set; }
         ///<summary>May contain extended information for property: 'Dimensions'</summary>
         public Element _Dimensions { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>A correction factor that is applied to the sampled data points before they are added to the origin.</summary>
         public decimal Factor { get; set; }
         ///<summary>May contain extended information for property: 'Factor'</summary>
         public Element _Factor { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The lower limit of detection of the measured points. This is needed if any of the data points have the value "L" (lower than detection limit).</summary>
         public decimal LowerLimit { get; set; }
         ///<summary>May contain extended information for property: 'LowerLimit'</summary>
@@ -2742,14 +1977,6 @@ namespace fhir
         public string Data { get; set; }
         ///<summary>May contain extended information for property: 'Data'</summary>
         public Element _Data { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A reference to an application-usable description of the identity that is represented by the signature.</summary>
         public Reference OnBehalfOf { get; set; }
         ///<summary>May contain extended information for property: 'OnBehalfOf'</summary>
@@ -2791,10 +2018,6 @@ namespace fhir
         public ContactPoint[] Contact { get; set; }
         ///<summary>May contain extended information for property: 'Contact'</summary>
         public Element[] _Contact { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
         ///<summary>The time for the server to turn the subscription off.</summary>
         public string End { get; set; }
         ///<summary>May contain extended information for property: 'End'</summary>
@@ -2807,40 +2030,14 @@ namespace fhir
         public decimal EventCount { get; set; }
         ///<summary>May contain extended information for property: 'EventCount'</summary>
         public Element _EventCount { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The filter properties to be applied to narrow the topic stream.  When multiple filters are applied, evaluates to true if all the conditions are met; otherwise it returns false.   (i.e., logical AND).</summary>
         public SubscriptionFilterBy[] FilterBy { get; set; }
         ///<summary>May contain extended information for property: 'FilterBy'</summary>
         public Element[] _FilterBy { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A formal identifier that is used to identify this code system when it is represented in other formats, or referenced in a specification, model, design or an instance.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>A natural language name identifying the subscription.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -2853,10 +2050,6 @@ namespace fhir
         public string Status { get; set; }
         ///<summary>May contain extended information for property: 'Status'</summary>
         public Element _Status { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
         ///<summary>The reference to the topic to be notified about.</summary>
         public Reference Topic { get; set; }
         ///<summary>May contain extended information for property: 'Topic'</summary>
@@ -2872,10 +2065,6 @@ namespace fhir
         public string Endpoint { get; set; }
         ///<summary>May contain extended information for property: 'Endpoint'</summary>
         public Element _Endpoint { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>Additional headers / information to send as part of the notification.</summary>
         public string[] Header { get; set; }
         ///<summary>May contain extended information for property: 'Header'</summary>
@@ -2884,16 +2073,6 @@ namespace fhir
         public decimal HeartbeatPeriod { get; set; }
         ///<summary>May contain extended information for property: 'HeartbeatPeriod'</summary>
         public Element _HeartbeatPeriod { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The payload mimetype and content.  If the payload is not present, then there is no payload in the notification, just a notification.</summary>
         public SubscriptionChannelPayload Payload { get; set; }
         ///<summary>May contain extended information for property: 'Payload'</summary>
@@ -2917,20 +2096,6 @@ namespace fhir
         public string ContentType { get; set; }
         ///<summary>May contain extended information for property: 'ContentType'</summary>
         public Element _ContentType { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
     }
     ///<summary>
     ///The filter properties to be applied to narrow the topic stream.  When multiple filters are applied, evaluates to true if all the conditions are met; otherwise it returns false.   (i.e., logical AND).
@@ -2938,24 +2103,10 @@ namespace fhir
     ///<source-file>c:/git/fhir\publish\subscription.profile.canonical.json</source-file>
     public class SubscriptionFilterBy : Element
     {
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The operator to apply to the filter value when determining matches (Search modifiers).</summary>
         public string MatchType { get; set; }
         ///<summary>May contain extended information for property: 'MatchType'</summary>
         public Element _MatchType { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The filter label (=key) as defined in the `Topic.canFilterBy.name`  element.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -2979,20 +2130,6 @@ namespace fhir
         public string[] Event { get; set; }
         ///<summary>May contain extended information for property: 'Event'</summary>
         public Element[] _Event { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>A set of rules that describe when the event is scheduled.</summary>
         public TimingRepeat Repeat { get; set; }
         ///<summary>May contain extended information for property: 'Repeat'</summary>
@@ -3040,10 +2177,6 @@ namespace fhir
         public string DurationUnit { get; set; }
         ///<summary>May contain extended information for property: 'DurationUnit'</summary>
         public Element _DurationUnit { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The number of times to repeat the action within the specified period. If frequencyMax is present, this element indicates the lower bound of the allowed range of the frequency.</summary>
         public decimal Frequency { get; set; }
         ///<summary>May contain extended information for property: 'Frequency'</summary>
@@ -3052,10 +2185,6 @@ namespace fhir
         public decimal FrequencyMax { get; set; }
         ///<summary>May contain extended information for property: 'FrequencyMax'</summary>
         public Element _FrequencyMax { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The number of minutes from the event. If the event code does not indicate whether the minutes is before or after the event, then the offset is assumed to be after the event.</summary>
         public decimal Offset { get; set; }
         ///<summary>May contain extended information for property: 'Offset'</summary>
@@ -3101,10 +2230,6 @@ namespace fhir
         public ContactDetail[] Contact { get; set; }
         ///<summary>May contain extended information for property: 'Contact'</summary>
         public Element[] _Contact { get; set; }
-        ///<summary>These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.</summary>
-        public Resource[] Contained { get; set; }
-        ///<summary>May contain extended information for property: 'Contained'</summary>
-        public Element[] _Contained { get; set; }
         ///<summary>A copyright statement relating to the Topic and/or its contents. Copyright statements are generally legal restrictions on the use and publishing of the Topic.</summary>
         public string Copyright { get; set; }
         ///<summary>May contain extended information for property: 'Copyright'</summary>
@@ -3133,44 +2258,18 @@ namespace fhir
         public bool Experimental { get; set; }
         ///<summary>May contain extended information for property: 'Experimental'</summary>
         public Element _Experimental { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>The logical id of the resource, as used in the URL for the resource. Once assigned, this value never changes.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Business identifiers assigned to this Topic by the performer and/or other systems.  These identifiers remain constant as the resource is updated and propagates from server to server.</summary>
         public Identifier[] Identifier { get; set; }
         ///<summary>May contain extended information for property: 'Identifier'</summary>
         public Element[] _Identifier { get; set; }
-        ///<summary>A reference to a set of rules that were followed when the resource was constructed, and which must be understood when processing the content. Often, this is a reference to an implementation guide that defines the special rules along with other profiles etc.</summary>
-        public string ImplicitRules { get; set; }
-        ///<summary>May contain extended information for property: 'ImplicitRules'</summary>
-        public Element _ImplicitRules { get; set; }
         ///<summary>A jurisdiction in which the Topic is intended to be used.</summary>
         public CodeableConcept[] Jurisdiction { get; set; }
         ///<summary>May contain extended information for property: 'Jurisdiction'</summary>
         public Element[] _Jurisdiction { get; set; }
-        ///<summary>The base language in which the resource is written.</summary>
-        public string Language { get; set; }
-        ///<summary>May contain extended information for property: 'Language'</summary>
-        public Element _Language { get; set; }
         ///<summary>The date on which the asset content was last reviewed. Review happens periodically after that, but doesn't change the original approval date.</summary>
         public string LastReviewDate { get; set; }
         ///<summary>May contain extended information for property: 'LastReviewDate'</summary>
         public Element _LastReviewDate { get; set; }
-        ///<summary>The metadata about the resource. This is content that is maintained by the infrastructure. Changes to the content might not always be associated with version changes to the resource.</summary>
-        public Meta Meta { get; set; }
-        ///<summary>May contain extended information for property: 'Meta'</summary>
-        public Element _Meta { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>Helps establish the "authority/credibility" of the Topic.  May also allow for contact.</summary>
         public Reference Publisher { get; set; }
         ///<summary>May contain extended information for property: 'Publisher'</summary>
@@ -3187,10 +2286,6 @@ namespace fhir
         public string Status { get; set; }
         ///<summary>May contain extended information for property: 'Status'</summary>
         public Element _Status { get; set; }
-        ///<summary>A human-readable narrative that contains a summary of the resource and can be used to represent the content of the resource to a human. The narrative need not encode all the structured data, but is required to contain sufficient detail to make it "clinically safe" for a human to just read the narrative. Resource definitions may define what content should be represented in the narrative to ensure clinical safety.</summary>
-        public Narrative Text { get; set; }
-        ///<summary>May contain extended information for property: 'Text'</summary>
-        public Element _Text { get; set; }
         ///<summary>A short, descriptive, user-friendly title for the Topic, for example, "admission".</summary>
         public string Title { get; set; }
         ///<summary>May contain extended information for property: 'Title'</summary>
@@ -3218,24 +2313,10 @@ namespace fhir
         public string Documentation { get; set; }
         ///<summary>May contain extended information for property: 'Documentation'</summary>
         public Element _Documentation { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>Allowable operators to apply when determining matches (Search Modifiers).</summary>
         public string[] MatchType { get; set; }
         ///<summary>May contain extended information for property: 'MatchType'</summary>
         public Element[] _MatchType { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>A search parameter (like "patient") which is a label for the filter.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -3251,28 +2332,14 @@ namespace fhir
         public string Description { get; set; }
         ///<summary>May contain extended information for property: 'Description'</summary>
         public Element _Description { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
         ///<summary>The FHIRPath based rules that the server should use to determine when to trigger a notification for this topic.</summary>
         public string FhirPathCriteria { get; set; }
         ///<summary>May contain extended information for property: 'FhirPathCriteria'</summary>
         public Element _FhirPathCriteria { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>The REST interaction based rules that the server should use to determine when to trigger a notification for this topic.</summary>
         public string[] MethodCriteria { get; set; }
         ///<summary>May contain extended information for property: 'MethodCriteria'</summary>
         public Element[] _MethodCriteria { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The FHIR query based rules that the server should use to determine when to trigger a notification for this topic.</summary>
         public TopicResourceTriggerQueryCriteria QueryCriteria { get; set; }
         ///<summary>May contain extended information for property: 'QueryCriteria'</summary>
@@ -3292,20 +2359,6 @@ namespace fhir
         public string Current { get; set; }
         ///<summary>May contain extended information for property: 'Current'</summary>
         public Element _Current { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.
-        /// 
-        /// Modifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).</summary>
-        public Extension[] ModifierExtension { get; set; }
-        ///<summary>May contain extended information for property: 'ModifierExtension'</summary>
-        public Element[] _ModifierExtension { get; set; }
         ///<summary>The FHIR query based rules are applied to the previous resource state.</summary>
         public string Previous { get; set; }
         ///<summary>May contain extended information for property: 'Previous'</summary>
@@ -3329,14 +2382,6 @@ namespace fhir
         public DataRequirement[] Data { get; set; }
         ///<summary>May contain extended information for property: 'Data'</summary>
         public Element[] _Data { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A formal name for the event. This may be an absolute URI that identifies the event formally (e.g. from a trigger registry), or a simple relative URI that identifies the event in a local context.</summary>
         public string Name { get; set; }
         ///<summary>May contain extended information for property: 'Name'</summary>
@@ -3372,14 +2417,6 @@ namespace fhir
         public Coding Code { get; set; }
         ///<summary>May contain extended information for property: 'Code'</summary>
         public Element _Code { get; set; }
-        ///<summary>May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.</summary>
-        public Extension[] Extension { get; set; }
-        ///<summary>May contain extended information for property: 'Extension'</summary>
-        public Element[] _Extension { get; set; }
-        ///<summary>Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.</summary>
-        public string Id { get; set; }
-        ///<summary>May contain extended information for property: 'Id'</summary>
-        public Element _Id { get; set; }
         ///<summary>A value that defines the context specified in this context of use. The interpretation of the value is defined by the code.</summary>
         public CodeableConcept ValueCodeableConcept { get; set; }
         ///<summary>May contain extended information for property: 'ValueCodeableConcept'</summary>
