@@ -355,7 +355,10 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
 
             }
-            catch (Exception) { /* ignore */ }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ProcessEncounter <<< caught exception: {ex.Message}");
+            }
         }
 
         ///-------------------------------------------------------------------------------------------------

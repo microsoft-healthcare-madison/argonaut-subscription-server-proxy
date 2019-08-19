@@ -27,9 +27,24 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             appInner.RunProxy(async context =>
             {
+                context.Request.Headers["Accept-Encoding"] = "";
                 // **** proxy this call ****
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+
+                //proxiedContext.HttpContext.Request.Headers["Accept"] = "application/fhir+json";
+                //proxiedContext.HttpContext.Request.Headers["Accept-Encoding"] = "";
+                //proxiedContext.HttpContext.Request.Headers["Accept-Language"] = "";
+
+                //if (proxiedContext.HttpContext.Request.Headers.ContainsKey("Accept-Encoding"))
+                //{
+                //    proxiedContext.HttpContext.Request.Headers.Remove("Accept-Encoding");
+                //}
+
+                //if (proxiedContext.HttpContext.Request.Headers.ContainsKey("Accept-Language"))
+                //{
+                //    proxiedContext.HttpContext.Request.Headers.Remove("Accept-Language");
+                //}
 
                 // **** send to server and await response ****
 
