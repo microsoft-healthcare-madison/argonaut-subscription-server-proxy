@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -36,9 +37,22 @@ namespace argonaut_subscription_server_proxy
 
             services.AddSingleton<IConfiguration>(Program.Configuration);
 
+            // **** configure automatic decompression for our proxy ****
+
+            HttpMessageHandler CreatePrimaryHandler()
+            {
+                return new HttpClientHandler
+                {
+                    AutomaticDecompression = System.Net.DecompressionMethods.GZip |
+                        System.Net.DecompressionMethods.Deflate
+                };
+            }  
+
             // **** add proxy services ****
 
-            services.AddProxy();
+            services.AddProxy(httpClientBuilder => 
+                httpClientBuilder.ConfigurePrimaryHttpMessageHandler(CreatePrimaryHandler)
+                );
         }
 
         ///-------------------------------------------------------------------------------------------------

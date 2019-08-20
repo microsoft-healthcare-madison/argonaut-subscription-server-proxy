@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using ProxyKit;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,24 +28,10 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             appInner.RunProxy(async context =>
             {
-                context.Request.Headers["Accept-Encoding"] = "";
+                //context.Request.Headers["Accept-Encoding"] = "";
                 // **** proxy this call ****
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
-
-                //proxiedContext.HttpContext.Request.Headers["Accept"] = "application/fhir+json";
-                //proxiedContext.HttpContext.Request.Headers["Accept-Encoding"] = "";
-                //proxiedContext.HttpContext.Request.Headers["Accept-Language"] = "";
-
-                //if (proxiedContext.HttpContext.Request.Headers.ContainsKey("Accept-Encoding"))
-                //{
-                //    proxiedContext.HttpContext.Request.Headers.Remove("Accept-Encoding");
-                //}
-
-                //if (proxiedContext.HttpContext.Request.Headers.ContainsKey("Accept-Language"))
-                //{
-                //    proxiedContext.HttpContext.Request.Headers.Remove("Accept-Language");
-                //}
 
                 // **** send to server and await response ****
 
@@ -58,7 +45,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "POST":
 
                         // **** grab the message body to look at ****
-                        
+
                         string responseContent = await response.Content.ReadAsStringAsync();
 
                         // **** run this Encounter through our Subscription Manager ****
