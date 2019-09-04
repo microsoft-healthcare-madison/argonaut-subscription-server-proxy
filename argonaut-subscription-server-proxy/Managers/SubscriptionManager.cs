@@ -648,9 +648,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (TryNotifySubscription(subscriptionId, null))
             {
-                // **** update in the manager ****
+                // **** update in the manager (if it hasn't been removed) ****
 
-                _idSubscriptionDict[subscriptionId].Status = "active";
+                if (_idSubscriptionDict.ContainsKey(subscriptionId))
+                {
+                    _idSubscriptionDict[subscriptionId].Status = "active";
+                }
             }
 
             // **** tell the user ****

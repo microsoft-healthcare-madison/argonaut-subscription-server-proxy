@@ -176,7 +176,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
                     Resource = topics[index],
                     Search = new BundleEntrySearch() { Mode = "match"},
-                    Response = new BundleEntryResponse() { Status = "201 Created"}
+                    //Response = new BundleEntryResponse() { Status = "201 Created"}
                 };
                 
             }
