@@ -402,7 +402,23 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** check for rest-hook ****
 
-                if (subscription.Channel.Type.Text == "rest-hook")
+                bool isRest = false;
+                
+                if ((subscription.Channel != null) &&
+                    (subscription.Channel.Type != null) &&
+                    (subscription.Channel.Type.Coding != null))
+                {
+                    foreach (fhir.Coding coding in subscription.Channel.Type.Coding)
+                    {
+                        if (coding.Code == fhir.SubscriptionChannelTypeCodes.rest_hook.Code)
+                        {
+                            isRest = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isRest)
                 {
                     string id = subscription.Id;
 
