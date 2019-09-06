@@ -500,7 +500,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** just mark active ****
 
-                    _idSubscriptionDict[subscription.Id].Status = "active";
+                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ACTIVE;
                 }
             }
             catch (Exception ex)
@@ -725,7 +725,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // **** nothing to do ****
 
-                _idSubscriptionDict[subscription.Id].Status = "error";
+                _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
 
                 return false;
             }
@@ -738,7 +738,16 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
-                    _idSubscriptionDict[subscriptionId].Status = "active";
+                    _idSubscriptionDict[subscriptionId].Status = fhir.SubscriptionStatusCodes.ACTIVE;
+                }
+            }
+            else
+            {
+                // **** update to error in the manager (if it hasn't been removed) ****
+
+                if (_idSubscriptionDict.ContainsKey(subscriptionId))
+                {
+                    _idSubscriptionDict[subscriptionId].Status = fhir.SubscriptionStatusCodes.ERROR;
                 }
             }
 
@@ -844,11 +853,11 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** check if we are adding contents ****
 
-            if ((content != null) && (subscription.Channel.Payload.Content != "empty"))
+            if ((content != null) && (subscription.Channel.Payload.Content != fhir.SubscriptionChannelPayloadContentCodes.EMPTY))
             {
                 // **** add depending on type ****
 
-                if (subscription.Channel.Payload.Content == "id-only")
+                if (subscription.Channel.Payload.Content == fhir.SubscriptionChannelPayloadContentCodes.ID_ONLY)
                 {
                     // **** add the URL, but no resource ****
 
@@ -927,7 +936,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     // **** done ****
 
-                    _idSubscriptionDict[subscription.Id].Status = "error";
+                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
 
                     return false;
                 }
@@ -938,7 +947,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" {subscription.Channel.Endpoint}" +
                     $" caused exception: {ex.Message}");
 
-                _idSubscriptionDict[subscription.Id].Status = "error";
+                _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
 
                 return false;
             }
