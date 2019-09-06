@@ -6,6 +6,7 @@ using ProxyKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -75,21 +76,38 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     // **** check to see if the manager does anything with this text ****
 
-                    SubscriptionManager.HandlePost(requestContent, out fhir.Subscription subscription);
-
-                    // **** serialize our response ****
-
-                    response.Content = new StringContent(
-                        JsonConvert.SerializeObject(
-                            subscription,
-                            new JsonSerializerSettings()
-                            {
-                                NullValueHandling = NullValueHandling.Ignore,
-                                ContractResolver = _contractResolver,
-                            })
+                    SubscriptionManager.HandlePost(
+                        requestContent, 
+                        out fhir.Subscription subscription,
+                        out HttpStatusCode statusCode,
+                        out string failureContent
                         );
-                    response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                    response.StatusCode = System.Net.HttpStatusCode.Created;
+
+                    // **** check for errors ****
+
+                    if (statusCode != HttpStatusCode.Created)
+                    {
+                        response.Content = new StringContent(failureContent);
+                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+                        response.StatusCode = statusCode;
+                    }
+                    else
+                    {
+                        // **** serialize our response ****
+
+                        response.Content = new StringContent(
+                            JsonConvert.SerializeObject(
+                                subscription,
+                                new JsonSerializerSettings()
+                                {
+                                    NullValueHandling = NullValueHandling.Ignore,
+                                    ContractResolver = _contractResolver,
+                                })
+                            );
+                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                        response.StatusCode = HttpStatusCode.Created;
+                    }
+
 
                     break;
 

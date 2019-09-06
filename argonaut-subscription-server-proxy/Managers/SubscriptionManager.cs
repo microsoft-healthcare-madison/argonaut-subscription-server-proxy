@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Policy;
@@ -42,6 +43,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private HashSet<string> _trackedResources;
 
+        private static HashSet<string> _supportedChannelTypes;
+
         #endregion Instance Variables . . .
 
         #region Constructors . . .
@@ -55,6 +58,10 @@ namespace argonaut_subscription_server_proxy.Managers
             _filterSubscriptionListDict = new Dictionary<string, List<fhir.Subscription>>();
             _trackedResources = new HashSet<string>();
             _rand = new Random();
+            _supportedChannelTypes = new HashSet<string>()
+            {
+                "rest-hook"
+            };
         }
 
         #endregion Constructors . . .
@@ -127,13 +134,25 @@ namespace argonaut_subscription_server_proxy.Managers
         ///
         /// <remarks>Gino Canessa, 8/1/2019.</remarks>
         ///
-        /// <param name="content">     The content.</param>
-        /// <param name="subscription">[out] The subscription.</param>
+        /// <param name="content">       The content.</param>
+        /// <param name="subscription">  [out] The subscription.</param>
+        /// <param name="statusCode">    [out] The status code.</param>
+        /// <param name="failureContent">[out] The failure content.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void HandlePost(string content, out fhir.Subscription subscription)
+        public static void HandlePost(
+                                        string content, 
+                                        out fhir.Subscription subscription,
+                                        out HttpStatusCode statusCode,
+                                        out string failureContent
+                                        )
         {
-            _instance._HandlePost(content, out subscription);
+            _instance._HandlePost(
+                content, 
+                out subscription,
+                out statusCode,
+                out failureContent
+                );
         }
 
         public static bool HandleDelete(HttpRequest request)
@@ -366,13 +385,22 @@ namespace argonaut_subscription_server_proxy.Managers
         ///
         /// <remarks>Gino Canessa, 7/30/2019.</remarks>
         ///
-        /// <param name="content">     The content.</param>
-        /// <param name="subscription">[out] The subscription.</param>
+        /// <param name="content">       The content.</param>
+        /// <param name="subscription">  [out] The subscription.</param>
+        /// <param name="statusCode">    [out] The status code.</param>
+        /// <param name="failureContent">[out] The failure content.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _HandlePost(string content, out fhir.Subscription subscription)
+        private void _HandlePost(
+                                    string content,
+                                    out fhir.Subscription subscription,
+                                    out HttpStatusCode statusCode,
+                                    out string failureContent
+                                    )
         {
             subscription = null;
+            statusCode = System.Net.HttpStatusCode.Created;
+            failureContent = string.Empty;
 
             // **** attempt to parse our content into a subscription request ****
             
@@ -382,10 +410,33 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 subscription = JsonConvert.DeserializeObject<fhir.Subscription>(content);
 
-                // **** check for no result ****
+                // **** check for no parsed object ****
 
                 if (subscription == null)
                 {
+                    statusCode = HttpStatusCode.BadRequest;
+                    failureContent = "Invalid subscription";
+                    return;
+                }
+
+                // **** check for no channel ****
+
+                if (subscription.Channel == null)
+                {
+                    statusCode = HttpStatusCode.BadRequest;
+                    failureContent = "Invalid channel";
+                    return;
+                }
+
+                // **** check for invalid content type ****
+
+                if ((subscription.Channel.Payload == null) ||
+                    (subscription.Channel.Payload.ContentType != "application/fhir+json"))
+                {
+                    statusCode = HttpStatusCode.BadRequest;
+                    failureContent = $"Invalid channel payload type:" +
+                        ((subscription.Channel.Payload != null) ? subscription.Channel.Payload.ContentType : "''") +
+                        $" currently only 'application/fhir+json' is supported.";
                     return;
                 }
 
@@ -412,8 +463,27 @@ namespace argonaut_subscription_server_proxy.Managers
                     {
                         if (coding.Code == fhir.SubscriptionChannelTypeCodes.rest_hook.Code)
                         {
+                            // **** check for an endpoint ****
+
+                            if ((string.IsNullOrEmpty(subscription.Channel.Endpoint)) ||
+                                (!Uri.TryCreate(subscription.Channel.Endpoint, UriKind.Absolute, out _)))
+                            {
+                                statusCode = HttpStatusCode.BadRequest;
+                                failureContent = $"Invalid Endpoint for rest-hook subscription: {subscription.Channel.Endpoint}";
+                                return;
+                            }
+
+                            // **** valid rest-hook ****
+
                             isRest = true;
                             break;
+                        }
+
+                        if (!_supportedChannelTypes.Contains(coding.Code))
+                        {
+                            statusCode = HttpStatusCode.BadRequest;
+                            failureContent = $"Invalid channel type requested: {coding.Code}";
+                            return;
                         }
                     }
                 }
@@ -473,7 +543,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             Console.WriteLine($" <<< added Subscription:" +
                 $" {subscription.Id}" +
-                $" ({subscription.Channel.Type.Text}," +
+                $" ({subscription.Channel.Type.Coding[0].Code}," +
                 $" {subscription.Channel.Payload.Content})"
                 );
             
@@ -708,19 +778,6 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
-            if ((subscription.Channel == null) ||
-                (subscription.Channel.Endpoint == null) ||
-                (string.IsNullOrEmpty(subscription.Channel.Endpoint)))
-            {
-                // **** flag we are in an error state ****
-
-                _idSubscriptionDict[subscription.Id].Status = "error";
-
-                // **** fail ****
-
-                return false;
-            }
-
             // **** check our event count ****
 
             int eventCount;
@@ -781,14 +838,14 @@ namespace argonaut_subscription_server_proxy.Managers
                 Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.Id))
             });
 
+            // **** add the entry node ****
+
+            bundle.Entry = new List<Bundle.EntryComponent>();
+
             // **** check if we are adding contents ****
 
             if ((content != null) && (subscription.Channel.Payload.Content != "empty"))
             {
-                // **** set contents ****
-
-                bundle.Entry = new List<Bundle.EntryComponent>();
-
                 // **** add depending on type ****
 
                 if (subscription.Channel.Payload.Content == "id-only")
