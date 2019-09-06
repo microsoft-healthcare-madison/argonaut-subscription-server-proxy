@@ -28,6 +28,9 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             appInner.RunProxy(async context =>
             {
+                // **** determine the type of resource this request is for ****
+
+
                 // **** determine if we need to ask the server for a current version of the resource ****
 
                 switch (context.Request.Method)
@@ -36,7 +39,9 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "POST":
                     case "DELETE":
 
-                        // **** figure out 
+                        // **** figure out if we need to ask the server about this ****
+
+
 
                         break;
 

@@ -43,19 +43,52 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 case "GET":
 
-                    // *** success ****
+                    // **** check for an ID ****
 
-                    response.Content = new StringContent(
-                        JsonConvert.SerializeObject(
-                            SubscriptionManager.GetSubscriptionList(),
-                            new JsonSerializerSettings()
-                            {
-                                NullValueHandling = NullValueHandling.Ignore,
-                                ContractResolver = _contractResolver,
-                            })
-                        );
-                    response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                    response.StatusCode = System.Net.HttpStatusCode.OK;
+                    string requestUrl = context.Request.Path;
+                    if (requestUrl.EndsWith('/'))
+                    {
+                        requestUrl = requestUrl.Substring(0, requestUrl.Length - 1);
+                    }
+
+                    string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
+
+                    if (id.ToLower() == "subscription")
+                    {
+                        // *** get list of subscriptions ****
+
+                        response.Content = new StringContent(
+                            JsonConvert.SerializeObject(
+                                SubscriptionManager.GetSubscriptionList(),
+                                new JsonSerializerSettings()
+                                {
+                                    NullValueHandling = NullValueHandling.Ignore,
+                                    ContractResolver = _contractResolver,
+                                })
+                            );
+                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                        response.StatusCode = System.Net.HttpStatusCode.OK;
+                        }
+                    else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
+                    {
+                        // *** get list of subscriptions ****
+
+                        response.Content = new StringContent(
+                            JsonConvert.SerializeObject(
+                                foundSub,
+                                new JsonSerializerSettings()
+                                {
+                                    NullValueHandling = NullValueHandling.Ignore,
+                                    ContractResolver = _contractResolver,
+                                })
+                            );
+                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                        response.StatusCode = System.Net.HttpStatusCode.OK;
+                        }
+                    else
+                    {
+                        response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    }
 
                     break;
 

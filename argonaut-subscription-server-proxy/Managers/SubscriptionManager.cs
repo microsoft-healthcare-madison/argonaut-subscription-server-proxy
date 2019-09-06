@@ -193,6 +193,17 @@ namespace argonaut_subscription_server_proxy.Managers
                 ).ToString();
         }
 
+        public static bool TryGetSubscription(string subscriptionId, out fhir.Subscription subscription)
+        {
+            if (_instance._idSubscriptionDict.ContainsKey(subscriptionId))
+            {
+                subscription = _instance._idSubscriptionDict[subscriptionId];
+                return true;
+            }
+            subscription = null;
+            return false;
+        }
+
         #endregion Class Interface . . .
 
         #region Instance Interface . . .
