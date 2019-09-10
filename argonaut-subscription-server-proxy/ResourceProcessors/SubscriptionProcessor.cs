@@ -1,5 +1,8 @@
 ﻿using argonaut_subscription_server_proxy.Managers;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ProxyKit;
@@ -8,6 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
@@ -30,149 +36,226 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         {
             // **** run the proxy for this request ****
 
-            appInner.RunProxy(async context => {
-            // **** grab a formatted copy of this request for proxying ****
-
-            //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
-
-            HttpResponseMessage response = new HttpResponseMessage();
-
-            // **** return appropriate code to the caller ****
-
-            switch (context.Request.Method.ToUpper())
+            appInner.RunProxy(async context =>
             {
-                case "GET":
+                // **** grab a formatted copy of this request for proxying ****
 
-                    // **** check for an ID ****
+                //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                    string requestUrl = context.Request.Path;
-                    if (requestUrl.EndsWith('/'))
+                HttpResponseMessage response = new HttpResponseMessage();
+
+                string preferredResponse = "return=representation";
+
+                // **** check for headers ****
+
+                foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
+                {
+                    if (kvp.Key.ToLower() == "prefer")
                     {
-                        requestUrl = requestUrl.Substring(0, requestUrl.Length - 1);
+                        preferredResponse = kvp.Value;
                     }
+                }
 
-                    string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
+                StringContent localResponse;
 
-                    if (id.ToLower() == "subscription")
-                    {
-                        // *** get list of subscriptions ****
+                // **** return appropriate code to the caller ****
 
-                        response.Content = new StringContent(
-                            JsonConvert.SerializeObject(
-                                SubscriptionManager.GetSubscriptionList(),
-                                new JsonSerializerSettings()
-                                {
-                                    NullValueHandling = NullValueHandling.Ignore,
-                                    ContractResolver = _contractResolver,
-                                })
-                            );
-                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                        response.StatusCode = System.Net.HttpStatusCode.OK;
+                switch (context.Request.Method.ToUpper())
+                {
+                    case "GET":
+
+                        // **** check for an ID ****
+
+                        string requestUrl = context.Request.Path;
+                        if (requestUrl.EndsWith('/'))
+                        {
+                            requestUrl = requestUrl.Substring(0, requestUrl.Length - 1);
                         }
-                    else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
-                    {
-                        // *** get list of subscriptions ****
 
-                        response.Content = new StringContent(
-                            JsonConvert.SerializeObject(
-                                foundSub,
-                                new JsonSerializerSettings()
-                                {
-                                    NullValueHandling = NullValueHandling.Ignore,
-                                    ContractResolver = _contractResolver,
-                                })
-                            );
-                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                        response.StatusCode = System.Net.HttpStatusCode.OK;
+                        string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
+
+                        if (id.ToLower() == "subscription")
+                        {
+                            // *** get list of subscriptions ****
+
+                            response.Content = new StringContent(
+                                JsonConvert.SerializeObject(
+                                    SubscriptionManager.GetSubscriptionList(),
+                                    new JsonSerializerSettings()
+                                    {
+                                        NullValueHandling = NullValueHandling.Ignore,
+                                        ContractResolver = _contractResolver,
+                                    })
+                                );
+                            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
+                            response.StatusCode = System.Net.HttpStatusCode.OK;
                         }
-                    else
-                    {
-                        response.StatusCode = System.Net.HttpStatusCode.NotFound;
-                    }
+                        else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
+                        {
+                            // *** get list of subscriptions ****
 
-                    break;
+                            response.Content = new StringContent(
+                                JsonConvert.SerializeObject(
+                                    foundSub,
+                                    new JsonSerializerSettings()
+                                    {
+                                        NullValueHandling = NullValueHandling.Ignore,
+                                        ContractResolver = _contractResolver,
+                                    })
+                                );
+                            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
+                            response.StatusCode = System.Net.HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                        }
 
-                case "PUT":
+                        break;
 
-                    // *** not implemented ****
+                    case "PUT":
 
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
+                        // *** not implemented ****
 
-                    break;
+                        response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
-                case "POST":
+                        break;
 
-                    // **** grab the message body to look at ****
+                    case "POST":
 
-                    System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
-                    string requestContent = requestReader.ReadToEnd();
+                        // **** grab the message body to look at ****
 
-                    // **** check to see if the manager does anything with this text ****
+                        System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
+                        string requestContent = requestReader.ReadToEnd();
 
-                    SubscriptionManager.HandlePost(
-                        requestContent, 
-                        out fhir.Subscription subscription,
-                        out HttpStatusCode statusCode,
-                        out string failureContent
-                        );
+                        // **** check to see if the manager does anything with this text ****
 
-                    // **** check for errors ****
-
-                    if (statusCode != HttpStatusCode.Created)
-                    {
-                        response.Content = new StringContent(failureContent);
-                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
-                        response.StatusCode = statusCode;
-                    }
-                    else
-                    {
-                        // **** serialize our response ****
-
-                        response.Content = new StringContent(
-                            JsonConvert.SerializeObject(
-                                subscription,
-                                new JsonSerializerSettings()
-                                {
-                                    NullValueHandling = NullValueHandling.Ignore,
-                                    ContractResolver = _contractResolver,
-                                })
+                        SubscriptionManager.HandlePost(
+                            requestContent,
+                            out fhir.Subscription subscription,
+                            out HttpStatusCode statusCode,
+                            out string failureContent
                             );
-                        response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+
+                        // **** check for errors ****
+
+                        if (statusCode != HttpStatusCode.Created)
+                        {
+                            switch (preferredResponse)
+                            {
+                                case "return=minimal":
+                                    localResponse = new StringContent("", Encoding.UTF8, "text/plain");
+                                    break;
+                                case "return=OperationOutcome":
+                                    OperationOutcome outcome = new OperationOutcome()
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        Issue = new List<OperationOutcome.IssueComponent>() {
+                                            new OperationOutcome.IssueComponent() {
+                                                Severity = OperationOutcome.IssueSeverity.Error,
+                                                Code = OperationOutcome.IssueType.Unknown,
+                                                Diagnostics = failureContent,
+                                            }
+                                        }
+                                    };
+                                    Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
+                                    localResponse = new StringContent(
+                                        serializer.SerializeToString(outcome),
+                                        Encoding.UTF8,
+                                        "application/fhir+json"
+                                        );
+
+                                    break;
+                                default:
+                                    localResponse = new StringContent(failureContent, Encoding.UTF8, "text/plain");
+                                    break;
+                            }
+
+                            response.Content = localResponse;
+                            response.StatusCode = statusCode;
+
+                            return response;
+                        }
+
+                        // **** figure out our link to this resource ****
+
+                        string url = Program.UrlForResourceId("Subscription", subscription.Id);
+
+                        switch (preferredResponse)
+                        {
+                            case "return=minimal":
+                                localResponse = new StringContent("", Encoding.UTF8, "text/plain");
+                                break;
+                            case "return=OperationOutcome":
+                                OperationOutcome outcome = new OperationOutcome()
+                                {
+                                    Id=Guid.NewGuid().ToString(),
+                                    Issue = new List<OperationOutcome.IssueComponent>() {
+                                            new OperationOutcome.IssueComponent() {
+                                                Severity = OperationOutcome.IssueSeverity.Information,
+                                                Code = OperationOutcome.IssueType.Value,
+                                            }
+                                        }
+                                };
+                                Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
+                                localResponse = new StringContent(
+                                    serializer.SerializeToString(outcome),
+                                    Encoding.UTF8,
+                                    "application/fhir+json"
+                                    );
+
+                                break;
+                            default:
+                                localResponse = new StringContent(
+                                    JsonConvert.SerializeObject(
+                                        subscription,
+                                        new JsonSerializerSettings()
+                                        {
+                                            NullValueHandling = NullValueHandling.Ignore,
+                                            ContractResolver = _contractResolver,
+                                        }),
+                                    Encoding.UTF8,
+                                    "application/fhir+json"
+                                    );
+                                break;
+                        }
+
+                        response.Headers.Add("Location", url);
+                        response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+                        response.Content = localResponse;
                         response.StatusCode = HttpStatusCode.Created;
-                    }
 
+                        break;
 
-                    break;
+                    case "DELETE":
 
-                case "DELETE":
+                        // **** ask the subscription manager to deal with this ***
 
-                    // **** ask the subscription manager to deal with this ***
+                        if (SubscriptionManager.HandleDelete(context.Request))
+                        {
+                            response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                        }
+                        else
+                        {
+                            // *** failed ****
 
-                    if (SubscriptionManager.HandleDelete(context.Request))
-                    {
-                        response.StatusCode = System.Net.HttpStatusCode.NoContent;
-                    }
-                    else
-                    {
-                        // *** failed ****
+                            response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                        }
 
-                        response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                    }
+                        break;
 
-                    break;
+                    default:
 
-                default:
+                        // **** tell client we didn't understand ****
 
-                    // **** tell client we didn't understand ****
+                        response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
-                    break;
-            }
+                        break;
+                }
 
                 return response;
             });
         }
-
     }
 }

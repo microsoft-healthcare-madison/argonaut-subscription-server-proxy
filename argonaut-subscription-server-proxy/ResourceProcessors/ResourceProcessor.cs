@@ -71,7 +71,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         // **** run this Encounter through our Subscription Manager ****
 
-                        SubscriptionManager.ProcessEncounter(responseContent);
+                        SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
 
                         break;
 

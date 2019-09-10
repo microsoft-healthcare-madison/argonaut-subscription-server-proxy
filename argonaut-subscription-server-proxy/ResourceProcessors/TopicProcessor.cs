@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.Primitives;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -34,6 +35,13 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
                 HttpResponseMessage response = new HttpResponseMessage();
+
+                //// **** check for headers ****
+
+                //foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
+                //{
+                //    Console.WriteLine($"Header: {kvp.Key}:{kvp.Value}");
+                //}
 
                 // **** return appropriate code to the caller ****
 

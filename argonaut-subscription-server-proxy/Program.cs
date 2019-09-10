@@ -33,6 +33,14 @@ namespace argonaut_subscription_server_proxy
         public static HttpClient RestClient { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets or sets URL of the fhir server.</summary>
+        ///
+        /// <value>The fhir server URL.</value>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static string FhirServerUrl { get; set; }
+
+        ///-------------------------------------------------------------------------------------------------
         /// <summary>Main entry-point for this application.</summary>
         ///
         /// <remarks>Gino Canessa, 7/30/2019.</remarks>
@@ -94,6 +102,13 @@ namespace argonaut_subscription_server_proxy
             match = regex.Match(Configuration["Server_Internal_Url"]);
             Configuration["Server_Internal_Url"] = match.ToString();
 
+            // **** update external urls to make sure the DO have trailing slashes ****
+
+            if (!Configuration["Server_FHIR_Url"].EndsWith('/'))
+            {
+                Configuration["Server_FHIR_Url"] = Configuration["Server_FHIR_Url"] + '/' ;
+            }
+            FhirServerUrl = Configuration["Server_FHIR_Url"];
 
             // **** create our REST client ****
 

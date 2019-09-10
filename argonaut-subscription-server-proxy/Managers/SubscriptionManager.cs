@@ -1,9 +1,11 @@
 ﻿using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -45,6 +47,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private static HashSet<string> _supportedChannelTypes;
 
+        private static Queue<FhirClient> _fhirClientQ;
+        private static object _fhirClientQLock;
+
         #endregion Instance Variables . . .
 
         #region Constructors . . .
@@ -62,6 +67,8 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 "rest-hook"
             };
+            _fhirClientQ = new Queue<FhirClient>();
+            _fhirClientQLock = new object();
         }
 
         #endregion Constructors . . .
@@ -165,14 +172,15 @@ namespace argonaut_subscription_server_proxy.Managers
         ///
         /// <remarks>Gino Canessa, 8/16/2019.</remarks>
         ///
-        /// <param name="content">The content.</param>
+        /// <param name="content"> The content.</param>
+        /// <param name="location">The location.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void ProcessEncounter(string content)
+        public static void ProcessEncounter(string content, Uri location)
         {
             // **** run this async and return immediately, we don't care about results ****
 
-            _ = System.Threading.Tasks.Task.Run((Action)(() => _instance._ProcessEncounter(content)));
+            _ = System.Threading.Tasks.Task.Run((Action)(() => _instance._ProcessEncounter(content, location)));
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -331,26 +339,135 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets encounter patient groups.</summary>
+        ///
+        /// <remarks>Gino Canessa, 9/9/2019.</remarks>
+        ///
+        /// <param name="encounter">         The encounter.</param>
+        /// <param name="List<string>groups">[out] The list.</param>
+        ///-------------------------------------------------------------------------------------------------
+
+        private void GetEncounterPatientGroups(Encounter encounter, out List<string>groups)
+        {
+            FhirClient client = null;
+            groups = new List<string>();
+
+            // **** attempt to get groups this patient may belong to ****
+
+            try
+            {
+                // **** get a FHIR client ****
+
+                if (!TryGetFhirClient(out client))
+                {
+                    return;
+                }
+
+                // **** ask for the groups for this patient ****
+
+                Bundle results = client.Search<Group>(new string[] { $"member:{encounter.Subject}" });
+
+                if ((results != null) &&
+                    (results.Entry != null) &&
+                    (results.Entry.Count > 0))
+                {
+                    // **** traverse entries ****
+
+                    foreach (Bundle.EntryComponent entry in results.Entry)
+                    {
+                        groups.Add(entry.Resource.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ProcessEncounter <<< failed to get groups, ignoring: {ex.Message}");
+            }
+            finally
+            {
+                if (client != null)
+                {
+                    // **** return to our queue ****
+
+                    ReturnFhirClientToQ(ref client);
+                }
+            }
+        }
+
+        ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the encounter described by content.</summary>
         ///
         /// <remarks>Gino Canessa, 8/15/2019.</remarks>
         ///
-        /// <param name="content">The content.</param>
+        /// <param name="content"> The content.</param>
+        /// <param name="location">The location.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _ProcessEncounter(string content)
+        private void _ProcessEncounter(string content, Uri location)
         {
-            // **** check to see if this is a valid encounter ****
-
             FhirJsonParser parser = new FhirJsonParser();
-
             List<fhir.Subscription> subscriptions = new List<fhir.Subscription>();
+
+            Encounter encounter = null;
+
+            // **** attempt to parse the encounter ****
+
+            try 
+            {
+                if ((!string.IsNullOrEmpty(content)) && (content.Length > 20))
+                {
+                    // **** attempt to parse this encounter ****
+
+                    encounter = parser.Parse<Encounter>(content);
+                }
+            }
+            catch (Exception)
+            {
+                // **** ignore, likely an operation outcome or empty content ****
+            }
+
+            if (encounter == null)
+            {
+                FhirClient client = null;
+
+                // **** attempt to retrieve the encounter ****
+
+                try
+                {
+                    // **** get a FHIR client ****
+
+                    if (!TryGetFhirClient(out client))
+                    {
+                        return;
+                    }
+
+                    // **** read the specified resource ****
+
+                    encounter = client.Read<Encounter>(location);
+                }
+                finally
+                {
+                    // **** return the client ****
+
+                    ReturnFhirClientToQ(ref client);
+                }
+            }
+
+            // **** check for no resource ****
+
+            if (encounter == null)
+            {
+                Console.WriteLine("Could not get Encounter resource!");
+                return;
+            }
+
+            // ***** parse the encounter ****
 
             try
             {
-                // **** attempt to parse this ****
+                // **** get the groups this patient belongs to ****
 
-                Encounter encounter = parser.Parse<Encounter>(content);
+                GetEncounterPatientGroups(encounter, out List<string> patientGroups);
 
                 // **** check for generic subscriptions ****
 
@@ -366,16 +483,33 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscriptions.AddRange(_filterSubscriptionListDict["Encounter:*"]);
                 }
 
-                // **** build our filter match key ****
+                // **** build our filter match key for patient searches ****
 
-                string matchKey = $"Encounter:patient:{encounter.Subject.Reference}";
+                string patientMatchKey = $"Encounter:patient:{encounter.Subject.Reference}";
 
                 // **** check for matching filter subscriptions ****
 
-                if (_filterSubscriptionListDict.ContainsKey(matchKey))
+                if (_filterSubscriptionListDict.ContainsKey(patientMatchKey))
                 {
-                    subscriptions.AddRange(_filterSubscriptionListDict[matchKey]);
+                    subscriptions.AddRange(_filterSubscriptionListDict[patientMatchKey]);
                 }
+
+                // **** build the match keys for all groups this patient belongs to ****
+
+                foreach (string patientGroup in patientGroups)
+                {
+                    string groupMatchKey = $"Encounter:group:{patientGroup}";
+
+                    // **** check for inclusions ****
+
+                    if (_filterSubscriptionListDict.ContainsKey(groupMatchKey))
+                    {
+                        subscriptions.AddRange(_filterSubscriptionListDict[groupMatchKey]);
+                    }
+
+                    // **** check for exclusions ****
+                }
+
 
                 // **** notify all subscriptions ****
 
@@ -769,6 +903,77 @@ namespace argonaut_subscription_server_proxy.Managers
             // **** done ****
 
             return true;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get fhir client a FhirClient from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 9/9/2019.</remarks>
+        ///
+        /// <param name="client">[out] The client.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private bool TryGetFhirClient(out FhirClient client)
+        {
+            // **** check to see if we can get a client from the queue ****
+
+            lock (_fhirClientQLock)
+            {
+                if (_fhirClientQ.Count > 0)
+                {
+                    client = _fhirClientQ.Dequeue();
+                    return true;
+                }
+
+                // **** attempt to create our client ****
+
+                try
+                {
+                    client = new FhirClient(Program.FhirServerUrl)
+                    {
+                        PreferredFormat = ResourceFormat.Json,
+                        PreferredReturn = Prefer.ReturnRepresentation,
+                    };
+
+                    // **** valid ****
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    // **** log for reference ****
+
+                    Console.WriteLine($"SubscriptionMananger.TryGetFhirClient <<<" +
+                        $" failed url: {Program.FhirServerUrl}," +
+                        $" exception: {ex.Message}");
+                }
+            }
+
+            // **** still here means failure ****
+
+            client = null;
+            return false;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Returns fhir client to q.</summary>
+        ///
+        /// <remarks>Gino Canessa, 9/9/2019.</remarks>
+        ///
+        /// <param name="client">[out] The client.</param>
+        ///-------------------------------------------------------------------------------------------------
+
+        private void ReturnFhirClientToQ(ref FhirClient client)
+        {
+            // **** thread safe ****
+
+            lock (_fhirClientQLock)
+            {
+                _fhirClientQ.Enqueue(client);
+                client = null;
+            }
         }
 
         ///-------------------------------------------------------------------------------------------------
