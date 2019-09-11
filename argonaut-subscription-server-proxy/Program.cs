@@ -156,7 +156,7 @@ namespace argonaut_subscription_server_proxy
         {
             return (new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
-                new Uri($"baseR4/{resource}/{id}", UriKind.Relative))
+                new Uri($"{resource}/{id}", UriKind.Relative))
                 ).ToString();
         }
 

@@ -48,10 +48,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         string responseContent = await response.Content.ReadAsStringAsync();
 
+                        if (response.IsSuccessStatusCode)
+                        {
+                            // **** run this Encounter through our Subscription Manager ****
 
-                        // **** run this Encounter through our Subscription Manager ****
-
-                        SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
+                            SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
+                        }
 
                         break;
 

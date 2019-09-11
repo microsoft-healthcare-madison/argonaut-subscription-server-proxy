@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.ElementModel;
+﻿using argonaut_subscription_server_proxy.Models;
+using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
@@ -41,9 +42,8 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>A random-number generator for this class.</summary>
         private Random _rand;
 
-        private Dictionary<string, List<fhir.Subscription>> _filterSubscriptionListDict;
-
-        private HashSet<string> _trackedResources;
+        private Dictionary<string, SubscriptionFilterNode> _resourceSubscriptionDict;
+        private object _resourceSubscriptionDictLock;
 
         private static HashSet<string> _supportedChannelTypes;
 
@@ -60,8 +60,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
             _idSubscriptionDict = new Dictionary<string, fhir.Subscription>();
             _idLockDict = new Dictionary<string, object>();
-            _filterSubscriptionListDict = new Dictionary<string, List<fhir.Subscription>>();
-            _trackedResources = new HashSet<string>();
+            _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
+            _resourceSubscriptionDictLock = new object();
             _rand = new Random();
             _supportedChannelTypes = new HashSet<string>()
             {
@@ -263,6 +263,66 @@ namespace argonaut_subscription_server_proxy.Managers
 
             return false;
         }
+        
+        private void RemoveSubscriptionFromNodeTree(
+                                                    fhir.Subscription subscription, 
+                                                    SubscriptionFilterNode node, 
+                                                    out bool isEmpty
+                                                    )
+        {
+            isEmpty = false;
+
+            lock (_resourceSubscriptionDictLock)
+            {
+                if (node.Subscriptions.Contains(subscription))
+                {
+                    node.Subscriptions.Remove(subscription);
+                }
+            }
+
+            string[] inclusionKeys = node.Inclusions.Keys.ToArray<string>();
+            foreach (string key in inclusionKeys)
+            {
+                // **** recurse ****
+
+                RemoveSubscriptionFromNodeTree(subscription, node.Inclusions[key], out bool subIsEmpty);
+
+                if (subIsEmpty)
+                {
+                    // **** remove this node ****
+
+                    lock (_resourceSubscriptionDictLock)
+                    {
+                        node.Inclusions.Remove(key);
+                    }
+                }
+            }
+
+            string[] exclusionKeys = node.Exclusions.Keys.ToArray<string>();
+            foreach (string key in exclusionKeys)
+            {
+                // **** recurse ****
+
+                RemoveSubscriptionFromNodeTree(subscription, node.Exclusions[key], out bool subIsEmpty);
+
+                if (subIsEmpty)
+                {
+                    // **** remove this node ****
+
+                    lock (_resourceSubscriptionDictLock)
+                    {
+                        node.Exclusions.Remove(key);
+                    }
+                }
+            }
+
+            if ((node.Subscriptions.Count == 0) &&
+                (node.Inclusions.Count == 0) &&
+                (node.Exclusions.Count == 0))
+            {
+                isEmpty = true;
+            }
+        }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Removes the subscription specified by ID.</summary>
@@ -285,36 +345,21 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Subscription subscription = _idSubscriptionDict[id];
 
-            // **** remove from tracking ****
+            // **** traverse trackings looking for this subscription ****
 
-            string[] filterKeys = _filterSubscriptionListDict.Keys.ToArray<string>();
-
-            foreach (string filterKey in filterKeys)
+            string[] resourceKeys = _resourceSubscriptionDict.Keys.ToArray<string>();
+            foreach (string key in resourceKeys)
             {
-                // **** check to see if this filter key has this subscription ****
+                // **** check this node ****
 
-                if (_filterSubscriptionListDict[filterKey].Contains(subscription))
+                RemoveSubscriptionFromNodeTree(subscription, _resourceSubscriptionDict[key], out bool isEmpty);
+
+                if (isEmpty)
                 {
-                    // **** check for this being the ONLY filter ****
-
-                    if (_filterSubscriptionListDict[filterKey].Count == 1)
+                    lock (_resourceSubscriptionDictLock)
                     {
-                        // **** remove from the filter dictionary ****
-
-                        _filterSubscriptionListDict.Remove(filterKey);
-
-                        Console.WriteLine($" <<< no longer tracking: {filterKey}");
-
-                        // **** continue checking ****
-
-                        continue;
+                        _resourceSubscriptionDict.Remove(key);
                     }
-
-                    // **** remove this subscription from the list ****
-
-                    _filterSubscriptionListDict[filterKey].Remove(subscription);
-
-                    Console.WriteLine($" <<< stopped tracking: {filterKey} for {id}");
                 }
             }
 
@@ -347,7 +392,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="List<string>groups">[out] The list.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void GetEncounterPatientGroups(Encounter encounter, out List<string>groups)
+        private void GetEncounterPatientGroupKeys(Encounter encounter, out List<string>groups)
         {
             FhirClient client = null;
             groups = new List<string>();
@@ -365,7 +410,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** ask for the groups for this patient ****
 
-                Bundle results = client.Search<Group>(new string[] { $"member:{encounter.Subject}" });
+                Bundle results = client.Search<Group>(new string[] { $"member={encounter.Subject.Reference}" });
 
                 if ((results != null) &&
                     (results.Entry != null) &&
@@ -375,7 +420,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     foreach (Bundle.EntryComponent entry in results.Entry)
                     {
-                        groups.Add(entry.Resource.Id);
+                        groups.Add($"patient:{entry.Resource.ResourceType}/{entry.Resource.Id}");
                     }
                 }
             }
@@ -410,6 +455,15 @@ namespace argonaut_subscription_server_proxy.Managers
 
             Encounter encounter = null;
 
+            // **** check to see if this resource is tracked (any subscriptions) ****
+
+            if (!_resourceSubscriptionDict.ContainsKey("Encounter"))
+            {
+                // **** done ****
+
+                return;
+            }
+
             // **** attempt to parse the encounter ****
 
             try 
@@ -425,6 +479,8 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // **** ignore, likely an operation outcome or empty content ****
             }
+
+            // **** check for not having an encounter ****
 
             if (encounter == null)
             {
@@ -465,51 +521,38 @@ namespace argonaut_subscription_server_proxy.Managers
 
             try
             {
+                // **** build a list of all our keys ****
+
+                List<string> searchKeys = new List<string>();
+
+                // **** add our patient match key ****
+
+                searchKeys.Add($"patient:{encounter.Subject.Reference}");
+
                 // **** get the groups this patient belongs to ****
 
-                GetEncounterPatientGroups(encounter, out List<string> patientGroups);
+                GetEncounterPatientGroupKeys(encounter, out List<string> patientGroupKeys);
 
-                // **** check for generic subscriptions ****
+                // **** add our patient group keys ****
 
-                if (_filterSubscriptionListDict.ContainsKey("*:*"))
-                {
-                    subscriptions.AddRange(_filterSubscriptionListDict["*:*"]);
-                }
+                searchKeys.AddRange(patientGroupKeys);
 
-                // **** check for generic Encounter subscriptions ****
+                // **** sort our keys ****
 
-                if (_filterSubscriptionListDict.ContainsKey("Encounter:*"))
-                {
-                    subscriptions.AddRange(_filterSubscriptionListDict["Encounter:*"]);
-                }
+                searchKeys.Sort();
 
-                // **** build our filter match key for patient searches ****
+                // **** create a hashset of the keys (for exclusion checking) ****
 
-                string patientMatchKey = $"Encounter:patient:{encounter.Subject.Reference}";
+                HashSet<string> searchSet = searchKeys.ToHashSet<string>();
 
-                // **** check for matching filter subscriptions ****
+                // **** find the subscriptions for this resource ****
 
-                if (_filterSubscriptionListDict.ContainsKey(patientMatchKey))
-                {
-                    subscriptions.AddRange(_filterSubscriptionListDict[patientMatchKey]);
-                }
-
-                // **** build the match keys for all groups this patient belongs to ****
-
-                foreach (string patientGroup in patientGroups)
-                {
-                    string groupMatchKey = $"Encounter:group:{patientGroup}";
-
-                    // **** check for inclusions ****
-
-                    if (_filterSubscriptionListDict.ContainsKey(groupMatchKey))
-                    {
-                        subscriptions.AddRange(_filterSubscriptionListDict[groupMatchKey]);
-                    }
-
-                    // **** check for exclusions ****
-                }
-
+                FindSubscriptionsForKeys(
+                    _resourceSubscriptionDict["Encounter"],
+                    searchKeys,
+                    searchSet,
+                    ref subscriptions
+                    );
 
                 // **** notify all subscriptions ****
 
@@ -522,6 +565,49 @@ namespace argonaut_subscription_server_proxy.Managers
             catch (Exception ex)
             {
                 Console.WriteLine($"ProcessEncounter <<< caught exception: {ex.Message}");
+            }
+        }
+
+        private void FindSubscriptionsForKeys(
+                                                SubscriptionFilterNode node,
+                                                List<string> matchKeys,
+                                                HashSet<string> matchHashSet,
+                                                ref List<fhir.Subscription> subscriptions
+                                                )
+        {
+            // **** add subscriptions on this level ****
+
+            if (node.Subscriptions.Count > 0)
+            {
+                subscriptions.AddRange(node.Subscriptions);
+            }
+
+            // **** check each of our keys ****
+
+            foreach (string key in matchKeys)
+            {
+                // **** check for inclusions ****
+
+                if (node.Inclusions.ContainsKey(key))
+                {
+                    // **** process this node ***
+
+                    FindSubscriptionsForKeys(node.Inclusions[key], matchKeys, matchHashSet, ref subscriptions);
+                }
+            }
+
+            // **** check exclusions ****
+
+            foreach (string key in node.Exclusions.Keys.ToArray<string>())
+            {
+                // **** check for not existing ****
+
+                if (!matchHashSet.Contains(key))
+                {
+                    // **** process this node ****
+
+                    FindSubscriptionsForKeys(node.Exclusions[key], matchKeys, matchHashSet, ref subscriptions);
+                }
             }
         }
 
@@ -662,7 +748,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _AddOrUpdate(fhir.Subscription subscription)
+        private bool _AddOrUpdate(fhir.Subscription subscription)
         {
             // **** check for an existing topic (may need to remove URL for cleanup) ****
 
@@ -701,25 +787,61 @@ namespace argonaut_subscription_server_proxy.Managers
             if (topic == null)
             {
                 Console.WriteLine($"SubscriptionManager._AddOrUpdate <<< could not find topic: {subscription.Topic.reference}");
-                return;
+                return false;
             }
 
+            // **** track this subscription (based on topic) ****
+
+            if (!TrackSubscription(subscription, topic))
+            {
+                // **** make sure partial updates are removed ****
+
+                Remove(subscription.Id);
+
+                // **** failed ****
+
+                return false;
+            }
+
+            // **** still here is success ****
+
+            return true;
+        }
+
+        private void TrackResource(string resourceName)
+        {
+            lock (_resourceSubscriptionDictLock)
+            {
+                // **** make sure this resource is tracked ****
+
+                if (!_resourceSubscriptionDict.ContainsKey(resourceName))
+                {
+                    _resourceSubscriptionDict.Add(resourceName, new SubscriptionFilterNode()
+                    {
+                        Subscriptions = new List<fhir.Subscription>(),
+                        Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                        Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                    })
+                    ;
+                }
+            }
+        }
+
+        private bool TrackSubscription(fhir.Subscription subscription, fhir.Topic topic)
+        {
             // **** check for unfiltered subscriptions ****
 
             if ((subscription.FilterBy == null) || (subscription.FilterBy.Length == 0))
             {
                 // **** check for resource types ****
 
-                if ((topic.ResourceTrigger.ResourceType == null) || 
+                if ((topic.ResourceTrigger.ResourceType == null) ||
                     (topic.ResourceTrigger.ResourceType.Length == 0))
                 {
-                    // **** all resources, all events ****
+                    // **** reject this subscription ****
 
-                    TrackSubscriptionFilter("*:*", subscription);
-
-                    // **** flag tracking 'all' resource ****
-
-                    TrackResource("*");
+                    Console.WriteLine("SubscriptionManager.TrackSubscription <<< invalid resource triggers: [].");
+                    return false;
                 }
                 else
                 {
@@ -727,103 +849,174 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     foreach (string resourceName in topic.ResourceTrigger.ResourceType)
                     {
-                        // **** all events on this resource ****
-
-                        TrackSubscriptionFilter($"{resourceName}:*", subscription);
-
-                        // **** flag tracking this resource ****
-
                         TrackResource(resourceName);
+                        lock (_resourceSubscriptionDictLock)
+                        {
+                            _resourceSubscriptionDict[resourceName].Subscriptions.Add(subscription);
+                        }
                     }
                 }
-            }
-            else
-            {
-                // **** traverse filters ****
 
-                foreach (fhir.SubscriptionFilterBy filterBy in subscription.FilterBy)
+                // **** done with this type of subscription ****
+
+                return true;
+            }
+
+            // **** for now, reject any subscription that starts with an exclusion ****
+
+            if (subscription.FilterBy[0].MatchType == "not-in")
+            {
+                Console.WriteLine($"SubscriptionManager.TrackSubscription <<<" +
+                    $" first match cannot be {subscription.FilterBy[0].MatchType}");
+                return false;
+            }
+
+            // **** get our list of filters ****
+
+            List<fhir.SubscriptionFilterBy> filters = subscription.FilterBy.ToList<fhir.SubscriptionFilterBy>();
+
+            // **** sort by field, match, value ****
+
+            filters.Sort((a, b) => ($"{a.Name}{a.MatchType}{a.Value}".CompareTo($"{b.Name}{b.MatchType}{b.Value}")));
+
+            // **** loop over resources in the topic ****
+
+            foreach (string resourceName in topic.ResourceTrigger.ResourceType)
+            {
+                // **** make sure this resource is tracked ****
+
+                TrackResource(resourceName);
+
+                // **** track based on filters ****
+
+                if (!TrackFilterNode(subscription, _resourceSubscriptionDict[resourceName], filters))
                 {
-                    // **** loop over resource types ****
-
-                    foreach (string resourceName in topic.ResourceTrigger.ResourceType)
-                    {
-                        // **** check for no value ****
-
-                        if (string.IsNullOrEmpty(filterBy.Value))
-                        {
-                            // **** all events on this resource ****
-
-                            TrackSubscriptionFilter($"{resourceName}:{filterBy.Name}:*", subscription);
-
-                            // **** flag tracking this resource ****
-
-                            TrackResource(resourceName);
-
-                            // **** go to next loop ****
-
-                            continue;
-                        }
-                        
-                        // **** split possible values ****
-
-                        string[] filterValues = filterBy.Value.Split(',');
-                        
-                        foreach (string filterValue in filterValues)
-                        {
-                            // **** all events on this resource ****
-
-                            TrackSubscriptionFilter($"{resourceName}:{filterBy.Name}:{filterValue}", subscription);
-
-                            // **** flag tracking this resource ****
-
-                            TrackResource(resourceName);
-                        }
-                    }
+                    return false;
                 }
             }
+
+            // **** still here is success ****
+
+            return true;
         }
 
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>Track resource.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
-        ///
-        /// <param name="resourceName">Name of the resource.</param>
-        ///-------------------------------------------------------------------------------------------------
-
-        private void TrackResource(string resourceName)
+        private bool TrackFilterNode(
+                                    fhir.Subscription subscription,
+                                    SubscriptionFilterNode node,
+                                    List<fhir.SubscriptionFilterBy> filters
+                                    )
         {
-            if (!_trackedResources.Contains(resourceName))
+            // **** check for no filters (done) ****
+
+            if (filters.Count == 0)
             {
-                _trackedResources.Add(resourceName);
+                // **** add the subscription to this node ****
 
-                Console.WriteLine($" <<< now tracking resource: {resourceName}");
-            }
-        }
+                node.Subscriptions.Add(subscription);
 
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>Track subscription filter.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
-        ///
-        /// <param name="key">         The key.</param>
-        /// <param name="subscription">The subscription.</param>
-        ///-------------------------------------------------------------------------------------------------
+                // **** done ****
 
-        private void TrackSubscriptionFilter(string key, fhir.Subscription subscription)
-        {
-            // **** check to see if this key doesn't exist ****
-
-            if (!_filterSubscriptionListDict.ContainsKey(key))
-            {
-                _filterSubscriptionListDict.Add(key, new List<fhir.Subscription>());
+                return true;
             }
 
-            // **** add our subscription ****
+            // **** grab the first filter (sorted) ****
 
-            _filterSubscriptionListDict[key].Add(subscription);
+            fhir.SubscriptionFilterBy filter = filters[0];
+            filters.RemoveAt(0);
 
-            Console.WriteLine($" <<< tracking {key} for {subscription.Id}");
+            // **** check for no value ****
+
+            if (string.IsNullOrEmpty(filter.Value))
+            {
+                // **** cannot add this ****
+
+                Console.WriteLine($"SubscriptionManager.TrackFilterNode <<<" +
+                    $" invalid value is null! subscription: {subscription.Id}");
+                return false;
+            }
+
+            bool success = true;
+
+            // **** split possible values ****
+
+            string[] filterValues = filter.Value.Split(',');
+
+            foreach (string filterValue in filterValues)
+            {
+                // **** build the key ****
+
+                string filterKey = $"{filter.Name}:{filterValue}";
+
+                // **** add to the correct type ****
+
+                switch (filter.MatchType)
+                {
+                    case "not-in":
+                    case "!=":
+                    case "ne":
+                        // **** make sure this field is in exclusions ****
+
+                        lock (_resourceSubscriptionDictLock)
+                        {
+                            if (!node.Exclusions.ContainsKey(filterKey))
+                            {
+                                node.Exclusions.Add(filterKey, new SubscriptionFilterNode()
+                                {
+                                    Subscriptions = new List<fhir.Subscription>(),
+                                    Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                                    Exclusions = new Dictionary<string, SubscriptionFilterNode>()
+                                });
+                            }
+                        }
+
+                        // **** continue traversing, stop on failures ****
+
+                        if (!TrackFilterNode(subscription, node.Exclusions[filterKey], filters))
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case "in":
+                    case "=":
+                    case "eq":
+                        // **** make sure this field is in the inclusions ****
+
+                        lock (_resourceSubscriptionDictLock)
+                        {
+                            if (!node.Inclusions.ContainsKey(filterKey))
+                            {
+                                node.Inclusions.Add(filterKey, new SubscriptionFilterNode()
+                                {
+                                    Subscriptions = new List<fhir.Subscription>(),
+                                    Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                                    Exclusions = new Dictionary<string, SubscriptionFilterNode>()
+                                });
+                            }
+                        }
+
+                        // **** continue traversing, stop of failures ****
+
+                        if (!TrackFilterNode(subscription, node.Inclusions[filterKey], filters))
+                        {
+                            return false;
+                        }
+                        break;
+
+                    default:
+                        // **** unhandled match type ****
+
+                        Console.WriteLine($"SubscriptionManager.TrackFilterNode <<<" +
+                            $" invalid MatchType: {filter.MatchType}! subscription: {subscription.Id}");
+                        return false;
+
+                        break;
+                }
+
+            }
+
+            return success;
         }
 
         private void DumpNode(ISourceNode node)
