@@ -6,9 +6,11 @@ using Newtonsoft.Json.Serialization;
 using ProxyKit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -57,6 +59,18 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             if (capabilities.Software != null)
                             {
                                 capabilities.Software.Name = $"Argo-Proxy: {capabilities.Software.Name}";
+                                capabilities.Software.Version =
+                                    FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString()
+                                    + ": " + capabilities.Software.Version;
+
+                            }
+                            else
+                            {
+                                capabilities.Software = new fhir.CapabilityStatementSoftware()
+                                {
+                                    Name = $"Argo-Proxy: {Program.FhirServerUrl}",
+                                    Version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString(),
+                                };
                             }
 
                             capabilities.Implementation = new fhir.CapabilityStatementImplementation()
