@@ -17,6 +17,9 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     public class CapabilitiesProcessor
     {
+        private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
+
+
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
             // **** run the proxy for this request ****
@@ -45,25 +48,87 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                             string responseContent = await response.Content.ReadAsStringAsync();
 
-                            // **** parse this response ****
+                            // **** parse this capabilities statement ****
 
-                            FhirJsonParser parser = new FhirJsonParser();
-                            CapabilityStatement capabilities = parser.Parse<CapabilityStatement>(responseContent);
+                            fhir.CapabilityStatement capabilities = JsonConvert.DeserializeObject<fhir.CapabilityStatement>(responseContent);
 
-                            // **** remove everything but application/fhir+json ****
+                            // **** flag we are involved ****
+
+                            if (capabilities.Software != null)
+                            {
+                                capabilities.Software.Name = $"Argo-Proxy: {capabilities.Software.Name}";
+                            }
+
+                            capabilities.Implementation = new fhir.CapabilityStatementImplementation()
+                            {
+                                Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrl}",
+                                Url = Program.PublicUrl,
+                            };
+
+                            // **** only support application/fhir+json ****
 
                             capabilities.Format = new string[] { "application/fhir+json" };
 
+                            // **** make sure Topic and Subscription are present ****
 
+                            bool foundSubscription = false;
+                            bool foundTopic = false;
+
+                            for (int restIndex = 0; 
+                                    restIndex < capabilities.Rest.Length; 
+                                    restIndex++)
+                            {
+                                for (int resourceIndex = 0; 
+                                        resourceIndex < capabilities.Rest[restIndex].Resource.Length; 
+                                        resourceIndex++)
+                                {
+                                    if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Topic")
+                                    {
+                                        foundTopic = true;
+                                        capabilities.Rest[restIndex].Resource[resourceIndex] = GetTopicCapabilityResource();
+                                    }
+                                    if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Subscription")
+                                    {
+                                        foundSubscription = true;
+                                        capabilities.Rest[restIndex].Resource[resourceIndex] = GetSubscriptionCapabilityResource();
+                                    }
+                                }
+                                if ((foundTopic) && (foundSubscription))
+                                {
+                                    break;
+                                }
+                            }
+
+                            // **** check for adding Topic ****
+
+                            if (!foundTopic)
+                            {
+                                fhir.CapabilityStatementRestResource[] resources = new fhir.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
+                                capabilities.Rest[0].Resource.CopyTo(resources, 1);
+                                resources[0] = GetTopicCapabilityResource();
+                                capabilities.Rest[0].Resource = resources;
+                            }
+
+                            if (!foundSubscription)
+                            {
+                                fhir.CapabilityStatementRestResource[] resources = new fhir.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
+                                capabilities.Rest[0].Resource.CopyTo(resources, 1);
+                                resources[0] = GetSubscriptionCapabilityResource();
+                                capabilities.Rest[0].Resource = resources;
+                            }
 
                             // **** serialize and return ****
 
-                            FhirJsonSerializer serializer = new FhirJsonSerializer();
-
                             response.Content = new StringContent(
-                                serializer.SerializeToString(capabilities),
-                                Encoding.UTF8,
-                                "application/fhir+json");
+                                JsonConvert.SerializeObject(
+                                    capabilities,
+                                    new JsonSerializerSettings()
+                                    {
+                                        NullValueHandling = NullValueHandling.Ignore,
+                                        ContractResolver = _contractResolver,
+                                    })
+                                );
+                            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                             response.StatusCode = System.Net.HttpStatusCode.OK;
                         }
                         catch (Exception ex)
@@ -87,5 +152,64 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 return response;
             });
         }
+
+        private static fhir.CapabilityStatementRestResource GetTopicCapabilityResource()
+        {
+            return new fhir.CapabilityStatementRestResource()
+            {
+                Type = "Topic",
+                Interaction = new fhir.CapabilityStatementRestResourceInteraction[]
+                                        {
+                                            new fhir.CapabilityStatementRestResourceInteraction()
+                                            {
+                                                Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.READ
+                                            },
+                                            //new fhir.CapabilityStatementRestResourceInteraction()
+                                            //{
+                                            //    Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.SEARCH_TYPE
+                                            //},
+                                            // TODO(ginoc): Support Topic creation and deletion
+                                            //new fhir.CapabilityStatementRestResourceInteraction()
+                                            //{
+                                            //    Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.CREATE
+                                            //},
+                                            //new fhir.CapabilityStatementRestResourceInteraction()
+                                            //{ 
+                                            //    Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.DELETE
+                                            //},
+                                        },
+                Versioning = fhir.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
+            };
+        }
+
+
+        private static fhir.CapabilityStatementRestResource GetSubscriptionCapabilityResource()
+        {
+            return new fhir.CapabilityStatementRestResource()
+            {
+                Type = "Subscription",
+                Interaction = new fhir.CapabilityStatementRestResourceInteraction[]
+                                        {
+                                        new fhir.CapabilityStatementRestResourceInteraction()
+                                        {
+                                            Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.READ
+                                        },
+                                        //new fhir.CapabilityStatementRestResourceInteraction()
+                                        //{
+                                        //    Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.SEARCH_TYPE
+                                        //},
+                                        new fhir.CapabilityStatementRestResourceInteraction()
+                                        {
+                                            Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.CREATE
+                                        },
+                                        new fhir.CapabilityStatementRestResourceInteraction()
+                                        {
+                                            Code = fhir.CapabilityStatementRestResourceInteractionCodeCodes.DELETE
+                                        },
+                                        },
+                Versioning = fhir.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
+            };
+        }
     }
 }
+

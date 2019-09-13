@@ -41,6 +41,14 @@ namespace argonaut_subscription_server_proxy
         public static string FhirServerUrl { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets or sets URL of the public.</summary>
+        ///
+        /// <value>The public URL.</value>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static string PublicUrl { get; set; }
+
+        ///-------------------------------------------------------------------------------------------------
         /// <summary>Main entry-point for this application.</summary>
         ///
         /// <remarks>Gino Canessa, 7/30/2019.</remarks>
@@ -98,6 +106,7 @@ namespace argonaut_subscription_server_proxy
             Regex regex = new Regex(_regexBaseUrlMatch);
             Match match = regex.Match(Configuration["Server_Public_Url"]);
             Configuration["Server_Public_Url"] = match.ToString();
+            PublicUrl = match.ToString();
 
             match = regex.Match(Configuration["Server_Internal_Url"]);
             Configuration["Server_Internal_Url"] = match.ToString();

@@ -95,35 +95,39 @@ namespace argonaut_subscription_server_proxy
 
             app
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"{basePath}Topic"),
-                    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
+                    context => context.Request.Path.StartsWithSegments($"/metadata"),
+                    appInner => ResourceProcessors.CapabilitiesProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
+                //.UseWhen(
+                //    context => context.Request.Path.StartsWithSegments($"{basePath}Topic"),
+                //    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
+                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Topic"),
                     appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"{basePath}Subscription"),
-                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                    )
+                //.UseWhen(
+                //    context => context.Request.Path.StartsWithSegments($"{basePath}Subscription"),
+                //    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerForwardBase)
+                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Subscription"),
                     appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"{basePath}Encounter"),
-                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                    )
+                //.UseWhen(
+                //    context => context.Request.Path.StartsWithSegments($"{basePath}Encounter"),
+                //    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
+                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Encounter"),
                     appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments(basePath),
-                    appInner => appInner.RunProxy(context => context
-                        .ForwardTo(fhirServerForwardBase)
-                        .Send())
-                    )
+                //.UseWhen(
+                //    context => context.Request.Path.StartsWithSegments(basePath),
+                //    appInner => appInner.RunProxy(context => context
+                //        .ForwardTo(fhirServerForwardBase)
+                //        .Send())
+                //    )
                 ;
 
             // **** default to proxying all other requests ****
