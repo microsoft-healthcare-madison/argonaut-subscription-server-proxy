@@ -103,6 +103,11 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._idSubscriptionDict.Values.ToList<fhir.Subscription>();
         }
 
+        public static fhir.Bundle GetSubscriptionsBundle()
+        {
+            return _instance._GetSubscriptionsBundle();
+        }
+
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Adds or updates a Subscription.</summary>
         ///
@@ -228,6 +233,40 @@ namespace argonaut_subscription_server_proxy.Managers
         #endregion Instance Interface . . .
 
         #region Internal Functions . . .
+
+        private fhir.Bundle _GetSubscriptionsBundle()
+        {
+            fhir.Bundle bundle = new fhir.Bundle()
+            {
+                Type = "searchset",
+                Total = _idSubscriptionDict.Count,
+                Meta = new fhir.Meta()
+                {
+                    LastUpdated = string.Format("{0:o}", DateTime.Now.ToUniversalTime())
+                },
+                Entry = new fhir.BundleEntry[_idSubscriptionDict.Count]
+            };
+
+            fhir.Subscription[] subscriptions = _idSubscriptionDict.Values.ToArray<fhir.Subscription>();
+
+            for (int index = 0; index < subscriptions.Length; index++)
+            {
+                // **** add this topic ****
+
+                bundle.Entry[index] = new fhir.BundleEntry()
+                {
+                    FullUrl = Program.UrlForResourceId("Subscription", subscriptions[index].Id),
+                    Resource = subscriptions[index],
+                    Search = new fhir.BundleEntrySearch() { Mode = "match" },
+                    //Response = new BundleEntryResponse() { Status = "201 Created"}
+                };
+
+            }
+
+            // **** return our bundle ****
+
+            return bundle;
+        }
 
         private bool _HandleDelete(HttpRequest request)
         {
@@ -1360,6 +1399,14 @@ namespace argonaut_subscription_server_proxy.Managers
                     _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
 
                     return false;
+                }
+
+                // **** check to see if we need to clear an error ****
+
+                if (_idSubscriptionDict[subscription.Id].Status == fhir.SubscriptionStatusCodes.ERROR)
+                {
+                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ACTIVE;
+                    _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[0];
                 }
             }
             catch (Exception ex)

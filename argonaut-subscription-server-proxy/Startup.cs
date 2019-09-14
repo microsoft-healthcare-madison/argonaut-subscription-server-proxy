@@ -92,14 +92,15 @@ namespace argonaut_subscription_server_proxy
                 basePath += "/";
             }
 
-            //// **** enable websockets ****
 
-            //app.UseWebSockets();
+            // **** enable websockets ****
 
-            //// **** setup Subscription websockets ****
+            app.UseWebSockets();
 
-            //app.UseMiddleware<SubscriptionWebsocketHandler>("subscriptions/websocketurl");
-            
+            // **** setup Subscription websockets ****
+
+            app.UseMiddleware<SubscriptionWebsocketHandler>("/subscriptions/websocketurl");
+
             // **** handle specific routes we want to intercept ****
 
             app

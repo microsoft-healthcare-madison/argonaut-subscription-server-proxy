@@ -80,7 +80,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(
-                                    SubscriptionManager.GetSubscriptionList(),
+                                    SubscriptionManager.GetSubscriptionsBundle(),
                                     new JsonSerializerSettings()
                                     {
                                         NullValueHandling = NullValueHandling.Ignore,
