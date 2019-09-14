@@ -1255,31 +1255,31 @@ namespace argonaut_subscription_server_proxy.Managers
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionEventCount",
+                Url = "http://hl7.org/fhir/StructureDefinition/subscription-event-count",
                 Value = new Hl7.Fhir.Model.UnsignedInt(eventCount)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/bundleEventCount",
+                Url = "http://hl7.org/fhir/StructureDefinition/bundle-event-count",
                 Value = new Hl7.Fhir.Model.UnsignedInt(content == null ? 0 : 1)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionStatus",
+                Url = "http://hl7.org/fhir/StructureDefinition/subscription-status",
                 Value = new Hl7.Fhir.Model.FhirString(subscription.Status)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionTopicUrl",
+                Url = "http://hl7.org/fhir/StructureDefinition/subscription-topic-url",
                 Value = new Hl7.Fhir.Model.FhirString(subscription.Topic.reference)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
-                Url = "http://hl7.org/fhir/StructureDefinition/subscriptionUrl",
+                Url = "http://hl7.org/fhir/StructureDefinition/subscription-url",
                 Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.Id))
             });
 
