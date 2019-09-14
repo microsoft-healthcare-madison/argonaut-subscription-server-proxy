@@ -212,6 +212,15 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
+        public static bool Exists(string subscriptionId)
+        {
+            if (subscriptionId.StartsWith("Subscription/"))
+            {
+                return _instance._idSubscriptionDict.ContainsKey(subscriptionId.Replace("Subscription/", ""));
+            }
+            return _instance._idSubscriptionDict.ContainsKey(subscriptionId);
+        }
+
         #endregion Class Interface . . .
 
         #region Instance Interface . . .
@@ -392,7 +401,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="List<string>groups">[out] The list.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void GetEncounterPatientGroupKeys(Encounter encounter, out List<string>groups)
+        private void GetEncounterPatientGroupKeys(Hl7.Fhir.Model.Encounter encounter, out List<string>groups)
         {
             FhirClient client = null;
             groups = new List<string>();
@@ -410,7 +419,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** ask for the groups for this patient ****
 
-                Bundle results = client.Search<Group>(new string[] { $"member={encounter.Subject.Reference}" });
+                Hl7.Fhir.Model.Bundle results = client.Search<Hl7.Fhir.Model.Group>(new string[] { $"member={encounter.Subject.Reference}" });
 
                 if ((results != null) &&
                     (results.Entry != null) &&
@@ -418,7 +427,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** traverse entries ****
 
-                    foreach (Bundle.EntryComponent entry in results.Entry)
+                    foreach (Hl7.Fhir.Model.Bundle.EntryComponent entry in results.Entry)
                     {
                         groups.Add($"patient:{entry.Resource.ResourceType}/{entry.Resource.Id}");
                     }
@@ -453,7 +462,7 @@ namespace argonaut_subscription_server_proxy.Managers
             FhirJsonParser parser = new FhirJsonParser();
             List<fhir.Subscription> subscriptions = new List<fhir.Subscription>();
 
-            Encounter encounter = null;
+            Hl7.Fhir.Model.Encounter encounter = null;
 
             // **** check to see if this resource is tracked (any subscriptions) ****
 
@@ -472,7 +481,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** attempt to parse this encounter ****
 
-                    encounter = parser.Parse<Encounter>(content);
+                    encounter = parser.Parse<Hl7.Fhir.Model.Encounter>(content);
                 }
             }
             catch (Exception)
@@ -499,7 +508,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     // **** read the specified resource ****
 
-                    encounter = client.Read<Encounter>(location);
+                    encounter = client.Read<Hl7.Fhir.Model.Encounter>(location);
                 }
                 finally
                 {
@@ -1169,38 +1178,17 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
-        ///
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="content">       (Optional) The content.</param>
-        ///
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
-        private bool TryNotifySubscription(string subscriptionId, Resource content = null)
+        public static void BundleForSubscriptionNotification(
+                                                            fhir.Subscription subscription,
+                                                            Hl7.Fhir.Model.Resource content,
+                                                            out Hl7.Fhir.Model.Bundle bundle,
+                                                            out int eventCount
+                                                            )
         {
-            // **** sanity checks ****
-
-            if ((string.IsNullOrEmpty(subscriptionId)) ||
-                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
-            {
-                // **** fail ****
-
-                return false;
-            }
-
-            // **** get the subscription ****
-
-            fhir.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
             // **** check our event count ****
 
-            int eventCount;
-
-            lock (_idLockDict[subscription.Id])
+            lock (_instance._idLockDict[subscription.Id])
             {
                 // **** get the event count ****
 
@@ -1216,7 +1204,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** create a bundle for this message message ****
 
-            Hl7.Fhir.Model.Bundle bundle = new Hl7.Fhir.Model.Bundle()
+            bundle = new Hl7.Fhir.Model.Bundle()
             {
                 //Identifier = new Hl7.Fhir.Model.Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
                 Type = Hl7.Fhir.Model.Bundle.BundleType.History,
@@ -1258,7 +1246,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** add the entry node ****
 
-            bundle.Entry = new List<Bundle.EntryComponent>();
+            bundle.Entry = new List<Hl7.Fhir.Model.Bundle.EntryComponent>();
 
             // **** check if we are adding contents ****
 
@@ -1269,7 +1257,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (subscription.Channel.Payload.Content == fhir.SubscriptionChannelPayloadContentCodes.ID_ONLY)
                 {
                     // **** add the URL, but no resource ****
-
+                    
                     bundle.AddResourceEntry(null, Program.UrlForResourceId(content.TypeName, content.Id));
                 }
                 else
@@ -1279,7 +1267,10 @@ namespace argonaut_subscription_server_proxy.Managers
                     bundle.AddResourceEntry(content, Program.UrlForResourceId(content.TypeName, content.Id));
                 }
             }
+        }
 
+        private bool TryNotifyRestHook(fhir.Subscription subscription, Hl7.Fhir.Model.Bundle bundle)
+        {
             // **** send the request to the endpoint ****
 
             try
@@ -1357,9 +1348,75 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" caused exception: {ex.Message}");
 
                 _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
+                _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[]
+                {
+                    new fhir.CodeableConcept()
+                    {
+                        Text = ex.Message,
+                        Coding = new fhir.Coding[] 
+                        {
+                            new fhir.Coding()
+                            {
+                                Code = "1",
+                                System = "http://example.org/primary/code/system/is/not/yet/defined",
+                                Display = "Placeholder code system - will be defined Soon(TM)"
+                            }
+                        }
+                    }
+                };
 
                 return false;
             }
+
+            return true;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="content">       (Optional) The content.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private bool TryNotifySubscription(string subscriptionId, Hl7.Fhir.Model.Resource content = null)
+        {
+            // **** sanity checks ****
+
+            if ((string.IsNullOrEmpty(subscriptionId)) ||
+                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            {
+                // **** fail ****
+
+                return false;
+            }
+
+            // **** get the subscription ****
+
+            fhir.Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+            // **** get our bundle we want to send ****
+
+            BundleForSubscriptionNotification(
+                subscription, 
+                content, 
+                out Hl7.Fhir.Model.Bundle bundle, 
+                out int eventCount
+                );
+
+            // **** check for a rest-hook ****
+
+            if (subscription.Channel.Type.Coding[0].Code == fhir.SubscriptionChannelTypeCodes.rest_hook.Code)
+            {
+                TryNotifyRestHook(subscription, bundle);
+            }
+
+            // **** look for websocket connections ****
+
+            WebsocketManager.QueueMessagesForSubscription(subscription, content);
 
             // **** tell the user ****
 

@@ -127,6 +127,7 @@ namespace argonaut_subscription_server_proxy
 
             TopicManager.Init();
             SubscriptionManager.Init();
+            WebsocketManager.Init();
 
             // **** create our web host ****
 

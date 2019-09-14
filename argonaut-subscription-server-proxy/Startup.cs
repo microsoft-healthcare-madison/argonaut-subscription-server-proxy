@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using argonaut_subscription_server_proxy.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -91,6 +92,14 @@ namespace argonaut_subscription_server_proxy
                 basePath += "/";
             }
 
+            // **** enable websockets ****
+
+            app.UseWebSockets();
+
+            // **** setup Subscription websockets ****
+
+            app.UseMiddleware<SubscriptionWebsocketHandler>("subscriptions/websocketurl");
+            
             // **** handle specific routes we want to intercept ****
 
             app
