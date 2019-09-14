@@ -1269,6 +1269,26 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
+        private fhir.CodeableConcept[] ErrorConceptForString(string message, int errno = 1)
+        {
+            return new fhir.CodeableConcept[]
+            {
+                new fhir.CodeableConcept()
+                {
+                    Text = message,
+                    Coding = new fhir.Coding[]
+                    {
+                        new fhir.Coding()
+                        {
+                            Code = errno.ToString(),
+                            System = "http://example.org/primary/code/system/is/not/yet/defined",
+                            Display = "Placeholder code system - will be defined Soon(TM)"
+                        }
+                    }
+                }
+            };
+        }
+
         private bool TryNotifyRestHook(fhir.Subscription subscription, Hl7.Fhir.Model.Bundle bundle)
         {
             // **** send the request to the endpoint ****
@@ -1337,6 +1357,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     // **** done ****
 
                     _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
+                    _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
 
                     return false;
                 }
@@ -1348,22 +1369,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" caused exception: {ex.Message}");
 
                 _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
-                _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[]
-                {
-                    new fhir.CodeableConcept()
-                    {
-                        Text = ex.Message,
-                        Coding = new fhir.Coding[] 
-                        {
-                            new fhir.Coding()
-                            {
-                                Code = "1",
-                                System = "http://example.org/primary/code/system/is/not/yet/defined",
-                                Display = "Placeholder code system - will be defined Soon(TM)"
-                            }
-                        }
-                    }
-                };
+                _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
 
                 return false;
             }
