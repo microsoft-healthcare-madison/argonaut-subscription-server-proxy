@@ -56,7 +56,13 @@ namespace argonaut_subscription_server_proxy.Managers
 
         public static void RegisterClient(WebsocketClientInformation client)
         {
-            _instance._RegisterClient(client);
+            // **** add this client to our dictionary ****
+
+            if (!_instance._guidInfoDict.ContainsKey(client.Uid))
+            {
+                _instance._guidInfoDict.Add(client.Uid, client);
+            }
+
         }
 
         public static void UnregisterClient(Guid guid)
@@ -111,6 +117,28 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             _instance._subscriptionInfosDict[subscriptionId].Add(_instance._guidInfoDict[clientGuid]);
+            return true;
+        }
+
+
+        public static bool RemoveSubscriptionFromClient(string subscriptionId, Guid clientGuid)
+        {
+            if (_instance._guidInfoDict[clientGuid].SubscriptionIdSet.Contains(subscriptionId))
+            {
+                _instance._guidInfoDict[clientGuid].SubscriptionIdSet.Remove(subscriptionId);
+            }
+
+            if ((_instance._subscriptionInfosDict.ContainsKey(subscriptionId)) &&
+                (_instance._subscriptionInfosDict[subscriptionId].Contains(_instance._guidInfoDict[clientGuid])))
+            {
+                _instance._subscriptionInfosDict[subscriptionId].Remove(_instance._guidInfoDict[clientGuid]);
+
+                if (_instance._subscriptionInfosDict[subscriptionId].Count == 0)
+                {
+                    _instance._subscriptionInfosDict.Remove(subscriptionId);
+                }
+            }
+
             return true;
         }
 
@@ -170,13 +198,6 @@ namespace argonaut_subscription_server_proxy.Managers
         #endregion Class Interface . . .
 
         #region Instance Interface . . .
-
-        private void _RegisterClient(WebsocketClientInformation client)
-        {
-            // **** add this client to our dictionary ****
-
-            _guidInfoDict.Add(client.Uid, client);
-        }
 
         #endregion Instance Interface . . .
 

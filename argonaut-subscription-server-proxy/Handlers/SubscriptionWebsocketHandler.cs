@@ -1,5 +1,6 @@
 ﻿using argonaut_subscription_server_proxy.Managers;
 using argonaut_subscription_server_proxy.Models;
+using Hl7.Fhir.Utility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CSharp.RuntimeBinder;
@@ -417,6 +418,10 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                 Console.WriteLine($" <<< caught exception: {wsEx.Message}");
             }
+            finally
+            {
+                WebsocketManager.UnregisterClient(client.Uid);
+            }
 
             return;
         }
@@ -532,8 +537,8 @@ namespace argonaut_subscription_server_proxy.Handlers
             // **** create our receive buffer ****
 
             byte[] buffer = new byte[_messageBufferSize];
-            int offset;
             int count;
+            int messageLength = 0;
 
             WebSocketReceiveResult result;
 
@@ -543,7 +548,7 @@ namespace argonaut_subscription_server_proxy.Handlers
             {
                 // **** reset buffer offset ****
 
-                offset = 0;
+                messageLength = 0;
 
                 // **** do not bubble errors here ****
 
@@ -553,14 +558,15 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                     do
                     {
-                        count = _messageBufferSize - offset;
+                        count = _messageBufferSize - messageLength;
                         result = await webSocket.ReceiveAsync(
                                     new ArraySegment<byte>(
                                         buffer,
-                                        offset,
+                                        messageLength,
                                         count),
                                     cancelToken
                                     );
+                        messageLength += result.Count;
                     }
                     while (!result.EndOfMessage);
 
@@ -573,13 +579,13 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                     // **** check for a bind request ****
 
-                    string message = Encoding.UTF8.GetString(buffer);
+                    string message = Encoding.UTF8.GetString(buffer).Substring(0, messageLength);
 
                     if (message.StartsWith("bind "))
                     {
                         // **** grab the rest of the content ****
 
-                        message.Replace("bind ", "");
+                        message = message.Replace("bind ", "");
 
                         string[] ids = message.Split(',');
 
@@ -589,7 +595,7 @@ namespace argonaut_subscription_server_proxy.Handlers
                         {
                             string subscriptionId = id.StartsWith("Subscription/")
                                 ? id.Replace("Subscription/", "")
-                                : "";
+                                : id;
 
                             // **** make sure this subscription exists ****
 
@@ -601,6 +607,28 @@ namespace argonaut_subscription_server_proxy.Handlers
                             // **** register this subscription to this client ****
 
                             WebsocketManager.AddSubscriptionToClient(subscriptionId, clientGuid);
+                        }
+                    }
+
+                    if (message.StartsWith("unbind "))
+                    {
+                        // **** grab the rest of the content ****
+
+                        message = message.Replace("unbind ", "");
+
+                        string[] ids = message.Split(',');
+
+                        // **** traverse the requested ids ****
+
+                        foreach (string id in ids)
+                        {
+                            string subscriptionId = id.StartsWith("Subscription/")
+                                ? id.Replace("Subscription/", "")
+                                : id;
+
+                            // **** remove this subscription from this client ****
+
+                            WebsocketManager.RemoveSubscriptionFromClient(subscriptionId, clientGuid);
                         }
                     }
 

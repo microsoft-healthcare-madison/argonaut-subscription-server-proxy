@@ -65,7 +65,8 @@ namespace argonaut_subscription_server_proxy.Managers
             _rand = new Random();
             _supportedChannelTypes = new HashSet<string>()
             {
-                "rest-hook"
+                "rest-hook",
+                "websocket"
             };
             _fhirClientQ = new Queue<FhirClient>();
             _fhirClientQLock = new object();
@@ -1451,42 +1452,44 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
-            // **** get our bundle we want to send ****
-
-            BundleForSubscriptionNotification(
-                subscription, 
-                content, 
-                out Hl7.Fhir.Model.Bundle bundle, 
-                out int eventCount
-                );
-
             // **** check for a rest-hook ****
 
             if (subscription.Channel.Type.Coding[0].Code == fhir.SubscriptionChannelTypeCodes.rest_hook.Code)
             {
+                // **** get our bundle we want to send ****
+
+                BundleForSubscriptionNotification(
+                    subscription,
+                    content,
+                    out Hl7.Fhir.Model.Bundle bundle,
+                    out int eventCount
+                    );
+
+                // **** send the bundle ***
+
                 TryNotifyRestHook(subscription, bundle);
+
+                // **** tell the user ****
+
+                if (content == null)
+                {
+                    string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
+
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" a {messageType} message");
+                }
+                else
+                {
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
+                }
             }
 
             // **** look for websocket connections ****
 
             WebsocketManager.QueueMessagesForSubscription(subscription, content);
-
-            // **** tell the user ****
-
-            if (content == null)
-            {
-                string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
-
-                Console.WriteLine($" <<< sent" +
-                    $" {subscription.Id} ({subscription.Channel.Endpoint})" +
-                    $" a {messageType} message");
-            }
-            else
-            {
-                Console.WriteLine($" <<< sent" +
-                    $" {subscription.Id} ({subscription.Channel.Endpoint})" +
-                    $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
-            }
 
             // **** done ****
 
