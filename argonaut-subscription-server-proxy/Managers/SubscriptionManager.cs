@@ -1275,13 +1275,13 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscription-topic-url",
-                Value = new Hl7.Fhir.Model.FhirString(subscription.Topic.reference)
+                Value = new Hl7.Fhir.Model.FhirUrl(subscription.Topic.reference)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscription-url",
-                Value = new Hl7.Fhir.Model.FhirString(UrlForSubscription(subscription.Id))
+                Value = new Hl7.Fhir.Model.FhirUrl(UrlForSubscription(subscription.Id))
             });
 
             // **** add the entry node ****
@@ -1329,12 +1329,21 @@ namespace argonaut_subscription_server_proxy.Managers
             };
         }
 
-        private bool TryNotifyRestHook(fhir.Subscription subscription, Hl7.Fhir.Model.Bundle bundle)
+        private bool TryNotifyRestHook(fhir.Subscription subscription, Resource content)
         {
             // **** send the request to the endpoint ****
 
             try
             {
+                // **** get our bundle we want to send ****
+
+                BundleForSubscriptionNotification(
+                    subscription,
+                    content,
+                    out Hl7.Fhir.Model.Bundle bundle,
+                    out int eventCount
+                    );
+
                 // **** serialize using the Firely serialization engine ****
 
                 Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
@@ -1390,7 +1399,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // **** failure ****
 
-                    Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<< request to" +
+                    Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
                         $" {subscription.Channel.Endpoint}" +
                         $" returned: {response.StatusCode}");
 
@@ -1409,10 +1418,206 @@ namespace argonaut_subscription_server_proxy.Managers
                     _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ACTIVE;
                     _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[0];
                 }
+
+                // **** tell the user ****
+
+                if (content == null)
+                {
+                    string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
+
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" a {messageType} message");
+                }
+                else
+                {
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SubscriptionManager.TryNotifySubscription <<< request to" +
+                Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
+                    $" {subscription.Channel.Endpoint}" +
+                    $" caused exception: {ex.Message}");
+
+                _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
+                _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetEmailText(fhir.Subscription subscription, Resource content, Bundle bundle, int eventCount)
+        {
+            string body = "";
+
+            // **** act depending on payload type ****
+
+            switch (subscription.Channel.Payload.Content)
+            {
+                case fhir.SubscriptionChannelPayloadContentCodes.EMPTY:
+                    body = $"You have a new Health notification, please check with your provider via your portal.";
+                    break;
+                case fhir.SubscriptionChannelPayloadContentCodes.ID_ONLY:
+                    body = $"You have a new Health notification, please check with your provider via your portal.";
+                    break;
+                case fhir.SubscriptionChannelPayloadContentCodes.FULL_RESOURCE:
+                    body = "Full resource body";
+                    break;
+            }
+
+            return body;
+        }
+
+
+        private bool TryNotifyEmail(fhir.Subscription subscription, Resource content)
+        {
+            // **** send the request to the endpoint ****
+
+            try
+            {
+                // **** get our bundle we want to send (increments event count) ****
+
+                BundleForSubscriptionNotification(
+                    subscription,
+                    content,
+                    out Hl7.Fhir.Model.Bundle bundle,
+                    out int eventCount
+                    );
+
+                // **** grab mime type ****
+
+                string mimeType = subscription.Channel.Payload.ContentType.ToLower();
+                string attachType = "";
+
+                if (mimeType.Contains("attach="))
+                {
+                    attachType = mimeType.Substring(mimeType.IndexOf("attach=") + 7);
+                }
+
+                // **** ignore all other parameters ****
+
+                if (mimeType.Contains(';'))
+                {
+                    mimeType = mimeType.Substring(0, mimeType.IndexOf(';'));
+                }
+
+
+                // **** act on mime type ****
+
+                switch (mimeType)
+                {
+                    case "text/plain":
+                        
+                        break;
+
+                    case "text/html":
+                        break;
+                }
+
+
+                // **** act depending on mime type ****
+
+
+                // **** serialize using the Firely serialization engine ****
+
+                Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
+
+                // **** build our request ****
+
+                HttpRequestMessage request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(subscription.Channel.Endpoint),
+                    Content = new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
+                };
+
+                // **** check for additional headers ****
+
+                if ((subscription.Channel.Header != null) && (subscription.Channel.Header.Length > 0))
+                {
+                    // **** add headers ****
+
+                    foreach (string header in subscription.Channel.Header)
+                    {
+                        // **** parse the existing header ****
+
+                        int seperatorLoc = header.IndexOf(':');
+
+                        if (seperatorLoc < 1)
+                        {
+                            continue;
+                        }
+
+                        // **** add this header (skip the seperator and the following space) ****
+
+                        request.Headers.Add(header.Substring(0, seperatorLoc), header.Substring(seperatorLoc + 2));
+                    }
+                }
+
+                // **** send our request ****
+
+                HttpResponseMessage response = Program.RestClient.SendAsync(request).Result;
+
+                //// **** send the request ****
+
+                //HttpResponseMessage response = Program.RestClient.PostAsync(
+                //    subscription.Channel.Endpoint,
+                //    new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
+                //    ).Result;
+
+                // **** check the status code ****
+
+                if ((response.StatusCode != System.Net.HttpStatusCode.OK) &&
+                    (response.StatusCode != System.Net.HttpStatusCode.Accepted) &&
+                    (response.StatusCode != System.Net.HttpStatusCode.NoContent))
+                {
+                    // **** failure ****
+
+                    Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
+                        $" {subscription.Channel.Endpoint}" +
+                        $" returned: {response.StatusCode}");
+
+                    // **** done ****
+
+                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
+                    _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+
+                    return false;
+                }
+
+                // **** check to see if we need to clear an error ****
+
+                if (_idSubscriptionDict[subscription.Id].Status == fhir.SubscriptionStatusCodes.ERROR)
+                {
+                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ACTIVE;
+                    _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[0];
+                }
+
+                // **** tell the user ****
+
+                if (content == null)
+                {
+                    string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
+
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" a {messageType} message");
+                }
+                else
+                {
+                    Console.WriteLine($" <<< sent REST" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
                     $" {subscription.Channel.Endpoint}" +
                     $" caused exception: {ex.Message}");
 
@@ -1456,38 +1661,19 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (subscription.Channel.Type.Coding[0].Code == fhir.SubscriptionChannelTypeCodes.rest_hook.Code)
             {
-                // **** get our bundle we want to send ****
+                // **** send via hook ***
 
-                BundleForSubscriptionNotification(
-                    subscription,
-                    content,
-                    out Hl7.Fhir.Model.Bundle bundle,
-                    out int eventCount
-                    );
-
-                // **** send the bundle ***
-
-                TryNotifyRestHook(subscription, bundle);
-
-                // **** tell the user ****
-
-                if (content == null)
-                {
-                    string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
-
-                    Console.WriteLine($" <<< sent REST" +
-                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
-                        $" a {messageType} message");
-                }
-                else
-                {
-                    Console.WriteLine($" <<< sent REST" +
-                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
-                        $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
-                }
+                TryNotifyRestHook(subscription, content);
             }
 
-            // **** look for websocket connections ****
+            if (subscription.Channel.Type.Coding[0].Code == fhir.SubscriptionChannelTypeCodes.email.Code)
+            {
+                // **** send via email ****
+
+                TryNotifyEmail(subscription, content);
+            }
+
+            // **** ALWAYS look for websocket connections for now, allows for binding a socket to another subscription ****
 
             WebsocketManager.QueueMessagesForSubscription(subscription, content);
 

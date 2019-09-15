@@ -16,6 +16,8 @@ namespace argonaut_subscription_server_proxy
         /// <summary>A Regex pattern to filter proper base URLs for WebHost.</summary>
         private const string _regexBaseUrlMatch = @"(http[s]*:\/\/[A-Za-z0-9\.]*(:\d+)*)";
 
+        public const string _proxyHeaderKey = "FHIR-Server-Url";
+
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets or sets the configuration.</summary>
         ///

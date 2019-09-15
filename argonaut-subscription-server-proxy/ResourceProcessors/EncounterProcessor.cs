@@ -28,6 +28,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             appInner.RunProxy(async context =>
             {
+                // **** look for a FHIR server header ****
+
+                if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
+                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
+                {
+                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+                }
+
                 //context.Request.Headers["Accept-Encoding"] = "";
                 // **** proxy this call ****
 

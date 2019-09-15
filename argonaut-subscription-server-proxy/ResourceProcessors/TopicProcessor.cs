@@ -30,6 +30,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             // **** run the proxy for this request ****
 
             appInner.RunProxy(async context => {
+                // **** look for a FHIR server header ****
+
+                if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
+                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
+                {
+                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+                }
+
                 // **** grab a formatted copy of this request for proxying ****
 
                 //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);

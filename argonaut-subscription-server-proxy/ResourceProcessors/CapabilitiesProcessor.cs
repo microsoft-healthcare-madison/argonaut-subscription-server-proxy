@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ProxyKit;
@@ -28,6 +29,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             appInner.RunProxy(async context =>
             {
+                // **** look for a FHIR server header ****
+
+                if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
+                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
+                {
+                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+                }
+
                 // **** proxy this call ****
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);

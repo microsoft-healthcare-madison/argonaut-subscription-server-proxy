@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Handlers;
+using argonaut_subscription_server_proxy.ResourceProcessors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -108,43 +109,30 @@ namespace argonaut_subscription_server_proxy
                     context => context.Request.Path.StartsWithSegments($"/metadata"),
                     appInner => ResourceProcessors.CapabilitiesProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                //.UseWhen(
-                //    context => context.Request.Path.StartsWithSegments($"{basePath}Topic"),
-                //    appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Topic"),
                     appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                //.UseWhen(
-                //    context => context.Request.Path.StartsWithSegments($"{basePath}Subscription"),
-                //    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Subscription"),
                     appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                //.UseWhen(
-                //    context => context.Request.Path.StartsWithSegments($"{basePath}Encounter"),
-                //    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerForwardBase)
-                //    )
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Encounter"),
                     appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
-                //.UseWhen(
-                //    context => context.Request.Path.StartsWithSegments(basePath),
-                //    appInner => appInner.RunProxy(context => context
-                //        .ForwardTo(fhirServerForwardBase)
-                //        .Send())
-                //    )
                 ;
 
-            // **** default to proxying all other requests ****
+            app.UseWhen(
+                context => true,
+                appInner => ResourceProcessors.DefaultProcessor.ProcessRequest(appInner, fhirServerUrl)
+                );
 
-            app.RunProxy(context => context
-                .ForwardTo(fhirServerUrl)
-                .Send());
+            //// **** default to proxying all other requests ****
+
+            //app.RunProxy(context => context
+            //    .ForwardTo(fhirServerUrl)
+            //    .Send());
 
         }
     }
