@@ -213,6 +213,12 @@ namespace argonaut_subscription_server_proxy.Handlers
             }
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Starts keepalive thread.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///-------------------------------------------------------------------------------------------------
+
         private void StartKeepaliveThread()
         {
             // **** make sure that we are not starting two at the same time ****
@@ -258,6 +264,12 @@ namespace argonaut_subscription_server_proxy.Handlers
                 _keepaliveThread.Start();
             }
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Keepalive thread function.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///-------------------------------------------------------------------------------------------------
 
         private void KeepaliveThreadFunc()
         {

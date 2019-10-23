@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace argonaut_subscription_server_proxy.Managers
@@ -45,10 +46,15 @@ namespace argonaut_subscription_server_proxy.Managers
         private Dictionary<string, SubscriptionFilterNode> _resourceSubscriptionDict;
         private object _resourceSubscriptionDictLock;
 
-        private static HashSet<string> _supportedChannelTypes;
+        private HashSet<string> _supportedChannelTypes;
 
-        private static Queue<FhirClient> _fhirClientQ;
-        private static object _fhirClientQLock;
+        private Queue<FhirClient> _fhirClientQ;
+        private object _fhirClientQLock;
+
+        private Thread _cleanUpThread;
+
+        /// <summary>The SendPulse email client.</summary>
+        private SendPulse.Sendpulse _sendpulseClient;
 
         #endregion Instance Variables . . .
 
@@ -66,10 +72,24 @@ namespace argonaut_subscription_server_proxy.Managers
             _supportedChannelTypes = new HashSet<string>()
             {
                 "rest-hook",
-                "websocket"
+                "websocket",
+                "email",
             };
             _fhirClientQ = new Queue<FhirClient>();
             _fhirClientQLock = new object();
+
+            // **** create our clean-up thread ****
+
+            _cleanUpThread = new Thread(new ThreadStart(CleanUpThreadFunc));
+            _cleanUpThread.IsBackground = true;
+            _cleanUpThread.Start();
+
+            // **** create our email client ****
+
+            _sendpulseClient = new SendPulse.Sendpulse(
+                Program.Configuration["Sendpulse_User_Id"],
+                Program.Configuration["Sendpulse_Secret"]
+                );
         }
 
         #endregion Constructors . . .
@@ -711,7 +731,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 // **** check for invalid content type ****
 
                 if ((subscription.Channel.Payload == null) ||
-                    (subscription.Channel.Payload.ContentType != "application/fhir+json"))
+                    (subscription.Channel.Payload.ContentType.Contains("xml")))
+                    //(subscription.Channel.Payload.ContentType != "application/fhir+json"))
                 {
                     statusCode = HttpStatusCode.BadRequest;
                     failureContent = $"Invalid channel payload type:" +
@@ -727,13 +748,26 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.Id = Guid.NewGuid().ToString();
                 }
 
+                // **** force the subscription to be one day or less ****
+
+                DateTime maxEnd = DateTime.Now.AddDays(1.0);
+                
+                if ((string.IsNullOrEmpty(subscription.End)) ||
+                    (!DateTime.TryParse(subscription.End, out DateTime requestedEnd)) ||
+                    (requestedEnd > maxEnd))
+                {
+                    // **** force our end ****
+
+                    subscription.End = string.Format("{0:o}", maxEnd.ToUniversalTime());
+                }
+
                 // **** add or update internally ****
 
                 _AddOrUpdate(subscription);
 
-                // **** check for rest-hook ****
+                // **** check for handshake ****
 
-                bool isRest = false;
+                bool shouldSendHandshake = false;
                 
                 if ((subscription.Channel != null) &&
                     (subscription.Channel.Type != null) &&
@@ -755,7 +789,13 @@ namespace argonaut_subscription_server_proxy.Managers
 
                             // **** valid rest-hook ****
 
-                            isRest = true;
+                            shouldSendHandshake = true;
+                            break;
+                        }
+
+                        if (coding.Code == fhir.SubscriptionChannelTypeCodes.email.Code)
+                        {
+                            shouldSendHandshake = true;
                             break;
                         }
 
@@ -768,13 +808,13 @@ namespace argonaut_subscription_server_proxy.Managers
                     }
                 }
 
-                if (isRest)
+                if (shouldSendHandshake)
                 {
                     string id = subscription.Id;
 
                     // **** attempt to validate the endpoint ****
 
-                    _ = System.Threading.Tasks.Task.Run((Action)(() => HandshakeRestHook(id)));
+                    _ = System.Threading.Tasks.Task.Run((Action)(() => HandshakeSubscription(id)));
                 }
                 else
                 {
@@ -1094,7 +1134,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>An asynchronous result that yields true if it succeeds, false if it fails.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        private bool HandshakeRestHook(string subscriptionId)
+        private bool HandshakeSubscription(string subscriptionId)
         {
             // **** sanity checks ****
 
@@ -1218,6 +1258,17 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Bundle for subscription notification.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///
+        /// <param name="subscription">The subscription.</param>
+        /// <param name="content">     The content.</param>
+        /// <param name="bundle">      [out] The bundle.</param>
+        /// <param name="eventCount">  [out] Number of events.</param>
+        ///-------------------------------------------------------------------------------------------------
+
         public static void BundleForSubscriptionNotification(
                                                             fhir.Subscription subscription,
                                                             Hl7.Fhir.Model.Resource content,
@@ -1309,6 +1360,17 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Error concept for string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///
+        /// <param name="message">The message.</param>
+        /// <param name="errno">  (Optional) The errno.</param>
+        ///
+        /// <returns>A fhir.CodeableConcept[].</returns>
+        ///-------------------------------------------------------------------------------------------------
+
         private fhir.CodeableConcept[] ErrorConceptForString(string message, int errno = 1)
         {
             return new fhir.CodeableConcept[]
@@ -1328,6 +1390,17 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             };
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to notify REST hook a Resource from the given fhir.Subscription.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///
+        /// <param name="subscription">The subscription.</param>
+        /// <param name="content">     The content.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
 
         private bool TryNotifyRestHook(fhir.Subscription subscription, Resource content)
         {
@@ -1451,28 +1524,113 @@ namespace argonaut_subscription_server_proxy.Managers
             return true;
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets email text.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///
+        /// <param name="subscription">The subscription.</param>
+        /// <param name="content">     The content.</param>
+        /// <param name="bundle">      [out] The bundle.</param>
+        /// <param name="eventCount">  [out] Number of events.</param>
+        ///
+        /// <returns>The email text.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
         private string GetEmailText(fhir.Subscription subscription, Resource content, Bundle bundle, int eventCount)
         {
-            string body = "";
+            // **** check for no content ****
+
+            if ((content == null) && (eventCount == 0))
+            {
+                return "This is a handshake message";
+            }
+
+            if (content == null)
+            {
+                return "This is a heartbeat message";
+            }
 
             // **** act depending on payload type ****
 
             switch (subscription.Channel.Payload.Content)
             {
                 case fhir.SubscriptionChannelPayloadContentCodes.EMPTY:
-                    body = $"You have a new Health notification, please check with your provider via your portal.";
-                    break;
+                    return $"You have a new Health notification, please check with your provider via your portal.";
+                    //break;
                 case fhir.SubscriptionChannelPayloadContentCodes.ID_ONLY:
-                    body = $"You have a new Health notification, please check with your provider via your portal.";
-                    break;
+                    return $"You have a new Health notification ({content.Id}), please check with your provider via your portal.";
+                    //break;
                 case fhir.SubscriptionChannelPayloadContentCodes.FULL_RESOURCE:
-                    body = "Full resource body";
-                    break;
+                    return "Picture it: a nice email relevant to this resource.";
+                    //break;
             }
 
-            return body;
+            return "";
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>SMTP send mail
+        /// From: https://github.com/sendpulse/sendpulse-rest-api-csharp/blob/master/Sendpulse-rest-api/Examples.cs 
+        /// </summary>
+        ///
+        /// <param name="sp">         The sp.</param>
+        /// <param name="from_name">  Name of from.</param>
+        /// <param name="from_email"> from email.</param>
+        /// <param name="name_to">    The name to.</param>
+        /// <param name="email_to">   The email to.</param>
+        /// <param name="html">       The HTML.</param>
+        /// <param name="text">       The text.</param>
+        /// <param name="subject">    The subject.</param>
+        /// <param name="attachments">The attachments.</param>
+        ///-------------------------------------------------------------------------------------------------
+
+        static void smtpSendMail(
+                                    SendPulse.Sendpulse sp, 
+                                    string from_name, 
+                                    string from_email, 
+                                    string name_to, 
+                                    string email_to, 
+                                    string html, 
+                                    string text, 
+                                    string subject, 
+                                    Dictionary<string, string> attachments
+                                )
+        {
+            Dictionary<string, object> from = new Dictionary<string, object>();
+            from.Add("name", from_name);
+            from.Add("email", from_email);
+            ArrayList to = new ArrayList();
+            Dictionary<string, object> elementto = new Dictionary<string, object>();
+            elementto.Add("name", name_to);
+            elementto.Add("email", email_to);
+            to.Add(elementto);
+            Dictionary<string, object> emaildata = new Dictionary<string, object>();
+            emaildata.Add("html", html);
+            emaildata.Add("text", text);
+            emaildata.Add("subject", subject);
+            emaildata.Add("from", from);
+            emaildata.Add("to", to);
+            if (attachments.Count > 0)
+            {
+                emaildata.Add("attachments_binary", attachments);
+            }
+            Dictionary<string, object> result = sp.smtpSendMail(emaildata);
+            Console.WriteLine("Response Status {0}", result["http_code"]);
+            Console.WriteLine("Result {0}", result["data"]);
+            Console.ReadKey();
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to notify email a Resource from the given fhir.Subscription.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///
+        /// <param name="subscription">The subscription.</param>
+        /// <param name="content">     The content.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
 
         private bool TryNotifyEmail(fhir.Subscription subscription, Resource content)
         {
@@ -1492,125 +1650,107 @@ namespace argonaut_subscription_server_proxy.Managers
                 // **** grab mime type ****
 
                 string mimeType = subscription.Channel.Payload.ContentType.ToLower();
-                string attachType = "";
 
-                if (mimeType.Contains("attach="))
-                {
-                    attachType = mimeType.Substring(mimeType.IndexOf("attach=") + 7);
-                }
-
-                // **** ignore all other parameters ****
-
-                if (mimeType.Contains(';'))
-                {
-                    mimeType = mimeType.Substring(0, mimeType.IndexOf(';'));
-                }
-
+                string body = "";
 
                 // **** act on mime type ****
 
-                switch (mimeType)
+                if (mimeType.StartsWith("text/plain"))
                 {
-                    case "text/plain":
-                        
-                        break;
-
-                    case "text/html":
-                        break;
+                    body = GetEmailText(subscription, content, bundle, eventCount);
                 }
 
-
-                // **** act depending on mime type ****
-
-
-                // **** serialize using the Firely serialization engine ****
-
-                Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
-
-                // **** build our request ****
-
-                HttpRequestMessage request = new HttpRequestMessage()
+                if (mimeType.StartsWith("text/html"))
                 {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(subscription.Channel.Endpoint),
-                    Content = new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
-                };
-
-                // **** check for additional headers ****
-
-                if ((subscription.Channel.Header != null) && (subscription.Channel.Header.Length > 0))
-                {
-                    // **** add headers ****
-
-                    foreach (string header in subscription.Channel.Header)
-                    {
-                        // **** parse the existing header ****
-
-                        int seperatorLoc = header.IndexOf(':');
-
-                        if (seperatorLoc < 1)
-                        {
-                            continue;
-                        }
-
-                        // **** add this header (skip the seperator and the following space) ****
-
-                        request.Headers.Add(header.Substring(0, seperatorLoc), header.Substring(seperatorLoc + 2));
-                    }
+                    body = GetEmailText(subscription, content, bundle, eventCount);
                 }
 
-                // **** send our request ****
+                // **** check for attachments ****
 
-                HttpResponseMessage response = Program.RestClient.SendAsync(request).Result;
+                Dictionary<string, string> attachments = new Dictionary<string, string>();
 
-                //// **** send the request ****
-
-                //HttpResponseMessage response = Program.RestClient.PostAsync(
-                //    subscription.Channel.Endpoint,
-                //    new StringContent(serializer.SerializeToString(bundle), Encoding.UTF8, "application/fhir+json")
-                //    ).Result;
-
-                // **** check the status code ****
-
-                if ((response.StatusCode != System.Net.HttpStatusCode.OK) &&
-                    (response.StatusCode != System.Net.HttpStatusCode.Accepted) &&
-                    (response.StatusCode != System.Net.HttpStatusCode.NoContent))
+                if (mimeType.Contains("attach"))
                 {
-                    // **** failure ****
+                    // **** serialize using the Firely serialization engine ****
 
-                    Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
-                        $" {subscription.Channel.Endpoint}" +
-                        $" returned: {response.StatusCode}");
+                    Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
 
-                    // **** done ****
+                    // **** serialize our bundle for attaching ****
 
-                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ERROR;
-                    _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+                    string attachmentString = serializer.SerializeToString(bundle);
+                    
+                    // **** convert to base 64 ****
 
-                    return false;
+                    string attachmentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(attachmentString));
+
+                    // **** add our attachment ****
+
+                    attachments.Add("fhirBundle.json", attachmentBase64);
                 }
 
-                // **** check to see if we need to clear an error ****
+                // **** check for handshake ****
 
-                if (_idSubscriptionDict[subscription.Id].Status == fhir.SubscriptionStatusCodes.ERROR)
+                if ((content == null) && (eventCount == 0))
                 {
-                    _idSubscriptionDict[subscription.Id].Status = fhir.SubscriptionStatusCodes.ACTIVE;
-                    _idSubscriptionDict[subscription.Id].Error = new fhir.CodeableConcept[0];
-                }
+                    // **** send our email message ****
 
-                // **** tell the user ****
+                    smtpSendMail(
+                        _sendpulseClient,
+                        "Argonaut Subscriptions",
+                        Program.Configuration["Sendpulse_Sender"],
+                        subscription.Channel.Endpoint,
+                        subscription.Channel.Endpoint,
+                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}",
+                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}",
+                        $"FHIR Notification - {subscription.Id} - New Registration",
+                        attachments
+                        );
 
-                if (content == null)
-                {
-                    string messageType = (eventCount == 0) ? "handshake" : "heartbeat";
-
-                    Console.WriteLine($" <<< sent REST" +
+                    Console.WriteLine($" <<< sent EMAIL" +
                         $" {subscription.Id} ({subscription.Channel.Endpoint})" +
-                        $" a {messageType} message");
+                        $" a handshake message");
                 }
-                else
+
+                // **** check for heartbeat ****
+
+                if ((content == null) && (eventCount != 0))
                 {
-                    Console.WriteLine($" <<< sent REST" +
+                    // **** send our email message ****
+
+                    smtpSendMail(
+                        _sendpulseClient,
+                        "Argonaut Subscriptions",
+                        Program.Configuration["Sendpulse_Sender"],
+                        subscription.Channel.Endpoint,
+                        subscription.Channel.Endpoint,
+                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}.  Letting you know nothing has happened.",
+                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}.  Letting you know nothing has happened.",
+                        $"FHIR Notification - {subscription.Id} - Nothing New",
+                        attachments
+                        );
+
+                    Console.WriteLine($" <<< sent EMAIL" +
+                        $" {subscription.Id} ({subscription.Channel.Endpoint})" +
+                        $" a heartbeat message");
+                }
+
+                if (content != null)
+                {
+                    // **** send our email message ****
+
+                    smtpSendMail(
+                        _sendpulseClient,
+                        "Argonaut Subscriptions",
+                        Program.Configuration["Sendpulse_Sender"],
+                        subscription.Channel.Endpoint,
+                        subscription.Channel.Endpoint,
+                        (mimeType.StartsWith("text/html")) ? body : "",
+                        (mimeType.StartsWith("text/plain")) ? body : "",
+                        $"FHIR Notification - {subscription.Id} - {Program.UrlForResourceId(content.TypeName, content.Id)}",
+                        attachments
+                        );
+
+                    Console.WriteLine($" <<< sent EMAIL" +
                         $" {subscription.Id} ({subscription.Channel.Endpoint})" +
                         $" notification for: {Program.UrlForResourceId(content.TypeName, content.Id)}");
                 }
@@ -1682,7 +1822,60 @@ namespace argonaut_subscription_server_proxy.Managers
             return true;
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Clean up thread function.</summary>
+        ///
+        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
+        ///-------------------------------------------------------------------------------------------------
 
+        private void CleanUpThreadFunc()
+        {
+            // **** loop forever (will be killed at shutdown as background thread) ****
+
+            while (true)
+            {
+                // **** wait a minute, not in one call so we can be responsive to shutdown ****
+
+                for (int sleepSecond = 0; sleepSecond < 60; sleepSecond++)
+                {
+                    Thread.Sleep(1000);
+                }
+
+                // **** check each subscription ****
+
+                foreach (string id in _idLockDict.Keys)
+                {
+                    try
+                    {
+                        // **** check this subscription ****
+
+                        fhir.Subscription subscription = _idSubscriptionDict[id];
+
+                        // **** check for expired ****
+
+                        if ((string.IsNullOrEmpty(subscription.End)) ||
+                            (!DateTime.TryParse(subscription.End, out DateTime end)) ||
+                            (end < DateTime.Now))
+                        {
+                            // **** tell the user what's going on ****
+
+                            Console.WriteLine($" <<< Removing subscription {id} due to expiration! - {DateTime.Now}");
+
+                            // **** remove this subscription ****
+
+                            Remove(id);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // **** just log for now ****
+
+                        Console.WriteLine($"SubscriptionManager.CleanUpThreadFunc <<<" +
+                            $"id: {id} raised exception: {ex.Message}");
+                    }
+                }
+            }
+        }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>Check or create instance.</summary>
