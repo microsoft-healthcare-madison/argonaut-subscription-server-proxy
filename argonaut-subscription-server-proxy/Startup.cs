@@ -121,6 +121,10 @@ namespace argonaut_subscription_server_proxy
                     context => context.Request.Path.StartsWithSegments($"/Encounter"),
                     appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/Basic"),
+                    appInner => ResourceProcessors.BasicProcessor.ProcessRequest(appInner, fhirServerUrl)
+                    )
                 ;
 
             app.UseWhen(

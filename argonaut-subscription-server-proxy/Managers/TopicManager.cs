@@ -1,6 +1,8 @@
 ﻿using fhir;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +37,8 @@ namespace argonaut_subscription_server_proxy.Managers
         private Dictionary<string, fhir.Topic> _localUrlTopicDict;
         private Dictionary<string, fhir.Topic> _idTopicDict;
 
+        private CamelCasePropertyNamesContractResolver _contractResolver;
+
         #endregion Instance Variables . . .
 
         #region Constructors . . .
@@ -47,6 +51,10 @@ namespace argonaut_subscription_server_proxy.Managers
             _canonicalUrlTopicDict = new Dictionary<string, fhir.Topic>();
             _localUrlTopicDict = new Dictionary<string, Topic>();
             _idTopicDict = new Dictionary<string, fhir.Topic>();
+
+            // **** serialization related ****
+
+            _contractResolver = new CamelCasePropertyNamesContractResolver();
         }
 
         #endregion Constructors . . .
@@ -85,9 +93,19 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
         }
 
-        public static fhir.Bundle GetTopicsBundle()
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets topics bundle.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
+        ///
+        /// <returns>The topics bundle.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static fhir.Bundle GetTopicsBundle(bool wrapInBasic = false)
         {
-            return _instance._GetTopicsBundle();
+            return _instance._GetTopicsBundle(wrapInBasic);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -145,6 +163,85 @@ namespace argonaut_subscription_server_proxy.Managers
             return null;
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get topic a fhir.Topic from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <param name="key">  The key for the topic</param>
+        /// <param name="topic">[out] The topic.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool TryGetTopic(string key, out fhir.Topic topic)
+        {
+            topic = GetTopic(key);
+
+            return (topic != null);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get serialized a string from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="key">       The key for the topic</param>
+        /// <param name="serialized">[out] The serialized.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool TryGetSerialized(string key, out string serialized)
+        {
+            if (TryGetTopic(key, out fhir.Topic subscription))
+            {
+                serialized = JsonConvert.SerializeObject(
+                    subscription,
+                    new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        ContractResolver = _instance._contractResolver,
+                    });
+
+                return true;
+            }
+
+            serialized = null;
+            return false;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get basic serialized a string from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="key">       The key for the topic.</param>
+        /// <param name="serialized">[out] The serialized.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool TryGetBasicSerialized(string key, out string serialized)
+        {
+            if (TryGetTopic(key, out fhir.Topic topic))
+            {
+                fhir.Basic basic = _instance.WrapInBasic(topic);
+                serialized = JsonConvert.SerializeObject(
+                    basic,
+                    new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        ContractResolver = _instance._contractResolver,
+                    });
+
+                return true;
+            }
+
+            serialized = null;
+            return false;
+        }
+
         #endregion Class Interface . . .
 
         #region Instance Interface . . .
@@ -153,12 +250,56 @@ namespace argonaut_subscription_server_proxy.Managers
 
         #region Internal Functions . . .
 
-        private fhir.Bundle _GetTopicsBundle()
+        private fhir.Basic WrapInBasic(fhir.Topic topic)
+        {
+            return new fhir.Basic()
+            {
+                Id = topic.Id,
+                Code = new fhir.CodeableConcept()
+                {
+                    Coding = new fhir.Coding[]
+                    {
+                        new fhir.Coding()
+                        {
+                            Code = "R5Topic",
+                            System = "http://hl7.org/fhir/resource-types",
+                            Display = "Backported R5 Topic"
+                        }
+                    }
+                },
+                Extension = new fhir.Extension[]
+                {
+                    new fhir.Extension()
+                    {
+                        Url = "http://hl7.org/fhir/StructureDefinition/json-embedded-resource",
+                        ValueString = JsonConvert.SerializeObject(
+                            topic,
+                            new JsonSerializerSettings()
+                            {
+                                NullValueHandling = NullValueHandling.Ignore,
+                                ContractResolver = _contractResolver,
+                            })
+                    }
+                }
+            };
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets topics bundle.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
+        ///
+        /// <returns>The topics bundle.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private fhir.Bundle _GetTopicsBundle(bool wrapInBasic = false)
         {
             fhir.Bundle bundle = new fhir.Bundle()
             {
                 Type = "searchset",
-                Total = _titleTopicDict.Count,
+                Total = (uint)_titleTopicDict.Count,
                 Meta = new fhir.Meta() {
                     LastUpdated = string.Format("{0:o}", DateTime.Now.ToUniversalTime())
                 },
@@ -167,18 +308,37 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Topic[] topics = _idTopicDict.Values.ToArray<fhir.Topic>();
 
-            for (int index = 0; index < topics.Length; index++)
+            if (wrapInBasic)
             {
-                // **** add this topic ****
-
-                bundle.Entry[index] = new BundleEntry()
+                for (int index = 0; index < topics.Length; index++)
                 {
-                    FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
-                    Resource = topics[index],
-                    Search = new BundleEntrySearch() { Mode = "match"},
-                    //Response = new BundleEntryResponse() { Status = "201 Created"}
-                };
-                
+                    // **** add this topic ****
+
+                    bundle.Entry[index] = new BundleEntry()
+                    {
+                        FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
+                        Resource = WrapInBasic(topics[index]),
+                        Search = new BundleEntrySearch() { Mode = "match" },
+                        //Response = new BundleEntryResponse() { Status = "201 Created"}
+                    };
+
+                }
+            }
+            else
+            {
+                for (int index = 0; index < topics.Length; index++)
+                {
+                    // **** add this topic ****
+
+                    bundle.Entry[index] = new BundleEntry()
+                    {
+                        FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
+                        Resource = topics[index],
+                        Search = new BundleEntrySearch() { Mode = "match" },
+                        //Response = new BundleEntryResponse() { Status = "201 Created"}
+                    };
+
+                }
             }
 
             // **** return our bundle ****

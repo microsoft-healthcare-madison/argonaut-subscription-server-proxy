@@ -46,15 +46,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
-                // **** grab a formatted copy of this request for proxying ****
-
-                //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+                // **** create our response objects ****
 
                 HttpResponseMessage response = new HttpResponseMessage();
+                StringContent localResponse;
+
+                // **** default to returning the representation if not specified ****
 
                 string preferredResponse = "return=representation";
 
-                // **** check for headers ****
+                // **** check for headers we are interested int ****
 
                 foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
                 {
@@ -64,9 +65,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     }
                 }
 
-                StringContent localResponse;
-
-                // **** return appropriate code to the caller ****
+                // **** act depending on request type ****
 
                 switch (context.Request.Method.ToUpper())
                 {
@@ -84,7 +83,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         if (id.ToLower() == "subscription")
                         {
-                            // *** get list of subscriptions ****
+                            // **** serialize the bundle of subscriptions ****
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(
@@ -100,7 +99,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         }
                         else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
                         {
-                            // *** get list of subscriptions ****
+                            // **** serialize this subscription ****
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(

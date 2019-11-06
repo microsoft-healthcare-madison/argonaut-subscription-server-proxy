@@ -5,6 +5,7 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of identifier locks.</summary>
         private Dictionary<string, object> _idLockDict;
 
+        private HashSet<string> _basicSubscriptionIds;
+
         /// <summary>A random-number generator for this class.</summary>
         private Random _rand;
 
@@ -56,6 +59,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>The SendPulse email client.</summary>
         private SendPulse.Sendpulse _sendpulseClient;
 
+        private CamelCasePropertyNamesContractResolver _contractResolver;
+
+        private FhirJsonSerializer _firelySerializer;
+
         #endregion Instance Variables . . .
 
         #region Constructors . . .
@@ -66,6 +73,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             _idSubscriptionDict = new Dictionary<string, fhir.Subscription>();
             _idLockDict = new Dictionary<string, object>();
+            _basicSubscriptionIds = new HashSet<string>();
             _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
             _resourceSubscriptionDictLock = new object();
             _rand = new Random();
@@ -90,6 +98,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 Program.Configuration["Sendpulse_User_Id"],
                 Program.Configuration["Sendpulse_Secret"]
                 );
+
+            // **** serialization related ****
+
+            _contractResolver = new CamelCasePropertyNamesContractResolver();
+            _firelySerializer = new FhirJsonSerializer();
         }
 
         #endregion Constructors . . .
@@ -124,9 +137,17 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._idSubscriptionDict.Values.ToList<fhir.Subscription>();
         }
 
-        public static fhir.Bundle GetSubscriptionsBundle()
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets subscriptions bundle.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <returns>The subscriptions bundle.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static fhir.Bundle GetSubscriptionsBundle(bool wrapInBasic = false)
         {
-            return _instance._GetSubscriptionsBundle();
+            return _instance._GetSubscriptionsBundle(wrapInBasic);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -135,11 +156,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         ///
         /// <param name="subscription">The subscription.</param>
+        /// <param name="useBasic">    (Optional) True to use basic.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void AddOrUpdate(fhir.Subscription subscription)
+        public static void AddOrUpdate(fhir.Subscription subscription, bool useBasic = false)
         {
-            _instance._AddOrUpdate(subscription);
+            _instance._AddOrUpdate(subscription, useBasic);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -177,14 +199,16 @@ namespace argonaut_subscription_server_proxy.Managers
                                         string content, 
                                         out fhir.Subscription subscription,
                                         out HttpStatusCode statusCode,
-                                        out string failureContent
+                                        out string failureContent,
+                                        bool useBasic = false
                                         )
         {
             _instance._HandlePost(
                 content, 
                 out subscription,
                 out statusCode,
-                out failureContent
+                out failureContent,
+                useBasic
                 );
         }
 
@@ -221,11 +245,29 @@ namespace argonaut_subscription_server_proxy.Managers
 
         public static string UrlForSubscription(string subscriptionId)
         {
+            if (_instance._basicSubscriptionIds.Contains(subscriptionId))
+            {
+                return (new Uri(
+                    new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
+                    new Uri($"Basic/{subscriptionId}", UriKind.Relative))
+                    ).ToString();
+            }
             return (new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"Subscription/{subscriptionId}", UriKind.Relative))
                 ).ToString();
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get subscription a fhir.Subscription from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="subscription">  [out] The subscription.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
 
         public static bool TryGetSubscription(string subscriptionId, out fhir.Subscription subscription)
         {
@@ -238,6 +280,77 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get serialized subscription a string from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="serialized">    [out] The serialized.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool TryGetSerialized(string subscriptionId, out string serialized)
+        {
+            if (TryGetSubscription(subscriptionId, out fhir.Subscription subscription))
+            {
+                serialized = JsonConvert.SerializeObject(
+                    subscription,
+                    new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        ContractResolver = _instance._contractResolver,
+                    });
+
+                return true;
+            }
+
+            serialized = null;
+            return false;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Attempts to get basic serialized subscription a string from the given string.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="serialized">    [out] The serialized.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool TryGetBasicSerialized(string subscriptionId, out string serialized)
+        {
+            if (TryGetSubscription(subscriptionId, out fhir.Subscription subscription))
+            {
+                fhir.Basic basic = _instance._WrapInBasic(subscription);
+                serialized = JsonConvert.SerializeObject(
+                    basic,
+                    new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        ContractResolver = _instance._contractResolver,
+                    });
+
+                return true;
+            }
+
+            serialized = null;
+            return false;
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Determine if 'subscriptionId' exists.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
+        ///
+        /// <param name="subscriptionId">The subscription id.</param>
+        ///
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
         public static bool Exists(string subscriptionId)
         {
             if (subscriptionId.StartsWith("Subscription/"))
@@ -245,6 +358,21 @@ namespace argonaut_subscription_server_proxy.Managers
                 return _instance._idSubscriptionDict.ContainsKey(subscriptionId.Replace("Subscription/", ""));
             }
             return _instance._idSubscriptionDict.ContainsKey(subscriptionId);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Wrap in basic.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="subscription">The subscription.</param>
+        ///
+        /// <returns>A fhir.Basic.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static fhir.Basic WrapInBasic(fhir.Subscription subscription)
+        {
+            return _instance._WrapInBasic(subscription);
         }
 
         #endregion Class Interface . . .
@@ -255,12 +383,56 @@ namespace argonaut_subscription_server_proxy.Managers
 
         #region Internal Functions . . .
 
-        private fhir.Bundle _GetSubscriptionsBundle()
+        private fhir.Basic _WrapInBasic(fhir.Subscription subscription)
+        {
+            return new fhir.Basic()
+            {
+                Id = subscription.Id,
+                Code = new fhir.CodeableConcept()
+                {
+                    Coding = new fhir.Coding[]
+                    {
+                        new fhir.Coding()
+                        {
+                            Code = "R5Subscription",
+                            System = "http://hl7.org/fhir/resource-types",
+                            Display = "Backported R5 Subscription"
+                        }
+                    }
+                },
+                Extension = new fhir.Extension[]
+                {
+                    new fhir.Extension()
+                    {
+                        Url = "http://hl7.org/fhir/StructureDefinition/json-embedded-resource",
+                        ValueString = JsonConvert.SerializeObject(
+                            subscription,
+                            new JsonSerializerSettings()
+                            {
+                                NullValueHandling = NullValueHandling.Ignore,
+                                ContractResolver = _contractResolver,
+                            })
+                    }
+                }
+            };
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Gets subscriptions bundle.</summary>
+        ///
+        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
+        ///
+        /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
+        ///
+        /// <returns>The subscriptions bundle.</returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        private fhir.Bundle _GetSubscriptionsBundle(bool wrapInBasic = false)
         {
             fhir.Bundle bundle = new fhir.Bundle()
             {
                 Type = "searchset",
-                Total = _idSubscriptionDict.Count,
+                Total = (uint)_idSubscriptionDict.Count,
                 Meta = new fhir.Meta()
                 {
                     LastUpdated = string.Format("{0:o}", DateTime.Now.ToUniversalTime())
@@ -270,18 +442,36 @@ namespace argonaut_subscription_server_proxy.Managers
 
             fhir.Subscription[] subscriptions = _idSubscriptionDict.Values.ToArray<fhir.Subscription>();
 
-            for (int index = 0; index < subscriptions.Length; index++)
+            // **** add either R5 subscriptions or R4 basic wrapped ones ****
+
+            if (wrapInBasic)
             {
-                // **** add this topic ****
-
-                bundle.Entry[index] = new fhir.BundleEntry()
+                for (int index = 0; index < subscriptions.Length; index++)
                 {
-                    FullUrl = Program.UrlForResourceId("Subscription", subscriptions[index].Id),
-                    Resource = subscriptions[index],
-                    Search = new fhir.BundleEntrySearch() { Mode = "match" },
-                    //Response = new BundleEntryResponse() { Status = "201 Created"}
-                };
+                    // **** add this subscription ****
 
+                    bundle.Entry[index] = new fhir.BundleEntry()
+                    {
+                        FullUrl = Program.UrlForResourceId("Basic", subscriptions[index].Id),
+                        Resource = _WrapInBasic(subscriptions[index]),
+                        Search = new fhir.BundleEntrySearch() { Mode = "match" },
+                    };
+
+                }
+            }
+            else
+            {
+                for (int index = 0; index < subscriptions.Length; index++)
+                {
+                    // **** add this subscription ****
+
+                    bundle.Entry[index] = new fhir.BundleEntry()
+                    {
+                        FullUrl = Program.UrlForResourceId("Subscription", subscriptions[index].Id),
+                        Resource = subscriptions[index],
+                        Search = new fhir.BundleEntrySearch() { Mode = "match" },
+                    };
+                }
             }
 
             // **** return our bundle ****
@@ -307,7 +497,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** make sure that we hit a 'Subscription' component ****
 
-                if (component.Equals("subscription", StringComparison.OrdinalIgnoreCase))
+                if ((component.Equals("subscription", StringComparison.OrdinalIgnoreCase)) ||
+                    (component.Equals("basic", StringComparison.OrdinalIgnoreCase)))
                 {
                     foundSubscriptionComponent = true;
                     continue;
@@ -441,6 +632,11 @@ namespace argonaut_subscription_server_proxy.Managers
             if (_idLockDict.ContainsKey(id))
             {
                 _idLockDict.Remove(id);
+            }
+
+            if (_basicSubscriptionIds.Contains(id))
+            {
+                _basicSubscriptionIds.Remove(id);
             }
 
             // **** log this addition ****
@@ -689,13 +885,15 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
+        /// <param name="useBasic">      (Optional) True to use basic.</param>
         ///-------------------------------------------------------------------------------------------------
 
         private void _HandlePost(
                                     string content,
                                     out fhir.Subscription subscription,
                                     out HttpStatusCode statusCode,
-                                    out string failureContent
+                                    out string failureContent,
+                                    bool useBasic = false
                                     )
         {
             subscription = null;
@@ -763,7 +961,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // **** add or update internally ****
 
-                _AddOrUpdate(subscription);
+                _AddOrUpdate(subscription, useBasic);
 
                 // **** check for handshake ****
 
@@ -837,7 +1035,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private bool _AddOrUpdate(fhir.Subscription subscription)
+        private bool _AddOrUpdate(fhir.Subscription subscription, bool useBasic = false)
         {
             // **** check for an existing topic (may need to remove URL for cleanup) ****
 
@@ -858,6 +1056,11 @@ namespace argonaut_subscription_server_proxy.Managers
             // **** add to the main dictionary ****
 
             _idSubscriptionDict.Add(subscription.Id, subscription);
+
+            if ((useBasic) && (!_basicSubscriptionIds.Contains(subscription.Id)))
+            {
+                _basicSubscriptionIds.Add(subscription.Id);
+            }
 
             // **** log this addition ****
 
@@ -1100,7 +1303,7 @@ namespace argonaut_subscription_server_proxy.Managers
                             $" invalid MatchType: {filter.MatchType}! subscription: {subscription.Id}");
                         return false;
 
-                        break;
+                        //break;
                 }
 
             }
@@ -1273,7 +1476,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                                             fhir.Subscription subscription,
                                                             Hl7.Fhir.Model.Resource content,
                                                             out Hl7.Fhir.Model.Bundle bundle,
-                                                            out int eventCount
+                                                            out uint eventCount
                                                             )
         {
 
@@ -1283,7 +1486,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // **** get the event count ****
 
-                eventCount = (int)subscription.EventCount;
+                eventCount = subscription.EventCount ?? 0;
 
                 // **** check if we are incrementing the event ****
 
@@ -1308,7 +1511,7 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscription-event-count",
-                Value = new Hl7.Fhir.Model.UnsignedInt(eventCount)
+                Value = new Hl7.Fhir.Model.UnsignedInt((int)eventCount)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
@@ -1402,7 +1605,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        private bool TryNotifyRestHook(fhir.Subscription subscription, Resource content)
+        private bool TryNotifyRestHook(fhir.Subscription subscription, Hl7.Fhir.Model.Resource content)
         {
             // **** send the request to the endpoint ****
 
@@ -1414,7 +1617,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out int eventCount
+                    out uint eventCount
                     );
 
                 // **** serialize using the Firely serialization engine ****
@@ -1537,7 +1740,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The email text.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        private string GetEmailText(fhir.Subscription subscription, Resource content, Bundle bundle, int eventCount)
+        private string GetEmailText(
+                                    fhir.Subscription subscription,
+                                    Hl7.Fhir.Model.Resource content,
+                                    Hl7.Fhir.Model.Bundle bundle, 
+                                    uint eventCount
+                                    )
         {
             // **** check for no content ****
 
@@ -1632,7 +1840,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        private bool TryNotifyEmail(fhir.Subscription subscription, Resource content)
+        private bool TryNotifyEmail(fhir.Subscription subscription, Hl7.Fhir.Model.Resource content)
         {
             // **** send the request to the endpoint ****
 
@@ -1644,7 +1852,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out int eventCount
+                    out uint eventCount
                     );
 
                 // **** grab mime type ****

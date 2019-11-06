@@ -168,7 +168,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
                         // **** get a notification bundle ****
 
-                        SubscriptionManager.BundleForSubscriptionNotification(subscription, resource, out Bundle bundle, out int eventCount);
+                        SubscriptionManager.BundleForSubscriptionNotification(
+                            subscription, 
+                            resource, 
+                            out Bundle bundle, 
+                            out uint eventCount
+                            );
 
                         // **** serialize using the Firely serialization engine ****
 

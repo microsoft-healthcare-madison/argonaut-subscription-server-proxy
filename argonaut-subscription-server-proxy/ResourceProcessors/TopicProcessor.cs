@@ -38,18 +38,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
-                // **** grab a formatted copy of this request for proxying ****
-
-                //ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
-
                 HttpResponseMessage response = new HttpResponseMessage();
-
-                //// **** check for headers ****
-
-                //foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
-                //{
-                //    Console.WriteLine($"Header: {kvp.Key}:{kvp.Value}");
-                //}
 
                 // **** return appropriate code to the caller ****
 
@@ -61,7 +50,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         response.Content = new StringContent(
                             JsonConvert.SerializeObject(
-                                TopicManager.GetTopicsBundle(),          // TopicManager.GetTopicList(),
+                                TopicManager.GetTopicsBundle(),
                                 new JsonSerializerSettings()
                                 {
                                     NullValueHandling = NullValueHandling.Ignore,
