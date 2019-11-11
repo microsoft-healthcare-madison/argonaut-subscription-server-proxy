@@ -1476,7 +1476,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                                             fhir.Subscription subscription,
                                                             Hl7.Fhir.Model.Resource content,
                                                             out Hl7.Fhir.Model.Bundle bundle,
-                                                            out uint eventCount
+                                                            out decimal eventCount
                                                             )
         {
 
@@ -1617,7 +1617,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out uint eventCount
+                    out decimal eventCount
                     );
 
                 // **** serialize using the Firely serialization engine ****
@@ -1744,7 +1744,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                     fhir.Subscription subscription,
                                     Hl7.Fhir.Model.Resource content,
                                     Hl7.Fhir.Model.Bundle bundle, 
-                                    uint eventCount
+                                    decimal eventCount
                                     )
         {
             // **** check for no content ****
@@ -1852,7 +1852,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out uint eventCount
+                    out decimal eventCount
                     );
 
                 // **** grab mime type ****

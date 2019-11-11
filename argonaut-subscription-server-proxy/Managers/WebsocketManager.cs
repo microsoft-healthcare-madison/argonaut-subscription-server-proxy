@@ -172,7 +172,7 @@ namespace argonaut_subscription_server_proxy.Managers
                             subscription, 
                             resource, 
                             out Bundle bundle, 
-                            out uint eventCount
+                            out decimal eventCount
                             );
 
                         // **** serialize using the Firely serialization engine ****
