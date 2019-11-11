@@ -1511,7 +1511,7 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscription-event-count",
-                Value = new Hl7.Fhir.Model.UnsignedInt((int)eventCount)
+                Value = new Hl7.Fhir.Model.FhirDecimal((int)eventCount)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
