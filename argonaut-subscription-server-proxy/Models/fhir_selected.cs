@@ -13811,7 +13811,7 @@ namespace fhir
         public Element[] _Error { get; set; }
         ///<summary>A record of  the number of events for which the server has attempted delivery on this subscription (i.e., the number of events that occurred while the subscription is in an "active" or "error" state -- not "requested" or "off").   Server Initializes to 0 for a new subscription.  Repeated attempts at delivery of the *same* event notification do not increment this counter.</summary>
         [JsonProperty(PropertyName = "eventCount")]
-        public decimal? EventCount { get; set; }
+        public int? EventCount { get; set; }
         ///<summary>May contain extended information for property: 'EventCount'</summary>
         [JsonProperty(PropertyName = "_eventCount")]
         public Element _EventCount { get; set; }

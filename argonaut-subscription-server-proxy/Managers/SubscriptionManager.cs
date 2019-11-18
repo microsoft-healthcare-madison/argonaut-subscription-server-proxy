@@ -1476,7 +1476,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                                             fhir.Subscription subscription,
                                                             Hl7.Fhir.Model.Resource content,
                                                             out Hl7.Fhir.Model.Bundle bundle,
-                                                            out decimal eventCount
+                                                            out int eventCount
                                                             )
         {
 
@@ -1511,7 +1511,7 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
             {
                 Url = "http://hl7.org/fhir/StructureDefinition/subscription-event-count",
-                Value = new Hl7.Fhir.Model.FhirDecimal((int)eventCount)
+                Value = new Hl7.Fhir.Model.UnsignedInt((int)eventCount)
             });
 
             bundle.Meta.Extension.Add(new Hl7.Fhir.Model.Extension()
@@ -1617,7 +1617,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out decimal eventCount
+                    out int eventCount
                     );
 
                 // **** serialize using the Firely serialization engine ****
@@ -1744,7 +1744,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                     fhir.Subscription subscription,
                                     Hl7.Fhir.Model.Resource content,
                                     Hl7.Fhir.Model.Bundle bundle, 
-                                    decimal eventCount
+                                    int eventCount
                                     )
         {
             // **** check for no content ****
@@ -1852,7 +1852,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out decimal eventCount
+                    out int eventCount
                     );
 
                 // **** grab mime type ****
