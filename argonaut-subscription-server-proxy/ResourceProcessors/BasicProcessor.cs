@@ -116,7 +116,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         {
                             // **** check for topic ****
 
-                            if (context.Request.Query["code"] == "R5Topic")
+                            if (context.Request.Query["code"] == "R5SubscriptionTopic")
                             {
                                 // **** serialize the bundle of topics ****
 
@@ -192,7 +192,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 foreach (fhir.Coding coding in basic.Code.Coding)
                                 {
                                     if ((coding.System.Equals("http://hl7.org/fhir/resource-types", StringComparison.Ordinal)) &&
-                                        (coding.Code.Equals("R5Topic", StringComparison.Ordinal)))
+                                        (coding.Code.Equals("R5SubscriptionTopic", StringComparison.Ordinal)))
                                     {
                                         // **** posting topics is not yet implemented ****
 

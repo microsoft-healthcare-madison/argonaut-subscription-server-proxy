@@ -110,7 +110,7 @@ namespace argonaut_subscription_server_proxy
                     appInner => ResourceProcessors.CapabilitiesProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/Topic"),
+                    context => context.Request.Path.StartsWithSegments($"/SubscriptionTopic"),
                     appInner => ResourceProcessors.TopicProcessor.ProcessRequest(appInner, fhirServerUrl)
                     )
                 .UseWhen(

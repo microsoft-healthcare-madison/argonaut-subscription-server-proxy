@@ -1072,7 +1072,7 @@ namespace argonaut_subscription_server_proxy.Managers
             
             // **** get the topic for this subscription ****
 
-            fhir.Topic topic = TopicManager.GetTopic(Program.ResourceIdFromReference(subscription.Topic.reference));
+            fhir.SubscriptionTopic topic = TopicManager.GetTopic(Program.ResourceIdFromReference(subscription.Topic.reference));
 
             // **** check for unknown topic ****
 
@@ -1119,7 +1119,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        private bool TrackSubscription(fhir.Subscription subscription, fhir.Topic topic)
+        private bool TrackSubscription(fhir.Subscription subscription, fhir.SubscriptionTopic topic)
         {
             // **** check for unfiltered subscriptions ****
 
@@ -1169,7 +1169,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** sort by field, match, value ****
 
-            filters.Sort((a, b) => ($"{a.Name}{a.MatchType}{a.Value}".CompareTo($"{b.Name}{b.MatchType}{b.Value}")));
+            filters.Sort((a, b) => ($"{a.SearchParamName}{a.MatchType}{a.Value}".CompareTo($"{b.SearchParamName}{b.MatchType}{b.Value}")));
 
             // **** loop over resources in the topic ****
 
@@ -1237,7 +1237,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // **** build the key ****
 
-                string filterKey = $"{filter.Name}:{filterValue}";
+                string filterKey = $"{filter.SearchParamName}:{filterValue}";
 
                 // **** add to the correct type ****
 
@@ -1476,7 +1476,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                                             fhir.Subscription subscription,
                                                             Hl7.Fhir.Model.Resource content,
                                                             out Hl7.Fhir.Model.Bundle bundle,
-                                                            out int eventCount
+                                                            out long eventCount
                                                             )
         {
 
@@ -1486,13 +1486,16 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // **** get the event count ****
 
-                eventCount = subscription.EventCount ?? 0;
+                if (!Int64.TryParse(subscription.EventCount, out eventCount))
+                {
+                    eventCount = 0;
+                }
 
                 // **** check if we are incrementing the event ****
 
                 if (content != null)
                 {
-                    subscription.EventCount = ++eventCount;
+                    subscription.EventCount = $"{++eventCount}";
                 }
             }
 
@@ -1617,7 +1620,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out int eventCount
+                    out long eventCount
                     );
 
                 // **** serialize using the Firely serialization engine ****
@@ -1744,7 +1747,7 @@ namespace argonaut_subscription_server_proxy.Managers
                                     fhir.Subscription subscription,
                                     Hl7.Fhir.Model.Resource content,
                                     Hl7.Fhir.Model.Bundle bundle, 
-                                    int eventCount
+                                    long eventCount
                                     )
         {
             // **** check for no content ****
@@ -1852,7 +1855,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     out Hl7.Fhir.Model.Bundle bundle,
-                    out int eventCount
+                    out long eventCount
                     );
 
                 // **** grab mime type ****

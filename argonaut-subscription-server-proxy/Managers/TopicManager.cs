@@ -32,10 +32,10 @@ namespace argonaut_subscription_server_proxy.Managers
         #region Instance Variables . . .
 
         /// <summary>Dictionary of topic names to indicies in _topics.</summary>
-        private Dictionary<string, fhir.Topic> _titleTopicDict;
-        private Dictionary<string, fhir.Topic> _canonicalUrlTopicDict;
-        private Dictionary<string, fhir.Topic> _localUrlTopicDict;
-        private Dictionary<string, fhir.Topic> _idTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _titleTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _canonicalUrlTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _localUrlTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _idTopicDict;
 
         private CamelCasePropertyNamesContractResolver _contractResolver;
 
@@ -47,10 +47,10 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // **** create our index objects ****
 
-            _titleTopicDict = new Dictionary<string, fhir.Topic>();
-            _canonicalUrlTopicDict = new Dictionary<string, fhir.Topic>();
-            _localUrlTopicDict = new Dictionary<string, Topic>();
-            _idTopicDict = new Dictionary<string, fhir.Topic>();
+            _titleTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _canonicalUrlTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _localUrlTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _idTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
 
             // **** serialization related ****
 
@@ -86,11 +86,11 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The topic list.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static List<fhir.Topic> GetTopicList()
+        public static List<fhir.SubscriptionTopic> GetTopicList()
         {
             // **** return our list of known topics ****
 
-            return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
+            return _instance._titleTopicDict.Values.ToList<fhir.SubscriptionTopic>();
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        public static void AddOrUpdate(fhir.Topic topic)
+        public static void AddOrUpdate(fhir.SubscriptionTopic topic)
         {
             _instance._AddOrUpdate(topic);
         }
@@ -131,7 +131,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>The topic.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static fhir.Topic GetTopic(string key)
+        public static fhir.SubscriptionTopic GetTopic(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -164,7 +164,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         ///-------------------------------------------------------------------------------------------------
-        /// <summary>Attempts to get topic a fhir.Topic from the given string.</summary>
+        /// <summary>Attempts to get topic a fhir.SubscriptionTopic from the given string.</summary>
         ///
         /// <remarks>Gino Canessa, 11/5/2019.</remarks>
         ///
@@ -174,7 +174,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         ///-------------------------------------------------------------------------------------------------
 
-        public static bool TryGetTopic(string key, out fhir.Topic topic)
+        public static bool TryGetTopic(string key, out fhir.SubscriptionTopic topic)
         {
             topic = GetTopic(key);
 
@@ -194,7 +194,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
         public static bool TryGetSerialized(string key, out string serialized)
         {
-            if (TryGetTopic(key, out fhir.Topic subscription))
+            if (TryGetTopic(key, out fhir.SubscriptionTopic subscription))
             {
                 serialized = JsonConvert.SerializeObject(
                     subscription,
@@ -224,7 +224,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
         public static bool TryGetBasicSerialized(string key, out string serialized)
         {
-            if (TryGetTopic(key, out fhir.Topic topic))
+            if (TryGetTopic(key, out fhir.SubscriptionTopic topic))
             {
                 fhir.Basic basic = _instance.WrapInBasic(topic);
                 serialized = JsonConvert.SerializeObject(
@@ -250,7 +250,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
         #region Internal Functions . . .
 
-        private fhir.Basic WrapInBasic(fhir.Topic topic)
+        private fhir.Basic WrapInBasic(fhir.SubscriptionTopic topic)
         {
             return new fhir.Basic()
             {
@@ -261,9 +261,9 @@ namespace argonaut_subscription_server_proxy.Managers
                     {
                         new fhir.Coding()
                         {
-                            Code = "R5Topic",
+                            Code = "R5SubscriptionTopic",
                             System = "http://hl7.org/fhir/resource-types",
-                            Display = "Backported R5 Topic"
+                            Display = "Backported R5 SubscriptionTopic"
                         }
                     }
                 },
@@ -306,7 +306,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 Entry = new BundleEntry[_idTopicDict.Count]
             };
 
-            fhir.Topic[] topics = _idTopicDict.Values.ToArray<fhir.Topic>();
+            fhir.SubscriptionTopic[] topics = _idTopicDict.Values.ToArray<fhir.SubscriptionTopic>();
 
             if (wrapInBasic)
             {
@@ -355,7 +355,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         ///-------------------------------------------------------------------------------------------------
 
-        private void _AddOrUpdate(fhir.Topic topic)
+        private void _AddOrUpdate(fhir.SubscriptionTopic topic)
         {
             string localUrl = Program.UrlForResourceId("Topic", topic.Title);
 
@@ -363,7 +363,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (_localUrlTopicDict.ContainsKey(localUrl))
             {
-                fhir.Topic oldTopic = _localUrlTopicDict[localUrl];
+                fhir.SubscriptionTopic oldTopic = _localUrlTopicDict[localUrl];
 
                 // **** remove if this topic exists in other dictionaries ****
 
@@ -380,7 +380,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (_canonicalUrlTopicDict.ContainsKey(topic.Url))
             {
-                fhir.Topic oldTopic = _canonicalUrlTopicDict[topic.Url];
+                fhir.SubscriptionTopic oldTopic = _canonicalUrlTopicDict[topic.Url];
 
                 // **** remove if this topic exists in other dictionaries ****
 
@@ -397,7 +397,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (_titleTopicDict.ContainsKey(topic.Title))
             {
-                fhir.Topic oldTopic = _titleTopicDict[topic.Title];
+                fhir.SubscriptionTopic oldTopic = _titleTopicDict[topic.Title];
 
                 // **** remove if this topic exists in other dictionaries ****
 
@@ -414,7 +414,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (_idTopicDict.ContainsKey(topic.Id))
             {
-                fhir.Topic oldTopic = _idTopicDict[topic.Id];
+                fhir.SubscriptionTopic oldTopic = _idTopicDict[topic.Id];
 
                 // **** remove if this topic exists in other dictionaries ****
 
@@ -444,7 +444,7 @@ namespace argonaut_subscription_server_proxy.Managers
             _idTopicDict.Add(topic.Id, topic);
         }
 
-        private void RemoveIfExists(Dictionary<string, fhir.Topic> dict, string key)
+        private void RemoveIfExists(Dictionary<string, fhir.SubscriptionTopic> dict, string key)
         {
             if (dict.ContainsKey(key))
             {
@@ -485,7 +485,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // **** create our known topics ****
 
-            fhir.Topic topic = new fhir.Topic()
+            fhir.SubscriptionTopic topic = new fhir.SubscriptionTopic()
             {
                 Title = "admission",
                 Id = "1",
@@ -495,11 +495,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 Experimental = true,
                 Description = "Admission Topic for testing framework and behavior",
                 Date = "2019-08-01",
-                ResourceTrigger = new fhir.TopicResourceTrigger()
+                ResourceTrigger = new fhir.SubscriptionTopicResourceTrigger()
                 {
                     Description = "Beginning of a clinical encounter",
                     ResourceType = new string[] {"Encounter"},
-                    QueryCriteria = new TopicResourceTriggerQueryCriteria()
+                    QueryCriteria = new SubscriptionTopicResourceTriggerQueryCriteria()
                     {
                         Previous = "status:not=in-progress",
                         Current = "status:in-progress",
@@ -507,11 +507,11 @@ namespace argonaut_subscription_server_proxy.Managers
                     },
                     FhirPathCriteria = "%previous.status!='in-progress' and %current.status='in-progress'",
                 },
-                CanFilterBy = new TopicCanFilterBy[]
+                CanFilterBy = new SubscriptionTopicCanFilterBy[]
                 {
-                    new TopicCanFilterBy()
+                    new SubscriptionTopicCanFilterBy()
                     {
-                        Name = "patient", 
+                        SearchParamName = "patient", 
                         Documentation = "Exact match to a patient resource (reference)", 
                         MatchType = new string[] { "=", "in", "not-in" }
                     },
