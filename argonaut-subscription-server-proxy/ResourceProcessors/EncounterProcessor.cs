@@ -13,22 +13,17 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     public class EncounterProcessor
     {
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the request.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/1/2019.</remarks>
         ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context =>
             {
-                // **** look for a FHIR server header ****
+                // look for a FHIR server header
 
                 if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
@@ -37,28 +32,28 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 }
 
                 //context.Request.Headers["Accept-Encoding"] = "";
-                // **** proxy this call ****
+                // proxy this call
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                // **** send to server and await response ****
+                // send to server and await response
 
                 HttpResponseMessage response = await proxiedContext.Send();
 
-                // **** get copies of data when we care ****
+                // get copies of data when we care
 
                 switch (context.Request.Method.ToUpper())
                 {
                     case "PUT":
                     case "POST":
 
-                        // **** grab the message body to look at ****
+                        // grab the message body to look at
 
                         string responseContent = await response.Content.ReadAsStringAsync();
 
                         if (response.IsSuccessStatusCode)
                         {
-                            // **** run this Encounter through our Subscription Manager ****
+                            // run this Encounter through our Subscription Manager
 
                             SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
                         }
@@ -67,12 +62,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     default:
 
-                        // **** ignore ****
+                        // ignore
 
                         break;
                 }
 
-                // **** return the results of the proxied call ****
+                // return the results of the proxied call
 
                 return response;
             });

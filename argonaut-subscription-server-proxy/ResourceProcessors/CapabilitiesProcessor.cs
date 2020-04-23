@@ -25,11 +25,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context =>
             {
-                // **** look for a FHIR server header ****
+                // look for a FHIR server header
 
                 if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
@@ -37,33 +37,33 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
-                // **** proxy this call ****
+                // proxy this call
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                // **** send to server and await response ****
+                // send to server and await response
 
                 HttpResponseMessage response = await proxiedContext.Send();
 
-                // **** get copies of data when we care ****
+                // get copies of data when we care
 
                 switch (context.Request.Method.ToUpper())
                 {
                     case "GET":
 
-                        // **** check for a valid capability statement ****
+                        // check for a valid capability statement
 
                         try
                         {
-                            // **** grab the message body to look at ****
+                            // grab the message body to look at
 
                             string responseContent = await response.Content.ReadAsStringAsync();
 
-                            // **** parse this capabilities statement ****
+                            // parse this capabilities statement
 
                             fhir.CapabilityStatement capabilities = JsonConvert.DeserializeObject<fhir.CapabilityStatement>(responseContent);
 
-                            // **** flag we are involved ****
+                            // flag we are involved
 
                             if (capabilities.Software != null)
                             {
@@ -88,11 +88,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 Url = Program.PublicUrl,
                             };
 
-                            // **** only support application/fhir+json ****
+                            // only support application/fhir+json
 
                             capabilities.Format = new string[] { "application/fhir+json" };
 
-                            // **** make sure Topic and Subscription are present ****
+                            // make sure Topic and Subscription are present
 
                             bool foundSubscription = false;
                             bool foundTopic = false;
@@ -122,7 +122,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 }
                             }
 
-                            // **** check for adding Topic ****
+                            // check for adding Topic
 
                             if (!foundTopic)
                             {
@@ -140,7 +140,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 capabilities.Rest[0].Resource = resources;
                             }
 
-                            // **** serialize and return ****
+                            // serialize and return
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(
@@ -156,7 +156,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         }
                         catch (Exception ex)
                         {
-                            // **** write to console ****
+                            // write to console
 
                             Console.WriteLine($"Failed to parse capability statement, {ex.Message}");
                         }
@@ -165,12 +165,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     default:
 
-                        // **** ignore ****
+                        // ignore
 
                         break;
                 }
 
-                // **** return the results of the proxied call ****
+                // return the results of the proxied call
 
                 return response;
             });

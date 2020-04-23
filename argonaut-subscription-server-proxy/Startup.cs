@@ -19,27 +19,22 @@ namespace argonaut_subscription_server_proxy
     public class Startup
     {
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Configure services.</summary>
         ///
-        /// <remarks>Gino Canessa, 7/30/2019.</remarks>
-        ///
         /// <param name="services">The services.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
 
-            // **** because we are loading the web host manually, we need to force it to load our local assemblies ****
+            // because we are loading the web host manually, we need to force it to load our local assemblies
 
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
 
-            // **** inject the configuration singleton into our services ****
+            // inject the configuration singleton into our services
 
             services.AddSingleton<IConfiguration>(Program.Configuration);
 
-            // **** configure automatic decompression for our proxy ****
+            // configure automatic decompression for our proxy
 
             HttpMessageHandler CreatePrimaryHandler()
             {
@@ -50,22 +45,17 @@ namespace argonaut_subscription_server_proxy
                 };
             }  
 
-            // **** add proxy services ****
+            // add proxy services
 
             services.AddProxy(httpClientBuilder => 
                 httpClientBuilder.ConfigurePrimaryHttpMessageHandler(CreatePrimaryHandler)
                 );
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>This method gets called by the runtime. Use this method to configure the HTTP request pipeline.</summary>
-        ///
-        /// <remarks>Gino Canessa, 7/30/2019.</remarks>
         ///
         /// <param name="app">The application.</param>
         /// <param name="env">The environment.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         [Obsolete]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
@@ -74,7 +64,7 @@ namespace argonaut_subscription_server_proxy
                 app.UseDeveloperExceptionPage();
             }
 
-            // **** we want to essentially disable CORS ****
+            // we want to essentially disable CORS
 
             app.UseCors(builder => builder
                 .AllowAnyOrigin()
@@ -94,15 +84,15 @@ namespace argonaut_subscription_server_proxy
             }
 
 
-            // **** enable websockets ****
+            // enable websockets
 
             app.UseWebSockets();
 
-            // **** setup Subscription websockets ****
+            // setup Subscription websockets
 
             app.UseMiddleware<SubscriptionWebsocketHandler>("/subscriptions/websocketurl");
 
-            // **** handle specific routes we want to intercept ****
+            // handle specific routes we want to intercept
 
             app
                 .UseWhen(
@@ -132,7 +122,7 @@ namespace argonaut_subscription_server_proxy
                 appInner => ResourceProcessors.DefaultProcessor.ProcessRequest(appInner, fhirServerUrl)
                 );
 
-            //// **** default to proxying all other requests ****
+            //// default to proxying all other requests
 
             //app.RunProxy(context => context
             //    .ForwardTo(fhirServerUrl)

@@ -23,22 +23,17 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the request.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/7/2019.</remarks>
         ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context =>
             {
-                // **** look for a FHIR server header ****
+                // look for a FHIR server header
 
                 if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
@@ -46,16 +41,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
-                // **** create our response objects ****
+                // create our response objects
 
                 HttpResponseMessage response = new HttpResponseMessage();
                 StringContent localResponse;
 
-                // **** default to returning the representation if not specified ****
+                // default to returning the representation if not specified
 
                 string preferredResponse = "return=representation";
 
-                // **** check for headers we are interested int ****
+                // check for headers we are interested int
 
                 foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
                 {
@@ -65,13 +60,13 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     }
                 }
 
-                // **** act depending on request type ****
+                // act depending on request type
 
                 switch (context.Request.Method.ToUpper())
                 {
                     case "GET":
 
-                        // **** check for an ID ****
+                        // check for an ID
 
                         string requestUrl = context.Request.Path;
                         if (requestUrl.EndsWith('/'))
@@ -83,7 +78,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         if (id.ToLower() == "subscription")
                         {
-                            // **** serialize the bundle of subscriptions ****
+                            // serialize the bundle of subscriptions
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(
@@ -99,7 +94,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         }
                         else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
                         {
-                            // **** serialize this subscription ****
+                            // serialize this subscription
 
                             response.Content = new StringContent(
                                 JsonConvert.SerializeObject(
@@ -130,12 +125,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     case "POST":
 
-                        // **** grab the message body to look at ****
+                        // grab the message body to look at
 
                         System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
                         string requestContent = requestReader.ReadToEnd();
 
-                        // **** check to see if the manager does anything with this text ****
+                        // check to see if the manager does anything with this text
 
                         SubscriptionManager.HandlePost(
                             requestContent,
@@ -145,7 +140,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             );
 
 
-                        // **** check for errors ****
+                        // check for errors
 
                         if (statusCode != HttpStatusCode.Created)
                         {
@@ -185,7 +180,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             return response;
                         }
 
-                        // **** figure out our link to this resource ****
+                        // figure out our link to this resource
 
                         string url = Program.UrlForResourceId("Subscription", subscription.Id);
 
@@ -254,7 +249,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     default:
 
-                        // **** tell client we didn't understand ****
+                        // tell client we didn't understand
 
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 

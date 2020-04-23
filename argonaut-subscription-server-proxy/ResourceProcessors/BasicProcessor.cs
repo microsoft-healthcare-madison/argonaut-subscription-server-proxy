@@ -25,11 +25,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         {
             string serialized;
 
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context =>
             {
-                // **** look for a FHIR server header ****
+                // look for a FHIR server header
 
                 if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
@@ -37,16 +37,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
-                // **** create some response objects ****
+                // create some response objects
 
                 HttpResponseMessage response = new HttpResponseMessage();
                 StringContent localResponse;
 
-                // **** default to returning the representation if not specified ****
+                // default to returning the representation if not specified
 
                 string preferredResponse = "return=representation";
 
-                // **** check for headers we are interested int ****
+                // check for headers we are interested int
 
                 foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
                 {
@@ -56,13 +56,13 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     }
                 }
 
-                // **** act depending on request type ****
+                // act depending on request type
 
                 switch (context.Request.Method.ToUpper())
                 {
                     case "GET":
 
-                        // **** check for an ID ****
+                        // check for an ID
 
                         string requestUrl = context.Request.Path;
                         if (requestUrl.EndsWith('/'))
@@ -72,11 +72,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
 
-                        // **** check for a subscription ****
+                        // check for a subscription
 
                         if (SubscriptionManager.TryGetBasicSerialized(id, out serialized))
                         {
-                            // **** build our response ****
+                            // build our response
 
                             response.Content = new StringContent(
                                 serialized,
@@ -86,16 +86,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                             response.StatusCode = System.Net.HttpStatusCode.OK;
 
-                            // **** done ****
+                            // done
 
                             return response;
                         }
 
-                        // **** check for a topic ****
+                        // check for a topic
 
                         if (TopicManager.TryGetBasicSerialized(id, out serialized))
                         {
-                            // **** build our response ****
+                            // build our response
 
                             response.Content = new StringContent(
                                 serialized,
@@ -105,20 +105,20 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                             response.StatusCode = System.Net.HttpStatusCode.OK;
 
-                            // **** done ****
+                            // done
 
                             return response;
                         }
 
-                        // **** look for query parameters for a search we are interested in ****
+                        // look for query parameters for a search we are interested in
 
                         if (context.Request.Query.ContainsKey("code"))
                         {
-                            // **** check for topic ****
+                            // check for topic
 
                             if (context.Request.Query["code"] == "R5Topic")
                             {
-                                // **** serialize the bundle of topics ****
+                                // serialize the bundle of topics
 
                                 response.Content = new StringContent(
                                     JsonConvert.SerializeObject(
@@ -135,11 +135,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 return response;
                             }
 
-                            // **** check for basic ****
+                            // check for basic
 
                             if (context.Request.Query["code"] == "R5Subscription")
                             {
-                                // **** serialize the bundle of subscriptions ****
+                                // serialize the bundle of subscriptions
 
                                 response.Content = new StringContent(
                                     JsonConvert.SerializeObject(
@@ -161,7 +161,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     case "PUT":
 
-                        // **** don't deal with PUT yet ****
+                        // don't deal with PUT yet
 
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
                         return response;
@@ -172,29 +172,29 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         try
                         {
-                            // **** grab the message body to look at ****
+                            // grab the message body to look at
 
                             System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
                             string requestContent = requestReader.ReadToEnd();
 
-                            // **** parse the basic resource ****
+                            // parse the basic resource
 
                             fhir.Basic basic = JsonConvert.DeserializeObject<fhir.Basic>(requestContent);
 
-                            // **** check to see if this is a something we are interested in ****
+                            // check to see if this is a something we are interested in
 
                             if ((basic.Code != null) &&
                                 (basic.Code.Coding != null) &&
                                 (basic.Code.Coding.Length > 0))
                             {
-                                // **** look for codes we want ****
+                                // look for codes we want
 
                                 foreach (fhir.Coding coding in basic.Code.Coding)
                                 {
                                     if ((coding.System.Equals("http://hl7.org/fhir/resource-types", StringComparison.Ordinal)) &&
                                         (coding.Code.Equals("R5Topic", StringComparison.Ordinal)))
                                     {
-                                        // **** posting topics is not yet implemented ****
+                                        // posting topics is not yet implemented
 
                                         response.StatusCode = HttpStatusCode.NotImplemented;
                                         return response;
@@ -203,7 +203,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                     if ((coding.System.Equals("http://hl7.org/fhir/resource-types", StringComparison.Ordinal)) &&
                                         (coding.Code.Equals("R5Subscription", StringComparison.Ordinal)))
                                     {
-                                        // **** check for having the required resource ****
+                                        // check for having the required resource
 
                                         if ((basic.Extension == null) || 
                                             (basic.Extension.Length == 0) ||
@@ -213,7 +213,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                             return response;
                                         }
 
-                                        // **** check to see if the manager does anything with this text ****
+                                        // check to see if the manager does anything with this text
 
                                         SubscriptionManager.HandlePost(
                                             basic.Extension[0].ValueString,
@@ -223,7 +223,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                             true
                                             );
 
-                                        // **** check for errors ****
+                                        // check for errors
 
                                         if (statusCode != HttpStatusCode.Created)
                                         {
@@ -266,7 +266,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                         }
 
 
-                                        // **** figure out our link to this resource ****
+                                        // figure out our link to this resource
 
                                         string url = Program.UrlForResourceId("Basic", subscription.Id);
 
@@ -334,17 +334,17 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         try
                         {
-                            // **** check to see if this is a subscription ****
+                            // check to see if this is a subscription
 
                             if (SubscriptionManager.HandleDelete(context.Request))
                             {
-                                // **** deleted ****
+                                // deleted
 
                                 response.StatusCode = System.Net.HttpStatusCode.NoContent;
                                 return response;
                             }
 
-                            // **** fall through to proxy ****
+                            // fall through to proxy
                         }
                         catch (Exception)
                         {
@@ -354,11 +354,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         break;
                 }
 
-                // **** if we're still here, proxy this call ****
+                // if we're still here, proxy this call
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                // **** send to server and await response ****
+                // send to server and await response
 
                 return await proxiedContext.Send();
             });

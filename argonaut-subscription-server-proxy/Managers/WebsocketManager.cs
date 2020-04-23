@@ -8,55 +8,35 @@ namespace argonaut_subscription_server_proxy.Managers
 {
     public class WebsocketManager
     {
-        #region Class Variables . . .
-
-        /// <summary>The instance for singleton pattern.</summary>
+                /// <summary>The instance for singleton pattern.</summary>
         private static WebsocketManager _instance;
 
-        #endregion Class Variables . . .
-
-        #region Instance Variables . . .
-
-        /// <summary>Dictionary of unique identifier informations.</summary>
+                        /// <summary>Dictionary of unique identifier informations.</summary>
         private Dictionary<Guid, WebsocketClientInformation> _guidInfoDict;
 
         private Dictionary<string, List<WebsocketClientInformation>> _subscriptionInfosDict;
 
-        #endregion Instance Variables . . .
-
-        #region Constructors . . .
-
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Constructor that prevents a default instance of this class from being created.</summary>
         ///
         /// <remarks>Gino Canessa, 9/13/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         private WebsocketManager()
         {
             _guidInfoDict = new Dictionary<Guid, WebsocketClientInformation>();
             _subscriptionInfosDict = new Dictionary<string, List<WebsocketClientInformation>>();
         }
-        #endregion Constructors . . .
-
-        #region Class Interface . . .
-
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Initializes this object.</summary>
         ///
         /// <remarks>Gino Canessa, 9/13/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void Init()
         {
-            // **** make an instance ****
+            // make an instance
 
             CheckOrCreateInstance();
         }
 
         public static void RegisterClient(WebsocketClientInformation client)
         {
-            // **** add this client to our dictionary ****
+            // add this client to our dictionary
 
             if (!_instance._guidInfoDict.ContainsKey(client.Uid))
             {
@@ -75,24 +55,24 @@ namespace argonaut_subscription_server_proxy.Managers
 
         public static bool TryGetClient(Guid guid, out WebsocketClientInformation client)
         {
-            // **** check for this client existing ****
+            // check for this client existing
 
             if (_instance._guidInfoDict.ContainsKey(guid))
             {
-                // **** set our client object ****
+                // set our client object
 
                 client = _instance._guidInfoDict[guid];
 
-                // **** success ****
+                // success
 
                 return true;
             }
 
-            // **** not found ****
+            // not found
 
             client = null;
 
-            // **** failure ****
+            // failure
 
             return false;
         }
@@ -152,13 +132,13 @@ namespace argonaut_subscription_server_proxy.Managers
                 return;
             }
 
-            // **** ****
+            //
 
             foreach (WebsocketClientInformation client in _instance._subscriptionInfosDict[subscription.Id])
             {
                 string clientMessage = "";
 
-                // **** determine the type of message this client wants ****
+                // determine the type of message this client wants
 
                 switch (client.PayloadType)
                 {
@@ -166,7 +146,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     case WebsocketClientInformation.WebsocketPayloadTypes.FULL_RESOURCE:
                     case WebsocketClientInformation.WebsocketPayloadTypes.ID_ONLY:
 
-                        // **** get a notification bundle ****
+                        // get a notification bundle
 
                         SubscriptionManager.BundleForSubscriptionNotification(
                             subscription, 
@@ -175,11 +155,11 @@ namespace argonaut_subscription_server_proxy.Managers
                             out int eventCount
                             );
 
-                        // **** serialize using the Firely serialization engine ****
+                        // serialize using the Firely serialization engine
 
                         Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
 
-                        // **** serialize our bundle as our message ****
+                        // serialize our bundle as our message
 
                         clientMessage = serializer.SerializeToString(bundle);
 
@@ -187,35 +167,25 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     case WebsocketClientInformation.WebsocketPayloadTypes.R4:
 
-                        // **** send a notification ****
+                        // send a notification
 
                         clientMessage = $"ping {subscription.Id}";
 
                         break;
                 }
 
-                // **** add this message to this client's queue ****
+                // add this message to this client's queue
 
                 client.MessageQ.Enqueue(clientMessage);
             }
         }
 
-        #endregion Class Interface . . .
-
-        #region Instance Interface . . .
-
-        #endregion Instance Interface . . .
-
-        #region Internal Functions . . .
-
-        private static void CheckOrCreateInstance()
+                                        private static void CheckOrCreateInstance()
         {
             if (_instance == null)
             {
                 _instance = new WebsocketManager();
             }
         }
-        #endregion Internal Functions . . .
-
-    }
+            }
 }

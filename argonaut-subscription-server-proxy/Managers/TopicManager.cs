@@ -10,28 +10,15 @@ using System.Threading.Tasks;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
-    ///-------------------------------------------------------------------------------------------------
     /// <summary>Manager for topics.</summary>
     ///
     /// <remarks>Gino Canessa, 7/2/2019.</remarks>
-    ///-------------------------------------------------------------------------------------------------
-
     public class TopicManager
     {
-        #region Class Types . . .
-
-        #endregion Class Types . . .
-
-        #region Class Variables . . .
-
-        /// <summary>The instance for singleton pattern.</summary>
+                                /// <summary>The instance for singleton pattern.</summary>
         private static TopicManager _instance;
 
-        #endregion Class Variables . . .
-
-        #region Instance Variables . . .
-
-        /// <summary>Dictionary of topic names to indicies in _topics.</summary>
+                        /// <summary>Dictionary of topic names to indicies in _topics.</summary>
         private Dictionary<string, fhir.Topic> _titleTopicDict;
         private Dictionary<string, fhir.Topic> _canonicalUrlTopicDict;
         private Dictionary<string, fhir.Topic> _localUrlTopicDict;
@@ -39,98 +26,67 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private CamelCasePropertyNamesContractResolver _contractResolver;
 
-        #endregion Instance Variables . . .
-
-        #region Constructors . . .
-
-        private TopicManager()
+                        private TopicManager()
         {
-            // **** create our index objects ****
+            // create our index objects
 
             _titleTopicDict = new Dictionary<string, fhir.Topic>();
             _canonicalUrlTopicDict = new Dictionary<string, fhir.Topic>();
             _localUrlTopicDict = new Dictionary<string, Topic>();
             _idTopicDict = new Dictionary<string, fhir.Topic>();
 
-            // **** serialization related ****
+            // serialization related
 
             _contractResolver = new CamelCasePropertyNamesContractResolver();
         }
 
-        #endregion Constructors . . .
-
-        #region Class Interface . . .
-
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Initializes this object.</summary>
         ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void Init()
         {
-            // **** make an instance ****
+            // make an instance
 
             CheckOrCreateInstance();
 
-            // **** setup our list of known topics ****
+            // setup our list of known topics
 
             _instance.CreateTopics();
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets a list of all currently known topics.</summary>
         ///
-        /// <remarks>Gino Canessa, 6/6/2019.</remarks>
-        ///
         /// <returns>The topic list.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static List<fhir.Topic> GetTopicList()
         {
-            // **** return our list of known topics ****
+            // return our list of known topics
 
             return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets topics bundle.</summary>
-        ///
-        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
         ///
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
         ///
         /// <returns>The topics bundle.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static fhir.Bundle GetTopicsBundle(bool wrapInBasic = false)
         {
             return _instance._GetTopicsBundle(wrapInBasic);
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Adds or updates a Topic</summary>
         ///
-        /// <remarks>Gino Canessa, 6/6/2019.</remarks>
-        ///
         /// <param name="topic">The topic.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void AddOrUpdate(fhir.Topic topic)
         {
             _instance._AddOrUpdate(topic);
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets a topic.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/2/2019.</remarks>
         ///
         /// <param name="key">The key (Title, ID, URL)</param>
         ///
         /// <returns>The topic.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static fhir.Topic GetTopic(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -158,22 +114,17 @@ namespace argonaut_subscription_server_proxy.Managers
                 return _instance._canonicalUrlTopicDict[key];
             }
 
-            // **** not found ****
+            // not found
 
             return null;
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Attempts to get topic a fhir.Topic from the given string.</summary>
-        ///
-        /// <remarks>Gino Canessa, 11/5/2019.</remarks>
         ///
         /// <param name="key">  The key for the topic</param>
         /// <param name="topic">[out] The topic.</param>
         ///
         /// <returns>True if it succeeds, false if it fails.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static bool TryGetTopic(string key, out fhir.Topic topic)
         {
             topic = GetTopic(key);
@@ -181,17 +132,12 @@ namespace argonaut_subscription_server_proxy.Managers
             return (topic != null);
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Attempts to get serialized a string from the given string.</summary>
-        ///
-        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
         ///
         /// <param name="key">       The key for the topic</param>
         /// <param name="serialized">[out] The serialized.</param>
         ///
         /// <returns>True if it succeeds, false if it fails.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static bool TryGetSerialized(string key, out string serialized)
         {
             if (TryGetTopic(key, out fhir.Topic subscription))
@@ -211,17 +157,12 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Attempts to get basic serialized a string from the given string.</summary>
-        ///
-        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
         ///
         /// <param name="key">       The key for the topic.</param>
         /// <param name="serialized">[out] The serialized.</param>
         ///
         /// <returns>True if it succeeds, false if it fails.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         public static bool TryGetBasicSerialized(string key, out string serialized)
         {
             if (TryGetTopic(key, out fhir.Topic topic))
@@ -242,15 +183,7 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        #endregion Class Interface . . .
-
-        #region Instance Interface . . .
-
-        #endregion Instance Interface . . .
-
-        #region Internal Functions . . .
-
-        private fhir.Basic WrapInBasic(fhir.Topic topic)
+                                        private fhir.Basic WrapInBasic(fhir.Topic topic)
         {
             return new fhir.Basic()
             {
@@ -284,16 +217,11 @@ namespace argonaut_subscription_server_proxy.Managers
             };
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets topics bundle.</summary>
-        ///
-        /// <remarks>Gino Canessa, 11/6/2019.</remarks>
         ///
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
         ///
         /// <returns>The topics bundle.</returns>
-        ///-------------------------------------------------------------------------------------------------
-
         private fhir.Bundle _GetTopicsBundle(bool wrapInBasic = false)
         {
             fhir.Bundle bundle = new fhir.Bundle()
@@ -312,7 +240,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 for (int index = 0; index < topics.Length; index++)
                 {
-                    // **** add this topic ****
+                    // add this topic
 
                     bundle.Entry[index] = new BundleEntry()
                     {
@@ -328,7 +256,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 for (int index = 0; index < topics.Length; index++)
                 {
-                    // **** add this topic ****
+                    // add this topic
 
                     bundle.Entry[index] = new BundleEntry()
                     {
@@ -341,88 +269,83 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
-            // **** return our bundle ****
+            // return our bundle
 
             return bundle;
         }
 
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Adds or updates a Topic</summary>
         ///
-        /// <remarks>Gino Canessa, 6/6/2019.</remarks>
-        ///
         /// <param name="topic">The topic.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         private void _AddOrUpdate(fhir.Topic topic)
         {
             string localUrl = Program.UrlForResourceId("Topic", topic.Title);
 
-            // **** check for local url already existing ****
+            // check for local url already existing
 
             if (_localUrlTopicDict.ContainsKey(localUrl))
             {
                 fhir.Topic oldTopic = _localUrlTopicDict[localUrl];
 
-                // **** remove if this topic exists in other dictionaries ****
+                // remove if this topic exists in other dictionaries
 
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_titleTopicDict, localUrl);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
-                // **** remove from this dict ****
+                // remove from this dict
 
                 _localUrlTopicDict.Remove(topic.Title);
             }
 
-            // **** check for this canonical url already existing ****
+            // check for this canonical url already existing
 
             if (_canonicalUrlTopicDict.ContainsKey(topic.Url))
             {
                 fhir.Topic oldTopic = _canonicalUrlTopicDict[topic.Url];
 
-                // **** remove if this topic exists in other dictionaries ****
+                // remove if this topic exists in other dictionaries
 
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_titleTopicDict, oldTopic.Url);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
-                // **** remove from this dict ****
+                // remove from this dict
 
                 _canonicalUrlTopicDict.Remove(topic.Url);
             }
 
-            // **** check for title already existing ****
+            // check for title already existing
 
             if (_titleTopicDict.ContainsKey(topic.Title))
             {
                 fhir.Topic oldTopic = _titleTopicDict[topic.Title];
 
-                // **** remove if this topic exists in other dictionaries ****
+                // remove if this topic exists in other dictionaries
 
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
-                // **** remove from this dict ****
+                // remove from this dict
 
                 _titleTopicDict.Remove(topic.Title);
             }
 
-            // **** check for this id already existing ****
+            // check for this id already existing
 
             if (_idTopicDict.ContainsKey(topic.Id))
             {
                 fhir.Topic oldTopic = _idTopicDict[topic.Id];
 
-                // **** remove if this topic exists in other dictionaries ****
+                // remove if this topic exists in other dictionaries
 
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_titleTopicDict, oldTopic.Title);
 
-                // **** remove from this dict ****
+                // remove from this dict
 
                 _idTopicDict.Remove(topic.Id);
             }
@@ -431,15 +354,15 @@ namespace argonaut_subscription_server_proxy.Managers
 
             _localUrlTopicDict.Add(localUrl, topic);
 
-            // **** add to canonical url dictionary ****
+            // add to canonical url dictionary
 
             _canonicalUrlTopicDict.Add(topic.Url, topic);
 
-            // **** add to the title dictionary ****
+            // add to the title dictionary
 
             _titleTopicDict.Add(topic.Title, topic);
 
-            // **** add to id dictionary ****
+            // add to id dictionary
 
             _idTopicDict.Add(topic.Id, topic);
         }
@@ -469,21 +392,18 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Creates the topics.</summary>
         ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         private void CreateTopics()
         {
-            // **** make sure our lists are clear ****
+            // make sure our lists are clear
 
             _titleTopicDict.Clear();
             _canonicalUrlTopicDict.Clear();
             _idTopicDict.Clear();
 
-            // **** create our known topics ****
+            // create our known topics
 
             fhir.Topic topic = new fhir.Topic()
             {
@@ -518,17 +438,14 @@ namespace argonaut_subscription_server_proxy.Managers
                 },
             };
 
-            // **** add this topic ****
+            // add this topic
 
             _AddOrUpdate(topic);
         }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Check or create instance.</summary>
         ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         private static void CheckOrCreateInstance()
         {
             if (_instance == null)
@@ -538,7 +455,5 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
 
-        #endregion Internal Functions . . .
-
-    }
+            }
 }

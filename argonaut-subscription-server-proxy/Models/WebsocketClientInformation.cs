@@ -7,14 +7,9 @@ namespace argonaut_subscription_server_proxy.Models
 {
     public class WebsocketClientInformation
     {
-        #region Class Enums . . .
-
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Client payload types.</summary>
         ///
         /// <remarks>Gino Canessa, 9/13/2019.</remarks>
-        ///-------------------------------------------------------------------------------------------------
-
         public sealed class WebsocketPayloadTypes
         {
             public const string R4 = "r4";
@@ -23,63 +18,25 @@ namespace argonaut_subscription_server_proxy.Models
             public const string FULL_RESOURCE = "full-resource";
         }
 
-        #endregion Class Enums . . .
-
-        #region Class Variables . . .
-
-        #endregion Class Variables . . .
-
-        #region Instance Variables . . .
-
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets or sets the UID.</summary>
         ///
         /// <value>The UID.</value>
-        ///-------------------------------------------------------------------------------------------------
-
         public Guid Uid { get; set; }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets or sets the type of the payload.</summary>
         ///
         /// <value>The type of the payload.</value>
-        ///-------------------------------------------------------------------------------------------------
-
         public string PayloadType { get; set; }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets or sets the message q.</summary>
         ///
         /// <value>The message q.</value>
-        ///-------------------------------------------------------------------------------------------------
-
         public ConcurrentQueue<string> MessageQ { get; set; }
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Gets or sets the set the subscription identifiers belongs to.</summary>
         ///
         /// <value>The subscription identifiers set.</value>
-        ///-------------------------------------------------------------------------------------------------
-
         public HashSet<string> SubscriptionIdSet { get; set; }
 
-        #endregion Instance Variables . . .
-
-        #region Constructors . . .
-
-        #endregion Constructors . . .
-
-        #region Class Interface . . .
-
-        #endregion Class Interface . . .
-
-        #region Instance Interface . . .
-
-        #endregion Instance Interface . . .
-
-        #region Internal Functions . . .
-
-        #endregion Internal Functions . . .
-
-    }
+                                                                            }
 }

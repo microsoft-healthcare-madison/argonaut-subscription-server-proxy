@@ -16,21 +16,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     {
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the request described by appInner.</summary>
-        ///
-        /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context => {
-                // **** look for a FHIR server header ****
+                // look for a FHIR server header
 
                 if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
@@ -40,7 +35,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 HttpResponseMessage response = new HttpResponseMessage();
 
-                // **** return appropriate code to the caller ****
+                // return appropriate code to the caller
 
                 switch (context.Request.Method.ToUpper())
                 {
@@ -73,7 +68,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     case "POST":
 
-                        // **** grab the message body to look at ****
+                        // grab the message body to look at
 
                         System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
                         string requestContent = requestReader.ReadToEnd();
@@ -96,7 +91,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     default:
 
-                        // **** tell client we didn't understand ****
+                        // tell client we didn't understand
 
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 

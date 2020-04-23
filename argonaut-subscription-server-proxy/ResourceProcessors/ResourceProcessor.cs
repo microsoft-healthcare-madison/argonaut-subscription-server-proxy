@@ -13,25 +13,20 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     public class ResourceProcessor
     {
-        ///-------------------------------------------------------------------------------------------------
         /// <summary>Process the request.</summary>
-        ///
-        /// <remarks>Gino Canessa, 8/26/2019.</remarks>
         ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        ///-------------------------------------------------------------------------------------------------
-
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // **** run the proxy for this request ****
+            // run the proxy for this request
 
             appInner.RunProxy(async context =>
             {
-                // **** determine the type of resource this request is for ****
+                // determine the type of resource this request is for
 
 
-                // **** determine if we need to ask the server for a current version of the resource ****
+                // determine if we need to ask the server for a current version of the resource
 
                 switch (context.Request.Method)
                 {
@@ -39,37 +34,37 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "POST":
                     case "DELETE":
 
-                        // **** figure out if we need to ask the server about this ****
+                        // figure out if we need to ask the server about this
 
 
 
                         break;
 
                     default:
-                        // **** don't need to check for existing copy ****
+                        // don't need to check for existing copy
                         break;
                 }
 
-                // **** proxy this call ****
+                // proxy this call
 
                 ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                // **** send to server and await response ****
+                // send to server and await response
 
                 HttpResponseMessage response = await proxiedContext.Send();
 
-                // **** get copies of data when we care ****
+                // get copies of data when we care
 
                 switch (context.Request.Method.ToUpper())
                 {
                     case "PUT":
                     case "POST":
 
-                        // **** grab the message body to look at ****
+                        // grab the message body to look at
 
                         string responseContent = await response.Content.ReadAsStringAsync();
 
-                        // **** run this Encounter through our Subscription Manager ****
+                        // run this Encounter through our Subscription Manager
 
                         SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
 
@@ -77,12 +72,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                     default:
 
-                    // **** just proxy ****
+                    // just proxy
 
                     break;
                 }
 
-                // **** return the results of the proxied call ****
+                // return the results of the proxied call
 
                 return response;
             });
