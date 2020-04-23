@@ -8,7 +8,6 @@ namespace argonaut_subscription_server_proxy.Models
     public class WebsocketClientInformation
     {
         /// <summary>Client payload types.</summary>
-        /// <remarks>Gino Canessa, 9/13/2019.</remarks>
         public sealed class WebsocketPayloadTypes
         {
             public const string R4 = "r4";

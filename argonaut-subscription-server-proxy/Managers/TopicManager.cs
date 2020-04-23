@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 namespace argonaut_subscription_server_proxy.Managers
 {
     /// <summary>Manager for topics.</summary>
-    /// <remarks>Gino Canessa, 7/2/2019.</remarks>
     public class TopicManager
     {
                                 /// <summary>The instance for singleton pattern.</summary>
@@ -40,7 +39,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Initializes this object.</summary>
-        /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         public static void Init()
         {
             // make an instance
@@ -376,7 +374,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Creates the topics.</summary>
-        /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         private void CreateTopics()
         {
             // make sure our lists are clear
@@ -426,7 +423,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Check or create instance.</summary>
-        /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         private static void CheckOrCreateInstance()
         {
             if (_instance == null)

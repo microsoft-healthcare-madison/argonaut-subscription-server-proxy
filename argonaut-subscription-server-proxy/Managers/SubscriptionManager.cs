@@ -92,7 +92,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Initializes this object.</summary>
-        /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         public static void Init()
         {
             // make an instance
@@ -1819,7 +1818,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Clean up thread function.</summary>
-        /// <remarks>Gino Canessa, 10/23/2019.</remarks>
         private void CleanUpThreadFunc()
         {
             // loop forever (will be killed at shutdown as background thread)
@@ -1870,7 +1868,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Check or create instance.</summary>
-        /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         private static void CheckOrCreateInstance()
         {
             if (_instance == null)
