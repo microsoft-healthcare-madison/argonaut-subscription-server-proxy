@@ -14,7 +14,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     public class EncounterProcessor
     {
         /// <summary>Process the request.</summary>
-        ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)

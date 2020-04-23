@@ -19,27 +19,22 @@ namespace argonaut_subscription_server_proxy
         public const string _proxyHeaderKey = "FHIR-Server-Url";
 
         /// <summary>Gets or sets the configuration.</summary>
-        ///
         /// <value>The configuration.</value>
         public static IConfiguration Configuration { get; set; }
 
         /// <summary>Gets or sets the REST client.</summary>
-        ///
         /// <value>The REST client.</value>
         public static HttpClient RestClient { get; set; }
 
         /// <summary>Gets or sets URL of the fhir server.</summary>
-        ///
         /// <value>The fhir server URL.</value>
         public static string FhirServerUrl { get; set; }
 
         /// <summary>Gets or sets URL of the public.</summary>
-        ///
         /// <value>The public URL.</value>
         public static string PublicUrl { get; set; }
 
         /// <summary>Main entry-point for this application.</summary>
-        ///
         /// <param name="args">An array of command-line argument strings.</param>
         public static void Main(string[] args)
         {
@@ -120,9 +115,7 @@ namespace argonaut_subscription_server_proxy
         }
 
         /// <summary>Creates web host builder.</summary>
-        ///
         /// <param name="args">An array of command-line argument strings.</param>
-        ///
         /// <returns>The new web host builder.</returns>
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
@@ -132,10 +125,8 @@ namespace argonaut_subscription_server_proxy
                 ;
 
         /// <summary>URL for resource identifier.</summary>
-        ///
         /// <param name="resource">The resource.</param>
         /// <param name="id">      The identifier.</param>
-        ///
         /// <returns>A string.</returns>
         public static string UrlForResourceId(string resource, string id)
         {
@@ -146,9 +137,7 @@ namespace argonaut_subscription_server_proxy
         }
 
         /// <summary>Resource identifier from reference.</summary>
-        ///
         /// <param name="reference">The reference.</param>
-        ///
         /// <returns>A string.</returns>
         public static string ResourceIdFromReference(string reference)
         {

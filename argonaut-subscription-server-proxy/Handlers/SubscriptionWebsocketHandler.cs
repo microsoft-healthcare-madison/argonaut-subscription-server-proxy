@@ -17,7 +17,7 @@ namespace argonaut_subscription_server_proxy.Handlers
 {
     public class SubscriptionWebsocketHandler
     {
-                /// <summary>Size of the message buffer.</summary>
+        /// <summary>Size of the message buffer.</summary>
         private const int _messageBufferSize = 1024 * 8;            // 8 KB
 
         /// <summary>The send sleep delay in milliseconds.</summary>
@@ -26,7 +26,7 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <summary>The keepalive timeout in ticks.</summary>
         private const long _keepaliveTimeoutTicks = 29 * TimeSpan.TicksPerSecond;         // 29 seconds
 
-                                        /// <summary>   The configuration. </summary>
+        /// <summary>   The configuration. </summary>
         private readonly IConfiguration _config;
 
         /// <summary>The next delegate.</summary>
@@ -46,9 +46,8 @@ namespace argonaut_subscription_server_proxy.Handlers
 
         /// <summary>The keepalive lock object.</summary>
         private object _keepaliveLockObject;
-        
+
         /// <summary>Constructor.</summary>
-        ///
         /// <param name="nextDelegate">  The next delegate in the process chain.</param>
         /// <param name="appLifetime">   The application lifetime.</param>
         /// <param name="iConfiguration">Reference to application configuration.</param>
@@ -71,9 +70,7 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Executes the asynchronous on a different thread, and waits for the result.</summary>
-        ///
         /// <param name="context">The context.</param>
-        ///
         /// <returns>An asynchronous result.</returns>
         public async Task InvokeAsync(HttpContext context)
         {
@@ -141,9 +138,7 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Tests queueing messages.</summary>
-        ///
         /// <param name="clientGuid">Unique identifier for the client.</param>
-        ///
         /// <returns>An asynchronous result.</returns>
         private void TestQueueingMessages(Guid clientGuid)
         {
@@ -173,7 +168,6 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Starts keepalive thread.</summary>
-        ///
         /// <remarks>Gino Canessa, 10/23/2019.</remarks>
         private void StartKeepaliveThread()
         {
@@ -222,7 +216,6 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Keepalive thread function.</summary>
-        ///
         /// <remarks>Gino Canessa, 10/23/2019.</remarks>
         private void KeepaliveThreadFunc()
         {
@@ -284,10 +277,8 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Accept and process web socket.</summary>
-        ///
         /// <param name="context">The context.</param>
         /// <param name="client"> The client.</param>
-        ///
         /// <returns>An asynchronous result.</returns>
         private async Task AcceptAndProcessWebSocket(
                                                     HttpContext context,
@@ -387,11 +378,9 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Write client messages.</summary>
-        ///
         /// <param name="webSocket">  The web socket.</param>
         /// <param name="clientGuid"> Unique identifier for the client.</param>
-        /// <param name="cancelToken">A token that allows processing to be cancelled.</param>
-        ///
+        /// <param name="cancelToken">A token that allows processing to be canceled.</param>
         /// <returns>An asynchronous result.</returns>
         private async Task WriteClientMessages(
                                               WebSocket webSocket,
@@ -463,11 +452,9 @@ namespace argonaut_subscription_server_proxy.Handlers
         }
 
         /// <summary>Reads client messages.</summary>
-        ///
         /// <param name="webSocket">  The web socket.</param>
         /// <param name="clientGuid"> Unique identifier for the client.</param>
         /// <param name="cancelToken">A token that allows processing to be cancelled.</param>
-        ///
         /// <returns>An asynchronous result.</returns>
         private async Task ReadClientMessages(
                                               WebSocket webSocket,
@@ -540,7 +527,7 @@ namespace argonaut_subscription_server_proxy.Handlers
                         string[] ids = message.Split(',');
 
                         // traverse the requested ids
-                        
+
                         foreach (string id in ids)
                         {
                             string subscriptionId = id.StartsWith("Subscription/")
@@ -597,4 +584,5 @@ namespace argonaut_subscription_server_proxy.Handlers
                 }
             }
         }
-        }
+    }
+}

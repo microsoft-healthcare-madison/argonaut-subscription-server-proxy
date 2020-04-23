@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 namespace argonaut_subscription_server_proxy.Managers
 {
     /// <summary>Manager for topics.</summary>
-    ///
     /// <remarks>Gino Canessa, 7/2/2019.</remarks>
     public class TopicManager
     {
@@ -41,7 +40,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Initializes this object.</summary>
-        ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         public static void Init()
         {
@@ -55,7 +53,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets a list of all currently known topics.</summary>
-        ///
         /// <returns>The topic list.</returns>
         public static List<fhir.Topic> GetTopicList()
         {
@@ -65,9 +62,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets topics bundle.</summary>
-        ///
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
-        ///
         /// <returns>The topics bundle.</returns>
         public static fhir.Bundle GetTopicsBundle(bool wrapInBasic = false)
         {
@@ -75,7 +70,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Adds or updates a Topic</summary>
-        ///
         /// <param name="topic">The topic.</param>
         public static void AddOrUpdate(fhir.Topic topic)
         {
@@ -83,9 +77,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets a topic.</summary>
-        ///
         /// <param name="key">The key (Title, ID, URL)</param>
-        ///
         /// <returns>The topic.</returns>
         public static fhir.Topic GetTopic(string key)
         {
@@ -120,10 +112,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get topic a fhir.Topic from the given string.</summary>
-        ///
         /// <param name="key">  The key for the topic</param>
         /// <param name="topic">[out] The topic.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetTopic(string key, out fhir.Topic topic)
         {
@@ -133,10 +123,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get serialized a string from the given string.</summary>
-        ///
         /// <param name="key">       The key for the topic</param>
         /// <param name="serialized">[out] The serialized.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string key, out string serialized)
         {
@@ -158,10 +146,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get basic serialized a string from the given string.</summary>
-        ///
         /// <param name="key">       The key for the topic.</param>
         /// <param name="serialized">[out] The serialized.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetBasicSerialized(string key, out string serialized)
         {
@@ -218,9 +204,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets topics bundle.</summary>
-        ///
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
-        ///
         /// <returns>The topics bundle.</returns>
         private fhir.Bundle _GetTopicsBundle(bool wrapInBasic = false)
         {
@@ -276,7 +260,6 @@ namespace argonaut_subscription_server_proxy.Managers
 
 
         /// <summary>Adds or updates a Topic</summary>
-        ///
         /// <param name="topic">The topic.</param>
         private void _AddOrUpdate(fhir.Topic topic)
         {
@@ -393,7 +376,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Creates the topics.</summary>
-        ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         private void CreateTopics()
         {
@@ -444,7 +426,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Check or create instance.</summary>
-        ///
         /// <remarks>Gino Canessa, 6/4/2019.</remarks>
         private static void CheckOrCreateInstance()
         {

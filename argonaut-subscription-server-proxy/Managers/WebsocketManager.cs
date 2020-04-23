@@ -17,7 +17,6 @@ namespace argonaut_subscription_server_proxy.Managers
         private Dictionary<string, List<WebsocketClientInformation>> _subscriptionInfosDict;
 
         /// <summary>Constructor that prevents a default instance of this class from being created.</summary>
-        ///
         /// <remarks>Gino Canessa, 9/13/2019.</remarks>
         private WebsocketManager()
         {
@@ -25,7 +24,6 @@ namespace argonaut_subscription_server_proxy.Managers
             _subscriptionInfosDict = new Dictionary<string, List<WebsocketClientInformation>>();
         }
         /// <summary>Initializes this object.</summary>
-        ///
         /// <remarks>Gino Canessa, 9/13/2019.</remarks>
         public static void Init()
         {

@@ -92,7 +92,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Initializes this object.</summary>
-        ///
         /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         public static void Init()
         {
@@ -102,7 +101,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets a list of all currently known Subscriptions.</summary>
-        ///
         /// <returns>The Subscription list.</returns>
         public static List<fhir.Subscription> GetSubscriptionList()
         {
@@ -112,7 +110,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
-        ///
         /// <returns>The subscriptions bundle.</returns>
         public static fhir.Bundle GetSubscriptionsBundle(bool wrapInBasic = false)
         {
@@ -120,7 +117,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Adds or updates a Subscription.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         /// <param name="useBasic">    (Optional) True to use basic.</param>
         public static void AddOrUpdate(fhir.Subscription subscription, bool useBasic = false)
@@ -129,9 +125,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets a subscription.</summary>
-        ///
         /// <param name="id">The identifier.</param>
-        ///
         /// <returns>The subscription.</returns>
         public static fhir.Subscription GetSubscription(string id)
         {
@@ -144,7 +138,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Handles a POST of a Subscription object.</summary>
-        ///
         /// <param name="content">       The content.</param>
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
@@ -172,7 +165,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Process the encounter described by content.</summary>
-        ///
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
         public static void ProcessEncounter(string content, Uri location)
@@ -183,9 +175,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>URL for subscription.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
-        ///
         /// <returns>A string.</returns>
         public static string UrlForSubscription(string subscriptionId)
         {
@@ -203,10 +193,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get subscription a fhir.Subscription from the given string.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="subscription">  [out] The subscription.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscription(string subscriptionId, out fhir.Subscription subscription)
         {
@@ -220,10 +208,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get serialized subscription a string from the given string.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="serialized">    [out] The serialized.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string subscriptionId, out string serialized)
         {
@@ -245,10 +231,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get basic serialized subscription a string from the given string.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="serialized">    [out] The serialized.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetBasicSerialized(string subscriptionId, out string serialized)
         {
@@ -271,9 +255,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Determine if 'subscriptionId' exists.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool Exists(string subscriptionId)
         {
@@ -285,9 +267,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Wrap in basic.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
-        ///
         /// <returns>A fhir.Basic.</returns>
         public static fhir.Basic WrapInBasic(fhir.Subscription subscription)
         {
@@ -329,9 +309,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
-        ///
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
-        ///
         /// <returns>The subscriptions bundle.</returns>
         private fhir.Bundle _GetSubscriptionsBundle(bool wrapInBasic = false)
         {
@@ -491,9 +469,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Removes the subscription specified by ID.</summary>
-        ///
         /// <param name="id">The identifier.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool Remove(string id)
         {
@@ -550,7 +526,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets encounter patient groups.</summary>
-        ///
         /// <param name="encounter">         The encounter.</param>
         /// <param name="List<string>groups">[out] The list.</param>
         private void GetEncounterPatientGroupKeys(Hl7.Fhir.Model.Encounter encounter, out List<string>groups)
@@ -601,7 +576,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Process the encounter described by content.</summary>
-        ///
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
         private void _ProcessEncounter(string content, Uri location)
@@ -768,7 +742,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Handles a POST of a Subscription object.</summary>
-        ///
         /// <param name="content">       The content.</param>
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
@@ -914,7 +887,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Adds or updates a Topic.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         private bool _AddOrUpdate(fhir.Subscription subscription, bool useBasic = false)
         {
@@ -1209,9 +1181,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Handshake REST hook.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
-        ///
         /// <returns>An asynchronous result that yields true if it succeeds, false if it fails.</returns>
         private bool HandshakeSubscription(string subscriptionId)
         {
@@ -1267,9 +1237,7 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get fhir client a FhirClient from the given string.</summary>
-        ///
         /// <param name="client">[out] The client.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryGetFhirClient(out FhirClient client)
         {
@@ -1314,7 +1282,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Returns fhir client to q.</summary>
-        ///
         /// <param name="client">[out] The client.</param>
         private void ReturnFhirClientToQ(ref FhirClient client)
         {
@@ -1328,7 +1295,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Bundle for subscription notification.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         /// <param name="content">     The content.</param>
         /// <param name="bundle">      [out] The bundle.</param>
@@ -1425,10 +1391,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Error concept for string.</summary>
-        ///
         /// <param name="message">The message.</param>
         /// <param name="errno">  (Optional) The errno.</param>
-        ///
         /// <returns>A fhir.CodeableConcept[].</returns>
         private fhir.CodeableConcept[] ErrorConceptForString(string message, int errno = 1)
         {
@@ -1451,10 +1415,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to notify REST hook a Resource from the given fhir.Subscription.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         /// <param name="content">     The content.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifyRestHook(fhir.Subscription subscription, Hl7.Fhir.Model.Resource content)
         {
@@ -1579,12 +1541,10 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets email text.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         /// <param name="content">     The content.</param>
         /// <param name="bundle">      [out] The bundle.</param>
         /// <param name="eventCount">  [out] Number of events.</param>
-        ///
         /// <returns>The email text.</returns>
         private string GetEmailText(
                                     fhir.Subscription subscription,
@@ -1626,7 +1586,6 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>SMTP send mail
         /// From: https://github.com/sendpulse/sendpulse-rest-api-csharp/blob/master/Sendpulse-rest-api/Examples.cs 
         /// </summary>
-        ///
         /// <param name="sp">         The sp.</param>
         /// <param name="from_name">  Name of from.</param>
         /// <param name="from_email"> from email.</param>
@@ -1673,10 +1632,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to notify email a Resource from the given fhir.Subscription.</summary>
-        ///
         /// <param name="subscription">The subscription.</param>
         /// <param name="content">     The content.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifyEmail(fhir.Subscription subscription, Hl7.Fhir.Model.Resource content)
         {
@@ -1817,10 +1774,8 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
-        ///
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="content">       (Optional) The content.</param>
-        ///
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(string subscriptionId, Hl7.Fhir.Model.Resource content = null)
         {
@@ -1864,7 +1819,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Clean up thread function.</summary>
-        ///
         /// <remarks>Gino Canessa, 10/23/2019.</remarks>
         private void CleanUpThreadFunc()
         {
@@ -1916,7 +1870,6 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Check or create instance.</summary>
-        ///
         /// <remarks>Gino Canessa, 7/2/2019.</remarks>
         private static void CheckOrCreateInstance()
         {

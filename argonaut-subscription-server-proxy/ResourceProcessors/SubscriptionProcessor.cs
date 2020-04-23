@@ -24,7 +24,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
         /// <summary>Process the request.</summary>
-        ///
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)

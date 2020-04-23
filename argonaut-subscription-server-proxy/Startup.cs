@@ -20,7 +20,6 @@ namespace argonaut_subscription_server_proxy
     {
 
         /// <summary>Configure services.</summary>
-        ///
         /// <param name="services">The services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
@@ -53,7 +52,6 @@ namespace argonaut_subscription_server_proxy
         }
 
         /// <summary>This method gets called by the runtime. Use this method to configure the HTTP request pipeline.</summary>
-        ///
         /// <param name="app">The application.</param>
         /// <param name="env">The environment.</param>
         [Obsolete]
