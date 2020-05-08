@@ -1,26 +1,32 @@
-﻿using argonaut_subscription_server_proxy.Managers;
-using Hl7.Fhir.Model;
+﻿// <copyright file="SubscriptionProcessor.cs" company="Microsoft Corporation">
+//     Copyright (c) Microsoft Corporation. All rights reserved.
+//     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// </copyright>
+
+extern alias fhir4;
+extern alias fhir5;
+
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ProxyKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
+using r4 = fhir4.Hl7.Fhir.Model;
+using r4s = fhir4.Hl7.Fhir.Serialization;
+using r5 = fhir5.Hl7.Fhir.Model;
+using r5s = fhir5.Hl7.Fhir.Serialization;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
-    public class SubscriptionProcessor
+    /// <summary>A subscription processor.</summary>
+    public abstract class SubscriptionProcessor
     {
-
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
         /// <summary>Process the request.</summary>
@@ -29,44 +35,38 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
             // run the proxy for this request
-
             appInner.RunProxy(async context =>
             {
                 // look for a FHIR server header
-
-                if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
+                if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
                 {
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
                 }
 
                 // create our response objects
-
                 HttpResponseMessage response = new HttpResponseMessage();
                 StringContent localResponse;
+                r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer(null);
 
                 // default to returning the representation if not specified
-
                 string preferredResponse = "return=representation";
 
                 // check for headers we are interested int
-
                 foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
                 {
-                    if (kvp.Key.ToLower() == "prefer")
+                    if (kvp.Key.ToLowerInvariant() == "prefer")
                     {
                         preferredResponse = kvp.Value;
                     }
                 }
 
                 // act depending on request type
-
-                switch (context.Request.Method.ToUpper())
+                switch (context.Request.Method.ToUpperInvariant())
                 {
                     case "GET":
 
                         // check for an ID
-
                         string requestUrl = context.Request.Path;
                         if (requestUrl.EndsWith('/'))
                         {
@@ -75,35 +75,20 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                         string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
 
-                        if (id.ToLower() == "subscription")
+                        if (id.ToLowerInvariant() == "subscription")
                         {
                             // serialize the bundle of subscriptions
-
                             response.Content = new StringContent(
-                                JsonConvert.SerializeObject(
-                                    SubscriptionManager.GetSubscriptionsBundle(),
-                                    new JsonSerializerSettings()
-                                    {
-                                        NullValueHandling = NullValueHandling.Ignore,
-                                        ContractResolver = _contractResolver,
-                                    })
-                                );
+                                serializer.SerializeToString(
+                                    SubscriptionManager.GetSubscriptionsBundle()));
                             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                             response.StatusCode = System.Net.HttpStatusCode.OK;
                         }
-                        else if (SubscriptionManager.TryGetSubscription(id, out fhir.Subscription foundSub))
+                        else if (SubscriptionManager.TryGetSubscription(id, out r5.Subscription foundSub))
                         {
                             // serialize this subscription
-
                             response.Content = new StringContent(
-                                JsonConvert.SerializeObject(
-                                    foundSub,
-                                    new JsonSerializerSettings()
-                                    {
-                                        NullValueHandling = NullValueHandling.Ignore,
-                                        ContractResolver = _contractResolver,
-                                    })
-                                );
+                                serializer.SerializeToString(foundSub));
                             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                             response.StatusCode = System.Net.HttpStatusCode.OK;
                         }
@@ -117,7 +102,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "PUT":
 
                         // *** not implemented ****
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;
@@ -125,47 +109,42 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "POST":
 
                         // grab the message body to look at
-
                         System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
                         string requestContent = requestReader.ReadToEnd();
 
                         // check to see if the manager does anything with this text
-
                         SubscriptionManager.HandlePost(
                             requestContent,
-                            out fhir.Subscription subscription,
+                            out r5.Subscription subscription,
                             out HttpStatusCode statusCode,
-                            out string failureContent
-                            );
-
+                            out string failureContent);
 
                         // check for errors
-
                         if (statusCode != HttpStatusCode.Created)
                         {
                             switch (preferredResponse)
                             {
                                 case "return=minimal":
-                                    localResponse = new StringContent("", Encoding.UTF8, "text/plain");
+                                    localResponse = new StringContent(string.Empty, Encoding.UTF8, "text/plain");
                                     break;
                                 case "return=OperationOutcome":
-                                    OperationOutcome outcome = new OperationOutcome()
+                                    r5.OperationOutcome outcome = new r5.OperationOutcome()
                                     {
                                         Id = Guid.NewGuid().ToString(),
-                                        Issue = new List<OperationOutcome.IssueComponent>() {
-                                            new OperationOutcome.IssueComponent() {
-                                                Severity = OperationOutcome.IssueSeverity.Error,
-                                                Code = OperationOutcome.IssueType.Unknown,
+                                        Issue = new List<r5.OperationOutcome.IssueComponent>()
+                                        {
+                                            new r5.OperationOutcome.IssueComponent()
+                                            {
+                                                Severity = r5.OperationOutcome.IssueSeverity.Error,
+                                                Code = r5.OperationOutcome.IssueType.Unknown,
                                                 Diagnostics = failureContent,
-                                            }
-                                        }
+                                            },
+                                        },
                                     };
-                                    Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
                                     localResponse = new StringContent(
                                         serializer.SerializeToString(outcome),
                                         Encoding.UTF8,
-                                        "application/fhir+json"
-                                        );
+                                        "application/fhir+json");
 
                                     break;
                                 default:
@@ -180,31 +159,30 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         }
 
                         // figure out our link to this resource
-
                         string url = Program.UrlForResourceId("Subscription", subscription.Id);
 
                         switch (preferredResponse)
                         {
                             case "return=minimal":
-                                localResponse = new StringContent("", Encoding.UTF8, "text/plain");
+                                localResponse = new StringContent(string.Empty, Encoding.UTF8, "text/plain");
                                 break;
                             case "return=OperationOutcome":
-                                OperationOutcome outcome = new OperationOutcome()
+                                r5.OperationOutcome outcome = new r5.OperationOutcome()
                                 {
-                                    Id=Guid.NewGuid().ToString(),
-                                    Issue = new List<OperationOutcome.IssueComponent>() {
-                                            new OperationOutcome.IssueComponent() {
-                                                Severity = OperationOutcome.IssueSeverity.Information,
-                                                Code = OperationOutcome.IssueType.Value,
-                                            }
-                                        }
+                                    Id = Guid.NewGuid().ToString(),
+                                    Issue = new List<r5.OperationOutcome.IssueComponent>()
+                                    {
+                                        new r5.OperationOutcome.IssueComponent()
+                                        {
+                                            Severity = r5.OperationOutcome.IssueSeverity.Information,
+                                            Code = r5.OperationOutcome.IssueType.Value,
+                                        },
+                                    },
                                 };
-                                Hl7.Fhir.Serialization.FhirJsonSerializer serializer = new Hl7.Fhir.Serialization.FhirJsonSerializer();
                                 localResponse = new StringContent(
                                     serializer.SerializeToString(outcome),
                                     Encoding.UTF8,
-                                    "application/fhir+json"
-                                    );
+                                    "application/fhir+json");
 
                                 break;
                             default:
@@ -217,8 +195,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                             ContractResolver = _contractResolver,
                                         }),
                                     Encoding.UTF8,
-                                    "application/fhir+json"
-                                    );
+                                    "application/fhir+json");
                                 break;
                         }
 
@@ -232,7 +209,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "DELETE":
 
                         // **** ask the subscription manager to deal with this ***
-
                         if (SubscriptionManager.HandleDelete(context.Request))
                         {
                             response.StatusCode = System.Net.HttpStatusCode.NoContent;
@@ -240,7 +216,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         else
                         {
                             // *** failed ****
-
                             response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
                         }
 
@@ -249,7 +224,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     default:
 
                         // tell client we didn't understand
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;

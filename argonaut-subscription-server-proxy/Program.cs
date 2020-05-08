@@ -1,21 +1,24 @@
-﻿using argonaut_subscription_server_proxy.Managers;
+﻿// <copyright file="Program.cs" company="Microsoft Corporation">
+//     Copyright (c) Microsoft Corporation. All rights reserved.
+//     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// </copyright>
+using System;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace argonaut_subscription_server_proxy
 {
-    class Program
+    /// <summary>A program.</summary>
+    public abstract class Program
     {
         /// <summary>A Regex pattern to filter proper base URLs for WebHost.</summary>
         private const string _regexBaseUrlMatch = @"(http[s]*:\/\/[A-Za-z0-9\.]*(:\d+)*)";
 
+        /// <summary>The proxy header key.</summary>
         public const string _proxyHeaderKey = "FHIR-Server-Url";
 
         /// <summary>Gets or sets the configuration.</summary>
@@ -39,50 +42,13 @@ namespace argonaut_subscription_server_proxy
         public static void Main(string[] args)
         {
             // setup our configuration (command line > environment > appsettings.json)
-
             Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build()
                 ;
 
-            //
-
-            //{
-            //    // create a basic tuple to return
-
-            //    Dictionary<string, string> information = new Dictionary<string, string>();
-
-            //    information.Add("Application", AppDomain.CurrentDomain.FriendlyName);
-            //    information.Add("Runtime", Environment.Version.ToString());
-
-            //    // get the file version of the assembly that launched us
-
-            //    information.Add("Version", FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString());
-
-            //    // add the list of configuration keys and values
-
-            //    IEnumerable<IConfigurationSection> configItems = Configuration.GetChildren();
-
-            //    foreach (IConfigurationSection configItem in configItems)
-            //    {
-            //        if (configItem.Key.StartsWith("Server", StringComparison.Ordinal))
-            //        {
-            //            information.Add(configItem.Key, configItem.Value);
-            //        }
-            //    }
-
-            //    // dump
-
-            //    foreach (KeyValuePair<string, string> kvp in information)
-            //    {
-            //        Console.WriteLine($" <<< {kvp.Key} : {kvp.Value}");
-            //    }
-            //}
-
-
             // update configuration to make sure listen url is properly formatted
-
             Regex regex = new Regex(_regexBaseUrlMatch);
             Match match = regex.Match(Configuration["Server_Public_Url"]);
             Configuration["Server_Public_Url"] = match.ToString();
@@ -92,25 +58,22 @@ namespace argonaut_subscription_server_proxy
             Configuration["Server_Internal_Url"] = match.ToString();
 
             // update external urls to make sure the DO have trailing slashes
-
             if (!Configuration["Server_FHIR_Url"].EndsWith('/'))
             {
-                Configuration["Server_FHIR_Url"] = Configuration["Server_FHIR_Url"] + '/' ;
+                Configuration["Server_FHIR_Url"] = Configuration["Server_FHIR_Url"] + '/';
             }
+
             FhirServerUrl = Configuration["Server_FHIR_Url"];
 
             // create our REST client
-
             RestClient = new HttpClient();
 
             // initialize managers
-
-            TopicManager.Init();
+            SubscriptionTopicManager.Init();
             SubscriptionManager.Init();
             WebsocketManager.Init();
 
             // create our web host
-
             CreateWebHostBuilder(args).Build().Run();
         }
 
@@ -130,10 +93,10 @@ namespace argonaut_subscription_server_proxy
         /// <returns>A string.</returns>
         public static string UrlForResourceId(string resource, string id)
         {
-            return (new Uri(
+            return new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"{resource}/{id}", UriKind.Relative))
-                ).ToString();
+                .ToString();
         }
 
         /// <summary>Resource identifier from reference.</summary>
@@ -143,18 +106,16 @@ namespace argonaut_subscription_server_proxy
         {
             if (string.IsNullOrEmpty(reference))
             {
-                return "";
+                return string.Empty;
             }
 
             // check for URL
-
             if (reference.Contains('/'))
             {
                 return reference.Substring(reference.LastIndexOf('/') + 1);
             }
 
             // assume this is the reference
-
             return reference;
         }
     }

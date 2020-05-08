@@ -1,18 +1,26 @@
-﻿using argonaut_subscription_server_proxy.Managers;
+﻿// <copyright file="SubscriptionTopicProcessor.cs" company="Microsoft Corporation">
+//     Copyright (c) Microsoft Corporation. All rights reserved.
+//     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// </copyright>
+
+extern alias fhir4;
+extern alias fhir5;
+
+using System.Net.Http;
+using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
-using ProxyKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
-using Microsoft.Extensions.Primitives;
+using ProxyKit;
+using r4 = fhir4.Hl7.Fhir.Model;
+using r4s = fhir4.Hl7.Fhir.Serialization;
+using r5 = fhir5.Hl7.Fhir.Model;
+using r5s = fhir5.Hl7.Fhir.Serialization;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
-    public class TopicProcessor
+    /// <summary>A topic processor.</summary>
+    public abstract class SubscriptionTopicProcessor
     {
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
@@ -22,11 +30,10 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
             // run the proxy for this request
-
-            appInner.RunProxy(async context => {
+            appInner.RunProxy(async context =>
+            {
                 // look for a FHIR server header
-
-                if ((context.Request.Headers.ContainsKey(Program._proxyHeaderKey)) &&
+                if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
                 {
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
@@ -34,24 +41,17 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 HttpResponseMessage response = new HttpResponseMessage();
 
-                // return appropriate code to the caller
+                r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer(null);
 
-                switch (context.Request.Method.ToUpper())
+                // return appropriate code to the caller
+                switch (context.Request.Method.ToUpperInvariant())
                 {
                     case "GET":
 
                         // *** success ****
-
                         response.Content = new StringContent(
-                            JsonConvert.SerializeObject(
-                                TopicManager.GetTopicsBundle(),
-                                new JsonSerializerSettings()
-                                {
-                                    NullValueHandling = NullValueHandling.Ignore,
-                                    ContractResolver = _contractResolver,
-                                }
-                                )
-                            );
+                            serializer.SerializeToString(
+                                SubscriptionTopicManager.GetTopicsBundle()));
                         response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                         response.StatusCode = System.Net.HttpStatusCode.OK;
 
@@ -60,7 +60,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "PUT":
 
                         // *** success ****
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;
@@ -68,14 +67,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "POST":
 
                         // grab the message body to look at
-
                         System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
                         string requestContent = requestReader.ReadToEnd();
 
                         response.Content = new StringContent(requestContent);
 
                         // *** not implemented yet ****
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;
@@ -83,7 +80,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "DELETE":
 
                         // *** success ****
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;
@@ -91,7 +87,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     default:
 
                         // tell client we didn't understand
-
                         response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
 
                         break;

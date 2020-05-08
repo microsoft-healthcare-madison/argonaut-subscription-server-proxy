@@ -1,40 +1,45 @@
-﻿using fhir;
-using Hl7.Fhir.ElementModel;
-using Hl7.Fhir.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿// <copyright file="SubscriptionTopicManagerProto.cs" company="Microsoft Corporation">
+//     Copyright (c) Microsoft Corporation. All rights reserved.
+//     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// </copyright>
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
+using Hl7.Fhir.ElementModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
     /// <summary>Manager for topics.</summary>
-    public class TopicManager
+    public class SubscriptionTopicManagerProto
     {
-                                /// <summary>The instance for singleton pattern.</summary>
-        private static TopicManager _instance;
+        /// <summary>The instance for singleton pattern.</summary>
+        private static SubscriptionTopicManagerProto _instance;
 
-                        /// <summary>Dictionary of topic names to indicies in _topics.</summary>
-        private Dictionary<string, fhir.Topic> _titleTopicDict;
-        private Dictionary<string, fhir.Topic> _canonicalUrlTopicDict;
-        private Dictionary<string, fhir.Topic> _localUrlTopicDict;
-        private Dictionary<string, fhir.Topic> _idTopicDict;
+        /// <summary>Dictionary of topic names to indicies in _topics.</summary>
+        private Dictionary<string, fhir.SubscriptionTopic> _titleTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _canonicalUrlTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _localUrlTopicDict;
+        private Dictionary<string, fhir.SubscriptionTopic> _idTopicDict;
 
         private CamelCasePropertyNamesContractResolver _contractResolver;
 
-                        private TopicManager()
+        /// <summary>
+        /// Prevents a default instance of the
+        /// <see cref="SubscriptionTopicManagerProto"/> class from being
+        /// created.
+        /// </summary>
+        private SubscriptionTopicManagerProto()
         {
             // create our index objects
-
-            _titleTopicDict = new Dictionary<string, fhir.Topic>();
-            _canonicalUrlTopicDict = new Dictionary<string, fhir.Topic>();
-            _localUrlTopicDict = new Dictionary<string, Topic>();
-            _idTopicDict = new Dictionary<string, fhir.Topic>();
+            _titleTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _canonicalUrlTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _localUrlTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
+            _idTopicDict = new Dictionary<string, fhir.SubscriptionTopic>();
 
             // serialization related
-
             _contractResolver = new CamelCasePropertyNamesContractResolver();
         }
 
@@ -42,21 +47,18 @@ namespace argonaut_subscription_server_proxy.Managers
         public static void Init()
         {
             // make an instance
-
             CheckOrCreateInstance();
 
             // setup our list of known topics
-
             _instance.CreateTopics();
         }
 
         /// <summary>Gets a list of all currently known topics.</summary>
         /// <returns>The topic list.</returns>
-        public static List<fhir.Topic> GetTopicList()
+        public static List<fhir.SubscriptionTopic> GetTopicList()
         {
             // return our list of known topics
-
-            return _instance._titleTopicDict.Values.ToList<fhir.Topic>();
+            return _instance._titleTopicDict.Values.ToList<fhir.SubscriptionTopic>();
         }
 
         /// <summary>Gets topics bundle.</summary>
@@ -69,15 +71,20 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Adds or updates a Topic</summary>
         /// <param name="topic">The topic.</param>
-        public static void AddOrUpdate(fhir.Topic topic)
+        public static void AddOrUpdate(fhir.SubscriptionTopic topic)
         {
+            if (topic == null)
+            {
+                return;
+            }
+
             _instance._AddOrUpdate(topic);
         }
 
         /// <summary>Gets a topic.</summary>
         /// <param name="key">The key (Title, ID, URL)</param>
         /// <returns>The topic.</returns>
-        public static fhir.Topic GetTopic(string key)
+        public static fhir.SubscriptionTopic GetTopic(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -105,19 +112,18 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // not found
-
             return null;
         }
 
-        /// <summary>Attempts to get topic a fhir.Topic from the given string.</summary>
+        /// <summary>Attempts to get topic a fhir.SubscriptionTopic from the given string.</summary>
         /// <param name="key">  The key for the topic</param>
         /// <param name="topic">[out] The topic.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetTopic(string key, out fhir.Topic topic)
+        public static bool TryGetTopic(string key, out fhir.SubscriptionTopic topic)
         {
             topic = GetTopic(key);
 
-            return (topic != null);
+            return topic != null;
         }
 
         /// <summary>Attempts to get serialized a string from the given string.</summary>
@@ -126,7 +132,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string key, out string serialized)
         {
-            if (TryGetTopic(key, out fhir.Topic subscription))
+            if (TryGetTopic(key, out fhir.SubscriptionTopic subscription))
             {
                 serialized = JsonConvert.SerializeObject(
                     subscription,
@@ -149,7 +155,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetBasicSerialized(string key, out string serialized)
         {
-            if (TryGetTopic(key, out fhir.Topic topic))
+            if (TryGetTopic(key, out fhir.SubscriptionTopic topic))
             {
                 fhir.Basic basic = _instance.WrapInBasic(topic);
                 serialized = JsonConvert.SerializeObject(
@@ -167,7 +173,7 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-                                        private fhir.Basic WrapInBasic(fhir.Topic topic)
+        private fhir.Basic WrapInBasic(fhir.SubscriptionTopic topic)
         {
             return new fhir.Basic()
             {
@@ -180,9 +186,9 @@ namespace argonaut_subscription_server_proxy.Managers
                         {
                             Code = "R5Topic",
                             System = "http://hl7.org/fhir/resource-types",
-                            Display = "Backported R5 Topic"
-                        }
-                    }
+                            Display = "Backported R5 Topic",
+                        },
+                    },
                 },
                 Extension = new fhir.Extension[]
                 {
@@ -195,9 +201,9 @@ namespace argonaut_subscription_server_proxy.Managers
                             {
                                 NullValueHandling = NullValueHandling.Ignore,
                                 ContractResolver = _contractResolver,
-                            })
-                    }
-                }
+                            }),
+                    },
+                },
             };
         }
 
@@ -210,28 +216,26 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = "searchset",
                 Total = (uint)_titleTopicDict.Count,
-                Meta = new fhir.Meta() {
-                    LastUpdated = string.Format("{0:o}", DateTime.Now.ToUniversalTime())
+                Meta = new fhir.Meta()
+                {
+                    LastUpdated = string.Format(CultureInfo.InvariantCulture, "{0:o}", DateTime.Now.ToUniversalTime()),
                 },
-                Entry = new BundleEntry[_idTopicDict.Count]
+                Entry = new fhir.BundleEntry[_idTopicDict.Count],
             };
 
-            fhir.Topic[] topics = _idTopicDict.Values.ToArray<fhir.Topic>();
+            fhir.SubscriptionTopic[] topics = _idTopicDict.Values.ToArray<fhir.SubscriptionTopic>();
 
             if (wrapInBasic)
             {
                 for (int index = 0; index < topics.Length; index++)
                 {
                     // add this topic
-
-                    bundle.Entry[index] = new BundleEntry()
+                    bundle.Entry[index] = new fhir.BundleEntry()
                     {
                         FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
                         Resource = WrapInBasic(topics[index]),
-                        Search = new BundleEntrySearch() { Mode = "match" },
-                        //Response = new BundleEntryResponse() { Status = "201 Created"}
+                        Search = new fhir.BundleEntrySearch() { Mode = "match" },
                     };
-
                 }
             }
             else
@@ -239,116 +243,98 @@ namespace argonaut_subscription_server_proxy.Managers
                 for (int index = 0; index < topics.Length; index++)
                 {
                     // add this topic
-
-                    bundle.Entry[index] = new BundleEntry()
+                    bundle.Entry[index] = new fhir.BundleEntry()
                     {
                         FullUrl = Program.UrlForResourceId("Topic", topics[index].Id),
                         Resource = topics[index],
-                        Search = new BundleEntrySearch() { Mode = "match" },
-                        //Response = new BundleEntryResponse() { Status = "201 Created"}
+                        Search = new fhir.BundleEntrySearch() { Mode = "match" },
                     };
-
                 }
             }
 
             // return our bundle
-
             return bundle;
         }
 
-
         /// <summary>Adds or updates a Topic</summary>
         /// <param name="topic">The topic.</param>
-        private void _AddOrUpdate(fhir.Topic topic)
+        private void _AddOrUpdate(fhir.SubscriptionTopic topic)
         {
             string localUrl = Program.UrlForResourceId("Topic", topic.Title);
 
             // check for local url already existing
-
             if (_localUrlTopicDict.ContainsKey(localUrl))
             {
-                fhir.Topic oldTopic = _localUrlTopicDict[localUrl];
+                fhir.SubscriptionTopic oldTopic = _localUrlTopicDict[localUrl];
 
                 // remove if this topic exists in other dictionaries
-
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_titleTopicDict, localUrl);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
                 // remove from this dict
-
                 _localUrlTopicDict.Remove(topic.Title);
             }
 
             // check for this canonical url already existing
-
             if (_canonicalUrlTopicDict.ContainsKey(topic.Url))
             {
-                fhir.Topic oldTopic = _canonicalUrlTopicDict[topic.Url];
+                fhir.SubscriptionTopic oldTopic = _canonicalUrlTopicDict[topic.Url];
 
                 // remove if this topic exists in other dictionaries
-
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_titleTopicDict, oldTopic.Url);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
                 // remove from this dict
-
                 _canonicalUrlTopicDict.Remove(topic.Url);
             }
 
             // check for title already existing
-
             if (_titleTopicDict.ContainsKey(topic.Title))
             {
-                fhir.Topic oldTopic = _titleTopicDict[topic.Title];
+                fhir.SubscriptionTopic oldTopic = _titleTopicDict[topic.Title];
 
                 // remove if this topic exists in other dictionaries
-
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_idTopicDict, oldTopic.Title);
 
                 // remove from this dict
-
                 _titleTopicDict.Remove(topic.Title);
             }
 
             // check for this id already existing
-
             if (_idTopicDict.ContainsKey(topic.Id))
             {
-                fhir.Topic oldTopic = _idTopicDict[topic.Id];
+                fhir.SubscriptionTopic oldTopic = _idTopicDict[topic.Id];
 
                 // remove if this topic exists in other dictionaries
-
                 RemoveIfExists(_localUrlTopicDict, localUrl);
                 RemoveIfExists(_canonicalUrlTopicDict, oldTopic.Url);
                 RemoveIfExists(_titleTopicDict, oldTopic.Title);
 
                 // remove from this dict
-
                 _idTopicDict.Remove(topic.Id);
             }
 
-            // **** add to local url dictionary ***
-
+            // add to local url dictionary
             _localUrlTopicDict.Add(localUrl, topic);
 
             // add to canonical url dictionary
-
             _canonicalUrlTopicDict.Add(topic.Url, topic);
 
             // add to the title dictionary
-
             _titleTopicDict.Add(topic.Title, topic);
 
             // add to id dictionary
-
             _idTopicDict.Add(topic.Id, topic);
         }
 
-        private void RemoveIfExists(Dictionary<string, fhir.Topic> dict, string key)
+        /// <summary>Removes if exists.</summary>
+        /// <param name="dict">The dictionary.</param>
+        /// <param name="key"> The key (Title, ID, URL)</param>
+        private void RemoveIfExists(Dictionary<string, fhir.SubscriptionTopic> dict, string key)
         {
             if (dict.ContainsKey(key))
             {
@@ -356,13 +342,22 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-
+        /// <summary>Dumps a node.</summary>
+        /// <param name="node">The node.</param>
         private void DumpNode(ISourceNode node)
         {
-            Console.WriteLine(string.Format("{0,70} {1,20} {2}", "Location", "Name", "Text"));
+            Console.WriteLine(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0,70} {1,20} {2}",
+                    "Location",
+                    "Name",
+                    "Text"));
             _DumpNode(node);
         }
 
+        /// <summary>Dumps a node.</summary>
+        /// <param name="node">The node.</param>
         private void _DumpNode(ISourceNode node)
         {
             Console.WriteLine($"{node.Location,70} {node.Name,20} {node.Text}");
@@ -377,14 +372,12 @@ namespace argonaut_subscription_server_proxy.Managers
         private void CreateTopics()
         {
             // make sure our lists are clear
-
             _titleTopicDict.Clear();
             _canonicalUrlTopicDict.Clear();
             _idTopicDict.Clear();
 
             // create our known topics
-
-            fhir.Topic topic = new fhir.Topic()
+            fhir.SubscriptionTopic topic = new fhir.SubscriptionTopic()
             {
                 Title = "admission",
                 Id = "1",
@@ -394,31 +387,33 @@ namespace argonaut_subscription_server_proxy.Managers
                 Experimental = true,
                 Description = "Admission Topic for testing framework and behavior",
                 Date = "2019-08-01",
-                ResourceTrigger = new fhir.TopicResourceTrigger()
+                ResourceTrigger = new fhir.SubscriptionTopicResourceTrigger()
                 {
                     Description = "Beginning of a clinical encounter",
-                    ResourceType = new string[] {"Encounter"},
-                    QueryCriteria = new TopicResourceTriggerQueryCriteria()
+                    ResourceType = new string[] { "Encounter" },
+                    QueryCriteria = new fhir.SubscriptionTopicResourceTriggerQueryCriteria()
                     {
                         Previous = "status:not=in-progress",
                         Current = "status:in-progress",
                         RequireBoth = true,
                     },
-                    FhirPathCriteria = "%previous.status!='in-progress' and %current.status='in-progress'",
-                },
-                CanFilterBy = new TopicCanFilterBy[]
-                {
-                    new TopicCanFilterBy()
+                    FhirPathCriteria = new string[]
                     {
-                        Name = "patient", 
-                        Documentation = "Exact match to a patient resource (reference)", 
-                        MatchType = new string[] { "=", "in", "not-in" }
+                        "%previous.status!='in-progress' and %current.status='in-progress'",
+                    },
+                },
+                CanFilterBy = new fhir.SubscriptionTopicCanFilterBy[]
+                {
+                    new fhir.SubscriptionTopicCanFilterBy()
+                    {
+                        SearchParamName = "patient",
+                        SearchModifier = new string[] { "=", "in", "not-in" },
+                        Documentation = "Exact match to a patient resource (reference)",
                     },
                 },
             };
 
             // add this topic
-
             _AddOrUpdate(topic);
         }
 
@@ -427,10 +422,8 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             if (_instance == null)
             {
-                _instance = new TopicManager();
+                _instance = new SubscriptionTopicManagerProto();
             }
         }
-
-
-            }
+    }
 }

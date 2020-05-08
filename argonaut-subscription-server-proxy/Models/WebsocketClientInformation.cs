@@ -1,21 +1,16 @@
-﻿using System;
+﻿// <copyright file="WebsocketClientInformation.cs" company="Microsoft Corporation">
+//     Copyright (c) Microsoft Corporation. All rights reserved.
+//     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// </copyright>
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 
 namespace argonaut_subscription_server_proxy.Models
 {
+    /// <summary>Information about the websocket client.</summary>
     public class WebsocketClientInformation
     {
-        /// <summary>Client payload types.</summary>
-        public sealed class WebsocketPayloadTypes
-        {
-            public const string R4 = "r4";
-            public const string EMPTY = "empty";
-            public const string ID_ONLY = "id-only";
-            public const string FULL_RESOURCE = "full-resource";
-        }
-
         /// <summary>Gets or sets the UID.</summary>
         /// <value>The UID.</value>
         public Guid Uid { get; set; }
@@ -32,5 +27,20 @@ namespace argonaut_subscription_server_proxy.Models
         /// <value>The subscription identifiers set.</value>
         public HashSet<string> SubscriptionIdSet { get; set; }
 
-                                                                            }
+        /// <summary>Client payload types.</summary>
+        public sealed class WebsocketPayloadTypes
+        {
+            /// <summary>The fourth r.</summary>
+            public const string R4 = "r4";
+
+            /// <summary>The empty.</summary>
+            public const string Empty = "empty";
+
+            /// <summary>The identifier only.</summary>
+            public const string IdOnly = "id-only";
+
+            /// <summary>The full resource.</summary>
+            public const string FullResource = "full-resource";
+        }
+    }
 }
