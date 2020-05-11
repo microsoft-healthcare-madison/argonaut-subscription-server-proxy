@@ -50,6 +50,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 // create some response objects
                 HttpResponseMessage response = new HttpResponseMessage();
                 StringContent localResponse;
+                r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer();
 
                 // default to returning the representation if not specified
                 string preferredResponse = "return=representation";
@@ -111,17 +112,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         if (context.Request.Query.ContainsKey("code"))
                         {
                             // check for topic
-                            if (context.Request.Query["code"] == "R5Topic")
+                            if (context.Request.Query["code"] == "R5SubscriptionTopic")
                             {
                                 // serialize the bundle of topics
                                 response.Content = new StringContent(
-                                    JsonConvert.SerializeObject(
-                                        SubscriptionTopicManager.GetTopicsBundle(true),
-                                        new JsonSerializerSettings()
-                                        {
-                                            NullValueHandling = NullValueHandling.Ignore,
-                                            ContractResolver = _contractResolver,
-                                        }));
+                                    serializer.SerializeToString(SubscriptionTopicManager.GetTopicsBundle(true)));
                                 response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                                 response.StatusCode = System.Net.HttpStatusCode.OK;
 
@@ -133,13 +128,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             {
                                 // serialize the bundle of subscriptions
                                 response.Content = new StringContent(
-                                    JsonConvert.SerializeObject(
-                                        SubscriptionManager.GetSubscriptionsBundle(true),
-                                        new JsonSerializerSettings()
-                                        {
-                                            NullValueHandling = NullValueHandling.Ignore,
-                                            ContractResolver = _contractResolver,
-                                        }));
+                                    serializer.SerializeToString(SubscriptionManager.GetSubscriptionsBundle(true)));
                                 response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
                                 response.StatusCode = System.Net.HttpStatusCode.OK;
 
@@ -187,7 +176,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                     {
                                         // check for having the required resource
                                         if ((basic.Extension == null) ||
-                                            basic.Extension.Any() ||
+                                            (!basic.Extension.Any()) ||
                                             (!basic.Extension[0].Url.Equals("http://hl7.org/fhir/StructureDefinition/json-embedded-resource", StringComparison.Ordinal)))
                                         {
                                             response.StatusCode = System.Net.HttpStatusCode.BadRequest;
@@ -224,7 +213,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                                             },
                                                         },
                                                     };
-                                                    r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer();
                                                     localResponse = new StringContent(
                                                         serializer.SerializeToString(outcome),
                                                         Encoding.UTF8,
@@ -263,7 +251,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                                         },
                                                     },
                                                 };
-                                                r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer();
                                                 localResponse = new StringContent(
                                                     serializer.SerializeToString(outcome),
                                                     Encoding.UTF8,

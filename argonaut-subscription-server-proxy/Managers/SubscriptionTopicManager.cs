@@ -142,13 +142,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             if (TryGetTopic(key, out SubscriptionTopic subscription))
             {
-                serialized = JsonConvert.SerializeObject(
-                    subscription,
-                    new JsonSerializerSettings()
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        ContractResolver = _instance._contractResolver,
-                    });
+                serialized = _instance._firelySerializer.SerializeToString(subscription);
 
                 return true;
             }
@@ -166,13 +160,7 @@ namespace argonaut_subscription_server_proxy.Managers
             if (TryGetTopic(key, out SubscriptionTopic topic))
             {
                 Basic basic = _instance.WrapInBasic(topic);
-                serialized = JsonConvert.SerializeObject(
-                    basic,
-                    new JsonSerializerSettings()
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        ContractResolver = _instance._contractResolver,
-                    });
+                serialized = _instance._firelySerializer.SerializeToString(basic);
 
                 return true;
             }
@@ -363,11 +351,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 Title = "encounter-start",
                 Id = "encounter-start",
                 Url = "http://argonautproject.org/encounters-ig/SubscriptionTopic/encounter-start",
-                Version = "1.0",
+                Version = "1.1",
                 Status = PublicationStatus.Draft,
                 Experimental = true,
                 Description = new Markdown("Beginning of a clinical encounter"),
-                Date = "2019-10-29",
+                Date = "2020-05-11",
                 ResourceTrigger = new SubscriptionTopic.ResourceTriggerComponent()
                 {
                     Description = "Beginning of a clinical encounter",

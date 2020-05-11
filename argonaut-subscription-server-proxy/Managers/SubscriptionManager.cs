@@ -247,13 +247,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             if (TryGetSubscription(subscriptionId, out Subscription subscription))
             {
-                serialized = JsonConvert.SerializeObject(
-                    subscription,
-                    new JsonSerializerSettings()
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        ContractResolver = _instance._contractResolver,
-                    });
+                serialized = _instance._firelySerializer.SerializeToString(subscription);
 
                 return true;
             }
@@ -271,13 +265,7 @@ namespace argonaut_subscription_server_proxy.Managers
             if (TryGetSubscription(subscriptionId, out Subscription subscription))
             {
                 Basic basic = _instance._WrapInBasic(subscription);
-                serialized = JsonConvert.SerializeObject(
-                    basic,
-                    new JsonSerializerSettings()
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        ContractResolver = _instance._contractResolver,
-                    });
+                serialized = _instance._firelySerializer.SerializeToString(basic);
 
                 return true;
             }
