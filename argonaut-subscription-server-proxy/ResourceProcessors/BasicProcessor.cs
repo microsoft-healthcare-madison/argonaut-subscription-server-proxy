@@ -28,8 +28,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     /// <summary>A basic processor.</summary>
     public abstract class BasicProcessor
     {
-        private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
-
         /// <summary>Process the request.</summary>
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
@@ -259,13 +257,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                                 break;
                                             default:
                                                 localResponse = new StringContent(
-                                                    JsonConvert.SerializeObject(
-                                                        SubscriptionManager.WrapInBasic(subscription),
-                                                        new JsonSerializerSettings()
-                                                        {
-                                                            NullValueHandling = NullValueHandling.Ignore,
-                                                            ContractResolver = _contractResolver,
-                                                        }),
+                                                    serializer.SerializeToString(SubscriptionManager.WrapInBasic(subscription)),
                                                     Encoding.UTF8,
                                                     "application/fhir+json");
                                                 break;

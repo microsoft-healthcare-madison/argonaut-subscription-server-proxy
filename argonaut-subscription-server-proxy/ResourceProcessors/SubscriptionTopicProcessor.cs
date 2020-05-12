@@ -22,8 +22,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     /// <summary>A topic processor.</summary>
     public abstract class SubscriptionTopicProcessor
     {
-        private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
-
         /// <summary>Process the request described by appInner.</summary>
         /// <param name="appInner">     The application inner.</param>
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
