@@ -170,10 +170,10 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Queue messages for subscription.</summary>
         /// <param name="subscription">The subscription.</param>
-        /// <param name="resource">    The resource.</param>
+        /// <param name="json">        The resource.</param>
         public static void QueueMessagesForSubscription(
             r5.Subscription subscription,
-            r5.Resource resource)
+            string json)
         {
             if (subscription == null)
             {
@@ -196,18 +196,8 @@ namespace argonaut_subscription_server_proxy.Managers
                     case WebsocketClientInformation.WebsocketPayloadTypes.FullResource:
                     case WebsocketClientInformation.WebsocketPayloadTypes.IdOnly:
 
-                        // get a notification bundle
-                        SubscriptionManager.BundleForSubscriptionNotification(
-                            subscription,
-                            resource,
-                            out r5.Bundle bundle,
-                            out long eventCount);
-
-                        // serialize using the Firely serialization engine
-                        r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer();
-
                         // serialize our bundle as our message
-                        clientMessage = serializer.SerializeToString(bundle);
+                        clientMessage = json;
 
                         break;
 

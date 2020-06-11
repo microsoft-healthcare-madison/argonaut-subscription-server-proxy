@@ -89,6 +89,31 @@ namespace argonaut_subscription_server_proxy.Managers
             _instance._AddOrUpdate(topic);
         }
 
+        /// <summary>Query if 'canonical' is subscription topic implemented.</summary>
+        /// <param name="url">The URL for the topic.</param>
+        /// <returns>True if subscription topic implemented, false if not.</returns>
+#pragma warning disable CA1054 // Uri parameters should not be strings
+        public static bool IsImplemented(string url)
+#pragma warning restore CA1054 // Uri parameters should not be strings
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            if (_instance._localUrlTopicDict.ContainsKey(url))
+            {
+                return true;
+            }
+
+            if (_instance._canonicalUrlTopicDict.ContainsKey(url))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>Gets a topic.</summary>
         /// <param name="key">The key (Title, ID, URL)</param>
         /// <returns>The topic.</returns>

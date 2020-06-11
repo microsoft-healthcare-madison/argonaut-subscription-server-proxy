@@ -80,24 +80,25 @@ namespace argonaut_subscription_server_proxy
             app
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/metadata", StringComparison.Ordinal),
-                    appInner => ResourceProcessors.CapabilitiesProcessor.ProcessRequest(appInner, fhirServerUrl))
+                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessor.Process))
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/SubscriptionTopic", StringComparison.Ordinal),
                     appInner => ResourceProcessors.SubscriptionTopicProcessor.ProcessRequest(appInner, fhirServerUrl))
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Subscription", StringComparison.Ordinal),
-                    appInner => ResourceProcessors.SubscriptionProcessor.ProcessRequest(appInner, fhirServerUrl))
+                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessor.Process))
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/Encounter", StringComparison.Ordinal),
-                    appInner => ResourceProcessors.EncounterProcessor.ProcessRequest(appInner, fhirServerUrl))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/Basic", StringComparison.Ordinal),
-                    appInner => ResourceProcessors.BasicProcessor.ProcessRequest(appInner, fhirServerUrl))
+                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessor.Process))
+
+                // .UseWhen(
+                //    context => context.Request.Path.StartsWithSegments($"/Basic", StringComparison.Ordinal),
+                //    appInner => ResourceProcessors.BasicProcessor.ProcessRequest(appInner, fhirServerUrl))
                 ;
 
             app.UseWhen(
                 context => true,
-                appInner => ResourceProcessors.DefaultProcessor.ProcessRequest(appInner, fhirServerUrl));
+                appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessor.Process));
 
             // default to proxying all other requests
             //app.RunProxy(context => context

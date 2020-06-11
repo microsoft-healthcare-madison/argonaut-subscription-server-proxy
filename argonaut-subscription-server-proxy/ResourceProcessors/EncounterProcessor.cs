@@ -3,8 +3,10 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 using System.Net.Http;
+using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
@@ -13,53 +15,46 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     public abstract class EncounterProcessor
     {
         /// <summary>Process the request.</summary>
-        /// <param name="appInner">     The application inner.</param>
-        /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
+        /// <param name="context">The context.</param>
+        /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
+        internal static async Task<HttpResponseMessage> Process(HttpContext context)
         {
-            // run the proxy for this request
-            appInner.RunProxy(async context =>
+            string fhirServerUrl = ProcessorUtils.GetFhirServerUrl(context.Request);
+
+            // context.Request.Headers["Accept-Encoding"] = "";
+            // proxy this call
+            ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+
+            // send to server and await response
+            HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+
+            // get copies of data when we care
+            switch (context.Request.Method.ToUpperInvariant())
             {
-                // look for a FHIR server header
-                if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
-                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
-                {
-                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
-                }
+                case "PUT":
+                case "POST":
 
-                // context.Request.Headers["Accept-Encoding"] = "";
-                // proxy this call
-                ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+                    // grab the message body to look at
+                    string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                // send to server and await response
-                HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // run this Encounter through our Subscription Manager
+                        SubscriptionManager.ProcessEncounter(
+                            responseContent,
+                            response.Headers.Location);
+                    }
 
-                // get copies of data when we care
-                switch (context.Request.Method.ToUpperInvariant())
-                {
-                    case "PUT":
-                    case "POST":
+                    break;
 
-                        // grab the message body to look at
-                        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                default:
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            // run this Encounter through our Subscription Manager
-                            SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
-                        }
+                    // ignore
+                    break;
+            }
 
-                        break;
-
-                    default:
-
-                        // ignore
-                        break;
-                }
-
-                // return the results of the proxied call
-                return response;
-            });
+            // return the results of the proxied call
+            return response;
         }
     }
 }

@@ -10,7 +10,9 @@ using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ProxyKit;
@@ -27,143 +29,146 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         private static CamelCasePropertyNamesContractResolver _contractResolver = new CamelCasePropertyNamesContractResolver();
 
         /// <summary>Process the request.</summary>
-        /// <param name="appInner">     The application inner.</param>
-        /// <param name="fhirServerUrl">URL of the fhir server.</param>
-        public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
+        /// <param name="context">The context.</param>
+        /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
+        internal static async Task<HttpResponseMessage> Process(HttpContext context)
         {
-            // run the proxy for this request
-            appInner.RunProxy(async context =>
+            string fhirServerUrl = ProcessorUtils.GetFhirServerUrl(context.Request);
+            bool isR4 = ProcessorUtils.IsR4(context.Request);
+
+            // proxy this call
+            ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+
+            // send to server and await response
+            HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+
+            // get copies of data when we care
+            switch (context.Request.Method.ToUpperInvariant())
             {
-                // look for a FHIR server header
-                if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
-                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
+                case "GET":
+                    ProcessGet(ref context, ref response, isR4);
+
+                    break;
+
+                default:
+
+                    // ignore
+                    break;
+            }
+
+            // return the originator response, plus any modifications we've done
+            return response;
+        }
+
+        /// <summary>Process the an R5 GET.</summary>
+        /// <param name="context"> [in,out] The context.</param>
+        /// <param name="response">[in,out] The response.</param>
+        /// <param name="isR4">    True if is FHIR R4, false if not.</param>
+        private static void ProcessGet(
+            ref HttpContext context,
+            ref HttpResponseMessage response,
+            bool isR4)
+        {
+            // check for a valid capability statement
+            try
+            {
+                // grab the message body to look at
+                string responseContent = response.Content.ReadAsStringAsync().Result;
+
+                // parse this capabilities statement
+                fhirP5.CapabilityStatement capabilities = JsonConvert.DeserializeObject<fhirP5.CapabilityStatement>(responseContent);
+
+                // flag we are involved
+                if (capabilities.Software != null)
                 {
-                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+                    capabilities.Software.Name = $"Argo-Proxy: {capabilities.Software.Name}";
+                    capabilities.Software.Version =
+                        FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString()
+                        + ": " + capabilities.Software.Version;
+                }
+                else
+                {
+                    capabilities.Software = new fhirP5.CapabilityStatementSoftware()
+                    {
+                        Name = $"Argo-Proxy: {Program.FhirServerUrl}",
+                        Version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString(),
+                    };
                 }
 
-                // proxy this call
-                ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
-
-                // send to server and await response
-                HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
-
-                // get copies of data when we care
-                switch (context.Request.Method.ToUpperInvariant())
+                capabilities.Implementation = new fhirP5.CapabilityStatementImplementation()
                 {
-                    case "GET":
+                    Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrl}",
+                    Url = Program.PublicUrl,
+                };
 
-                        // check for a valid capability statement
-                        try
+                // only support application/fhir+json
+                capabilities.Format = new string[] { "application/fhir+json" };
+
+                // make sure Topic and Subscription are present
+                bool foundSubscription = false;
+                bool foundTopic = false;
+
+                for (int restIndex = 0;
+                        restIndex < capabilities.Rest.Length;
+                        restIndex++)
+                {
+                    for (int resourceIndex = 0;
+                            resourceIndex < capabilities.Rest[restIndex].Resource.Length;
+                            resourceIndex++)
+                    {
+                        if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Topic")
                         {
-                            // grab the message body to look at
-                            string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                            // parse this capabilities statement
-                            fhirP5.CapabilityStatement capabilities = JsonConvert.DeserializeObject<fhirP5.CapabilityStatement>(responseContent);
-
-                            // flag we are involved
-                            if (capabilities.Software != null)
-                            {
-                                capabilities.Software.Name = $"Argo-Proxy: {capabilities.Software.Name}";
-                                capabilities.Software.Version =
-                                    FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString()
-                                    + ": " + capabilities.Software.Version;
-                            }
-                            else
-                            {
-                                capabilities.Software = new fhirP5.CapabilityStatementSoftware()
-                                {
-                                    Name = $"Argo-Proxy: {Program.FhirServerUrl}",
-                                    Version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString(),
-                                };
-                            }
-
-                            capabilities.Implementation = new fhirP5.CapabilityStatementImplementation()
-                            {
-                                Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrl}",
-                                Url = Program.PublicUrl,
-                            };
-
-                            // only support application/fhir+json
-                            capabilities.Format = new string[] { "application/fhir+json" };
-
-                            // make sure Topic and Subscription are present
-                            bool foundSubscription = false;
-                            bool foundTopic = false;
-
-                            for (int restIndex = 0;
-                                    restIndex < capabilities.Rest.Length;
-                                    restIndex++)
-                            {
-                                for (int resourceIndex = 0;
-                                        resourceIndex < capabilities.Rest[restIndex].Resource.Length;
-                                        resourceIndex++)
-                                {
-                                    if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Topic")
-                                    {
-                                        foundTopic = true;
-                                        capabilities.Rest[restIndex].Resource[resourceIndex] = GetTopicCapabilityResource();
-                                    }
-
-                                    if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Subscription")
-                                    {
-                                        foundSubscription = true;
-                                        capabilities.Rest[restIndex].Resource[resourceIndex] = GetSubscriptionCapabilityResource();
-                                    }
-                                }
-
-                                if (foundTopic && foundSubscription)
-                                {
-                                    break;
-                                }
-                            }
-
-                            // check for adding Topic
-                            if (!foundTopic)
-                            {
-                                fhirP5.CapabilityStatementRestResource[] resources = new fhirP5.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
-                                capabilities.Rest[0].Resource.CopyTo(resources, 1);
-                                resources[0] = GetTopicCapabilityResource();
-                                capabilities.Rest[0].Resource = resources;
-                            }
-
-                            if (!foundSubscription)
-                            {
-                                fhirP5.CapabilityStatementRestResource[] resources = new fhirP5.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
-                                capabilities.Rest[0].Resource.CopyTo(resources, 1);
-                                resources[0] = GetSubscriptionCapabilityResource();
-                                capabilities.Rest[0].Resource = resources;
-                            }
-
-                            // serialize and return
-                            response.Content = new StringContent(
-                                JsonConvert.SerializeObject(
-                                    capabilities,
-                                    new JsonSerializerSettings()
-                                    {
-                                        NullValueHandling = NullValueHandling.Ignore,
-                                        ContractResolver = _contractResolver,
-                                    }));
-                            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
-                            response.StatusCode = System.Net.HttpStatusCode.OK;
-                        }
-                        catch (Exception ex)
-                        {
-                            // write to console
-                            Console.WriteLine($"Failed to parse capability statement, {ex.Message}");
+                            foundTopic = true;
+                            capabilities.Rest[restIndex].Resource[resourceIndex] = GetTopicCapabilityResource();
                         }
 
-                        break;
+                        if (capabilities.Rest[restIndex].Resource[resourceIndex].Type == "Subscription")
+                        {
+                            foundSubscription = true;
+                            capabilities.Rest[restIndex].Resource[resourceIndex] = GetSubscriptionCapabilityResource();
+                        }
+                    }
 
-                    default:
-
-                        // ignore
+                    if (foundTopic && foundSubscription)
+                    {
                         break;
+                    }
                 }
 
-                // return the results of the proxied call
-                return response;
-            });
+                // check for adding Topic
+                if ((!foundTopic) && (!isR4))
+                {
+                    fhirP5.CapabilityStatementRestResource[] resources = new fhirP5.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
+                    capabilities.Rest[0].Resource.CopyTo(resources, 1);
+                    resources[0] = GetTopicCapabilityResource();
+                    capabilities.Rest[0].Resource = resources;
+                }
+
+                if (!foundSubscription)
+                {
+                    fhirP5.CapabilityStatementRestResource[] resources = new fhirP5.CapabilityStatementRestResource[capabilities.Rest[0].Resource.Length + 1];
+                    capabilities.Rest[0].Resource.CopyTo(resources, 1);
+                    resources[0] = GetSubscriptionCapabilityResource();
+                    capabilities.Rest[0].Resource = resources;
+                }
+
+                // serialize and return
+                response.Content = new StringContent(
+                    JsonConvert.SerializeObject(
+                        capabilities,
+                        new JsonSerializerSettings()
+                        {
+                            NullValueHandling = NullValueHandling.Ignore,
+                            ContractResolver = _contractResolver,
+                        }));
+                response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
+                response.StatusCode = System.Net.HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                // write to console
+                Console.WriteLine($"Failed to parse capability statement, {ex.Message}");
+            }
         }
 
         /// <summary>Gets topic capability resource.</summary>
