@@ -188,9 +188,18 @@ namespace argonaut_subscription_server_proxy.Backport
 
             foreach (r4.Extension ext in s4.Extension)
             {
-                if ((ext.Url == ExtensionUrlTopic) && (ext.Value is r4.Canonical))
+                if (ext.Url == ExtensionUrlTopic)
                 {
-                    s5.Topic = new r5.ResourceReference(((r4.Canonical)ext.Value).Value);
+                    if (ext.Value is r4.FhirUri)
+                    {
+                        s5.Topic = new r5.ResourceReference(((r4.FhirUri)ext.Value).Value);
+                        break;
+                    }
+                    else if (ext.Value is r4.Canonical)
+                    {
+                        s5.Topic = new r5.ResourceReference(((r4.Canonical)ext.Value).Value);
+                        break;
+                    }
                 }
             }
 
@@ -438,7 +447,8 @@ namespace argonaut_subscription_server_proxy.Backport
             s4.Extension.Add(new r4.Extension()
             {
                 Url = ExtensionUrlTopic,
-                Value = new r4.Canonical(s5.Topic.Url),
+                Value = new r4.FhirUri(s5.Topic.Url),
+                // Value = new r4.Canonical(s5.Topic.Url),
             });
 
             if (s5.HeartbeatPeriod != null)
