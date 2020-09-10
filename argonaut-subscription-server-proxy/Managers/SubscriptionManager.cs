@@ -229,7 +229,6 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
-        /// <param name="isR4">    True if is r 4, false if not.</param>
         public static void ProcessEncounter(string content, Uri location)
         {
             _ = System.Threading.Tasks.Task.Run((Action)(() => _instance._ProcessEncounter(content, location)));
@@ -1529,6 +1528,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 Status = subscription.Status,
                 Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
                 Topic = new ResourceReference(subscription.Topic.Reference),
+
                 // TODO: May2020 build still calls this NotificationType instead of Type
                 // TODO: May2020 build doesn't have QUERY-STATUS type yet
                 NotificationType = SubscriptionStatus.SubscriptionNotificationType.Heartbeat,

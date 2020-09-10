@@ -21,10 +21,10 @@ namespace argonaut_subscription_server_proxy.Backport
     /// <summary>A subscription converter.</summary>
     public abstract class SubscriptionConverter
     {
-        private const string ExtensionUrlTopic = "http://hl7.org/fhir/us/subscriptions-backport/StructureDefinition/backport-topic-canonical";
-        private const string ExtensionUrlHeartbeat = "http://hl7.org/fhir/us/subscriptions-backport/StructureDefinition/backport-heartbeat-period";
-        private const string ExtensionUrlTimeout = "http://hl7.org/fhir/us/subscriptions-backport/StructureDefinition/backport-timeout";
-        private const string ExtensionUrlContent = "http://hl7.org/fhir/us/subscriptions-backport/StructureDefinition/backport-payload-content";
+        private const string ExtensionUrlTopic = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-topic-canonical";
+        private const string ExtensionUrlHeartbeat = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-heartbeat-period";
+        private const string ExtensionUrlTimeout = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-timeout";
+        private const string ExtensionUrlContent = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content";
 
         private const string CanonicalChannelType = "http://hl7.org/fhir/ValueSet/subscription-channel-type";
 
