@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
 		..\CONTRIBUTING.MD = ..\CONTRIBUTING.MD
+		..\Dockerfile = ..\Dockerfile
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
 		..\stylecop.json = ..\stylecop.json
@@ -15,10 +16,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "argonaut-subscription-server-proxy", "..\argonaut-subscription-server-proxy\argonaut-subscription-server-proxy.csproj", "{16FBE99B-5F8B-41A8-935A-44AAEFC28DCC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevOps", "DevOps", "{639E60EE-159E-40DA-9C75-554FC725AED8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GH Workflows", "GH Workflows", "{386B6245-B98E-4E28-BDF5-BF077B76B121}"
 	ProjectSection(SolutionItems) = preProject
-		..\.devops\azure-pipelines.yml = ..\.devops\azure-pipelines.yml
-		..\.devops\Dockerfile = ..\.devops\Dockerfile
+		..\.github\workflows\main.yml = ..\.github\workflows\main.yml
 	EndProjectSection
 EndProject
 Global
