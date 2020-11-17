@@ -21,6 +21,7 @@ using fhir5.Hl7.Fhir.Model;
 using fhir5.Hl7.Fhir.Rest;
 using fhir5.Hl7.Fhir.Serialization;
 using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -418,7 +419,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = r4.Bundle.BundleType.Searchset,
                 Total = _idSubscriptionDict.Count,
-                Meta = new r4.Meta()
+                Meta = new Meta()
                 {
                     LastUpdated = new DateTimeOffset(DateTime.Now.ToUniversalTime()),
                 },
@@ -430,7 +431,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 bundle.Entry.Add(new r4.Bundle.EntryComponent()
                 {
                     FullUrl = Program.UrlForResourceId("Subscription", subscription.Id),
-                    Resource = (r4.Resource)SubscriptionConverter.ToR4(subscription),
+                    Resource = (Resource)SubscriptionConverter.ToR4(subscription),
                     Search = new r4.Bundle.SearchComponent()
                     {
                         Mode = r4.Bundle.SearchEntryMode.Match,
@@ -626,7 +627,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     // traverse entries
                     foreach (Bundle.EntryComponent entry in results.Entry)
                     {
-                        groups.Add($"patient:{entry.Resource.ResourceType}/{entry.Resource.Id}");
+                        groups.Add($"patient:{entry.Resource.TypeName}/{entry.Resource.Id}");
                     }
                 }
             }
@@ -673,7 +674,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     // traverse entries
                     foreach (r4.Bundle.EntryComponent entry in results.Entry)
                     {
-                        groups.Add($"patient:{entry.Resource.ResourceType}/{entry.Resource.Id}");
+                        groups.Add($"patient:{entry.Resource.TypeName}/{entry.Resource.Id}");
                     }
                 }
             }
@@ -1355,11 +1356,13 @@ namespace argonaut_subscription_server_proxy.Managers
                 // attempt to create our client
                 try
                 {
-                    client = new FhirClient(Program.FhirServerUrl)
-                    {
-                        PreferredFormat = ResourceFormat.Json,
-                        PreferredReturn = Prefer.ReturnRepresentation,
-                    };
+                    client = new FhirClient(
+                        Program.FhirServerUrl,
+                        new Hl7.Fhir.Rest.FhirClientSettings()
+                        {
+                            PreferredFormat = Hl7.Fhir.Rest.ResourceFormat.Json,
+                            PreferredReturn = Hl7.Fhir.Rest.Prefer.ReturnRepresentation,
+                        });
 
                     // valid
                     return true;
@@ -1407,11 +1410,13 @@ namespace argonaut_subscription_server_proxy.Managers
                 // attempt to create our client
                 try
                 {
-                    client = new r4r.FhirClient(Program.FhirServerUrl)
-                    {
-                        PreferredFormat = r4r.ResourceFormat.Json,
-                        PreferredReturn = r4r.Prefer.ReturnRepresentation,
-                    };
+                    client = new r4r.FhirClient(
+                        Program.FhirServerUrl,
+                        new Hl7.Fhir.Rest.FhirClientSettings()
+                        {
+                            PreferredFormat = Hl7.Fhir.Rest.ResourceFormat.Json,
+                            PreferredReturn = Hl7.Fhir.Rest.Prefer.ReturnRepresentation,
+                        });
 
                     // valid
                     return true;
@@ -1467,28 +1472,28 @@ namespace argonaut_subscription_server_proxy.Managers
             long eventCount = _instance._idEventCountDict[subscription.Id];
 
             status = new r4.Parameters();
-            status.Add("subscription-url", new r4.FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
-            status.Add("subscription-topic-url", new r4.FhirUri(subscription.Topic.Url));
-            status.Add("type", new r4.Code("query-status"));
-            status.Add("subscription-event-count", new r4.UnsignedInt((int)eventCount));
-            status.Add("bundle-event-count", new r4.UnsignedInt(0));
+            status.Add("subscription-url", new FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
+            status.Add("subscription-topic-url", new FhirUri(subscription.Topic.Url));
+            status.Add("type", new Code("query-status"));
+            status.Add("subscription-event-count", new UnsignedInt((int)eventCount));
+            status.Add("bundle-event-count", new UnsignedInt(0));
 
             switch (subscription.Status)
             {
                 case SubscriptionState.Active:
-                    status.Add("status", new r4.Code("active"));
+                    status.Add("status", new Code("active"));
                     break;
 
                 case SubscriptionState.Error:
-                    status.Add("status", new r4.Code("error"));
+                    status.Add("status", new Code("error"));
                     break;
 
                 case SubscriptionState.Off:
-                    status.Add("status", new r4.Code("off"));
+                    status.Add("status", new Code("off"));
                     break;
 
                 case SubscriptionState.Requested:
-                    status.Add("status", new r4.Code("requested"));
+                    status.Add("status", new Code("requested"));
                     break;
                 default:
                     break;
@@ -1527,11 +1532,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 EventsInNotification = 0,
                 Status = subscription.Status,
                 Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
-                Topic = new ResourceReference(subscription.Topic.Reference),
-
-                // TODO: May2020 build still calls this NotificationType instead of Type
-                // TODO: May2020 build doesn't have QUERY-STATUS type yet
-                NotificationType = SubscriptionStatus.SubscriptionNotificationType.Heartbeat,
+                Topic = new Canonical(subscription.Topic.Reference),
+                Type = SubscriptionStatus.SubscriptionNotificationType.QueryStatus,
             };
 
             return true;
@@ -1545,7 +1547,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
         public static void BundleForSubscriptionNotificationR4(
             Subscription subscription,
-            r4.Resource content,
+            Resource content,
             out r4.Bundle bundle,
             out long subscriptionEventCount)
         {
@@ -1572,32 +1574,32 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = r4.Bundle.BundleType.History,
                 Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new r4.Meta(),
+                Meta = new Meta(),
                 Entry = new List<r4.Bundle.EntryComponent>(),
             };
 
             r4.Parameters status = new r4.Parameters();
-            status.Add("subscription-url", new r4.FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
-            status.Add("subscription-topic-url", new r4.FhirUri(subscription.Topic.Url));
-            status.Add("subscription-event-count", new r4.UnsignedInt((int)subscriptionEventCount));
-            status.Add("bundle-event-count", new r4.UnsignedInt((content == null) ? 0 : 1));
+            status.Add("subscription-url", new FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
+            status.Add("subscription-topic-url", new FhirUri(subscription.Topic.Url));
+            status.Add("subscription-event-count", new UnsignedInt((int)subscriptionEventCount));
+            status.Add("bundle-event-count", new UnsignedInt((content == null) ? 0 : 1));
 
             switch (subscription.Status)
             {
                 case SubscriptionState.Active:
-                    status.Add("status", new r4.Code("active"));
+                    status.Add("status", new Code("active"));
                     break;
 
                 case SubscriptionState.Error:
-                    status.Add("status", new r4.Code("error"));
+                    status.Add("status", new Code("error"));
                     break;
 
                 case SubscriptionState.Off:
-                    status.Add("status", new r4.Code("off"));
+                    status.Add("status", new Code("off"));
                     break;
 
                 case SubscriptionState.Requested:
-                    status.Add("status", new r4.Code("requested"));
+                    status.Add("status", new Code("requested"));
                     break;
                 default:
                     break;
@@ -1607,16 +1609,16 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 if (subscriptionEventCount == 0)
                 {
-                    status.Add("type", new r4.Code("handshake"));
+                    status.Add("type", new Code("handshake"));
                 }
                 else
                 {
-                    status.Add("type", new r4.Code("heartbeat"));
+                    status.Add("type", new Code("heartbeat"));
                 }
             }
             else
             {
-                status.Add("type", new r4.Code("event-notification"));
+                status.Add("type", new Code("event-notification"));
             }
 
             bundle.Entry.Add(new r4.Bundle.EntryComponent()
@@ -1696,23 +1698,23 @@ namespace argonaut_subscription_server_proxy.Managers
                 EventsInNotification = (content == null) ? 0 : 1,
                 Status = subscription.Status,
                 Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
-                Topic = new ResourceReference(subscription.Topic.Reference),
+                Topic = new Canonical(subscription.Topic.Reference),
             };
 
             if (content == null)
             {
                 if (subscriptionEventCount == 0)
                 {
-                    status.NotificationType = SubscriptionStatus.SubscriptionNotificationType.Handshake;
+                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Handshake;
                 }
                 else
                 {
-                    status.NotificationType = SubscriptionStatus.SubscriptionNotificationType.Heartbeat;
+                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Heartbeat;
                 }
             }
             else
             {
-                status.NotificationType = SubscriptionStatus.SubscriptionNotificationType.EventNotification;
+                status.Type = SubscriptionStatus.SubscriptionNotificationType.EventNotification;
             }
 
             bundle.AddResourceEntry(status, Program.UrlForResourceId(status.TypeName, status.Id));
@@ -1815,7 +1817,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                     // done
                     _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                    _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+                    //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
 
                     return false;
                 }
@@ -1824,7 +1826,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
                 {
                     _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
-                    _idSubscriptionDict[subscription.Id].Error = null;
+                    //_idSubscriptionDict[subscription.Id].Error = null;
                 }
 
                 // tell the user
@@ -1850,7 +1852,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" caused exception: {ex.Message}");
 
                 _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
+                //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
 
                 return false;
             }
@@ -2074,7 +2076,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" caused exception: {ex.Message}");
 
                 _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
+                //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
 
                 return false;
             }
@@ -2083,12 +2085,12 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>
-        /// Attempts to notify subscription r 4 a r4.Resource from the given string.
+        /// Attempts to notify subscription r 4 a Resource from the given string.
         /// </summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="content">       (Optional) The content.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TryNotifySubscriptionR4(string subscriptionId, r4.Resource content = null)
+        private bool TryNotifySubscriptionR4(string subscriptionId, Resource content = null)
         {
             // sanity checks
             if (string.IsNullOrEmpty(subscriptionId) ||

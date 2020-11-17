@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using argonaut_subscription_server_proxy.Managers;
+using Hl7.Fhir.Model;
 using r4 = fhir4.Hl7.Fhir.Model;
 using r4s = fhir4.Hl7.Fhir.Serialization;
 using r5 = fhir5.Hl7.Fhir.Model;
@@ -27,36 +28,6 @@ namespace argonaut_subscription_server_proxy.Backport
         private const string ExtensionUrlContent = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content";
 
         private const string CanonicalChannelType = "http://hl7.org/fhir/ValueSet/subscription-channel-type";
-
-        /// <summary>Coding to r 4.</summary>
-        /// <param name="c5">The fifth Coding.</param>
-        /// <returns>A r4.Coding.</returns>
-        private static r4.Coding CodingToR4(r5.Coding c5)
-        {
-            return new r4.Coding()
-            {
-                System = c5.System,
-                UserSelected = c5.UserSelected,
-                Display = c5.Display,
-                Code = c5.Code,
-                Version = c5.Version,
-            };
-        }
-
-        /// <summary>Coding to r 5.</summary>
-        /// <param name="c4">The fourth Coding.</param>
-        /// <returns>A r5.Coding.</returns>
-        private static r5.Coding CodingToR5(r4.Coding c4)
-        {
-            return new r5.Coding()
-            {
-                System = c4.System,
-                UserSelected = c4.UserSelected,
-                Display = c4.Display,
-                Code = c4.Code,
-                Version = c4.Version,
-            };
-        }
 
         /// <summary>Converts a FHIR R4 Subscription to FHIR R5.</summary>
         /// <param name="s4">The fourth Subscription.</param>
@@ -82,7 +53,7 @@ namespace argonaut_subscription_server_proxy.Backport
 
             if (s4.Meta != null)
             {
-                s5.Meta = new r5.Meta();
+                s5.Meta = new Meta();
 
                 if (s4.Meta.LastUpdated != null)
                 {
@@ -96,10 +67,10 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if (s4.Meta.Security != null)
                 {
-                    s5.Meta.Security = new List<r5.Coding>();
-                    foreach (r4.Coding c4 in s4.Meta.Security)
+                    s5.Meta.Security = new List<Coding>();
+                    foreach (Coding c4 in s4.Meta.Security)
                     {
-                        s5.Meta.Security.Add(CodingToR5(c4));
+                        s5.Meta.Security.Add((Coding)c4.DeepCopy());
                     }
                 }
 
@@ -110,10 +81,10 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if (s4.Meta.Tag != null)
                 {
-                    s5.Meta.Tag = new List<r5.Coding>();
-                    foreach (r4.Coding c4 in s4.Meta.Tag)
+                    s5.Meta.Tag = new List<Coding>();
+                    foreach (Coding c4 in s4.Meta.Tag)
                     {
-                        s5.Meta.Tag.Add(CodingToR5(c4));
+                        s5.Meta.Tag.Add((Coding)c4.DeepCopy());
                     }
                 }
             }
@@ -144,7 +115,7 @@ namespace argonaut_subscription_server_proxy.Backport
             switch (s4.Channel.Type)
             {
                 case r4.Subscription.SubscriptionChannelType.Email:
-                    s5.ChannelType = new r5.Coding()
+                    s5.ChannelType = new Coding()
                     {
                         System = CanonicalChannelType,
                         Code = "email",
@@ -152,7 +123,7 @@ namespace argonaut_subscription_server_proxy.Backport
                     break;
 
                 case r4.Subscription.SubscriptionChannelType.Message:
-                    s5.ChannelType = new r5.Coding()
+                    s5.ChannelType = new Coding()
                     {
                         System = CanonicalChannelType,
                         Code = "message",
@@ -160,7 +131,7 @@ namespace argonaut_subscription_server_proxy.Backport
                     break;
 
                 case r4.Subscription.SubscriptionChannelType.RestHook:
-                    s5.ChannelType = new r5.Coding()
+                    s5.ChannelType = new Coding()
                     {
                         System = CanonicalChannelType,
                         Code = "rest-hook",
@@ -168,7 +139,7 @@ namespace argonaut_subscription_server_proxy.Backport
                     break;
 
                 case r4.Subscription.SubscriptionChannelType.Websocket:
-                    s5.ChannelType = new r5.Coding()
+                    s5.ChannelType = new Coding()
                     {
                         System = CanonicalChannelType,
                         Code = "websocket",
@@ -186,18 +157,18 @@ namespace argonaut_subscription_server_proxy.Backport
                 return null;
             }
 
-            foreach (r4.Extension ext in s4.Extension)
+            foreach (Extension ext in s4.Extension)
             {
                 if (ext.Url == ExtensionUrlTopic)
                 {
-                    if (ext.Value is r4.FhirUri)
+                    if (ext.Value is FhirUri)
                     {
-                        s5.Topic = new r5.ResourceReference(((r4.FhirUri)ext.Value).Value);
+                        s5.Topic = new ResourceReference(((FhirUri)ext.Value).Value);
                         break;
                     }
-                    else if (ext.Value is r4.Canonical)
+                    else if (ext.Value is Canonical)
                     {
-                        s5.Topic = new r5.ResourceReference(((r4.Canonical)ext.Value).Value);
+                        s5.Topic = new ResourceReference(((Canonical)ext.Value).Value);
                         break;
                     }
                 }
@@ -232,22 +203,22 @@ namespace argonaut_subscription_server_proxy.Backport
 
             if (s4.Channel.Extension != null)
             {
-                foreach (r4.Extension ext in s4.Channel.Extension)
+                foreach (Extension ext in s4.Channel.Extension)
                 {
                     switch (ext.Url)
                     {
                         case ExtensionUrlHeartbeat:
-                            if ((ext.Value != null) && (ext.Value is r4.UnsignedInt))
+                            if ((ext.Value != null) && (ext.Value is UnsignedInt))
                             {
-                                s5.HeartbeatPeriod = ((r4.UnsignedInt)ext.Value).Value;
+                                s5.HeartbeatPeriod = ((UnsignedInt)ext.Value).Value;
                             }
 
                             break;
 
                         case ExtensionUrlTimeout:
-                            if ((ext.Value != null) && (ext.Value is r4.UnsignedInt))
+                            if ((ext.Value != null) && (ext.Value is UnsignedInt))
                             {
-                                s5.Timeout = ((r4.UnsignedInt)ext.Value).Value;
+                                s5.Timeout = ((UnsignedInt)ext.Value).Value;
                             }
 
                             break;
@@ -258,11 +229,11 @@ namespace argonaut_subscription_server_proxy.Backport
             if ((s4.Channel.PayloadElement.Extension != null) &&
                 (s4.Channel.PayloadElement.Extension.Count > 0))
             {
-                foreach (r4.Extension ext in s4.Channel.PayloadElement.Extension)
+                foreach (Extension ext in s4.Channel.PayloadElement.Extension)
                 {
-                    if ((ext.Url == ExtensionUrlContent) && (ext.Value is r4.Code))
+                    if ((ext.Url == ExtensionUrlContent) && (ext.Value is Code))
                     {
-                        switch (((r4.Code)ext.Value).Value)
+                        switch (((Code)ext.Value).Value)
                         {
                             case "empty":
                                 s5.Content = r5.Subscription.SubscriptionPayloadContent.Empty;
@@ -277,7 +248,7 @@ namespace argonaut_subscription_server_proxy.Backport
                                 break;
 
                             default:
-                                Console.WriteLine($"Invalid R4 Subscription.Channel.Payload Content: {((r4.Code)ext.Value).Value}");
+                                Console.WriteLine($"Invalid R4 Subscription.Channel.Payload Content: {((Code)ext.Value).Value}");
                                 return null;
                         }
                     }
@@ -370,7 +341,7 @@ namespace argonaut_subscription_server_proxy.Backport
 
             if (s5.Meta != null)
             {
-                s4.Meta = new r4.Meta();
+                s4.Meta = new Meta();
 
                 if (s5.Meta.LastUpdated != null)
                 {
@@ -384,10 +355,10 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if (s5.Meta.Security != null)
                 {
-                    s4.Meta.Security = new List<r4.Coding>();
-                    foreach (r5.Coding c5 in s5.Meta.Security)
+                    s4.Meta.Security = new List<Coding>();
+                    foreach (Coding c5 in s5.Meta.Security)
                     {
-                        s4.Meta.Security.Add(CodingToR4(c5));
+                        s4.Meta.Security.Add((Coding)c5.DeepCopy());
                     }
                 }
 
@@ -398,10 +369,10 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if (s5.Meta.Tag != null)
                 {
-                    s4.Meta.Tag = new List<r4.Coding>();
-                    foreach (r5.Coding c5 in s5.Meta.Tag)
+                    s4.Meta.Tag = new List<Coding>();
+                    foreach (Coding c5 in s5.Meta.Tag)
                     {
-                        s4.Meta.Tag.Add(CodingToR4(c5));
+                        s4.Meta.Tag.Add((Coding)c5.DeepCopy());
                     }
                 }
             }
@@ -444,62 +415,62 @@ namespace argonaut_subscription_server_proxy.Backport
                     break;
             }
 
-            s4.Extension.Add(new r4.Extension()
+            s4.Extension.Add(new Extension()
             {
                 Url = ExtensionUrlTopic,
-                Value = new r4.FhirUri(s5.Topic.Url),
+                Value = new FhirUri(s5.Topic.Url),
                 // Value = new r4.Canonical(s5.Topic.Url),
             });
 
             if (s5.HeartbeatPeriod != null)
             {
-                s4.Channel.Extension.Add(new r4.Extension()
+                s4.Channel.Extension.Add(new Extension()
                 {
                     Url = ExtensionUrlHeartbeat,
-                    Value = new r4.UnsignedInt(s5.HeartbeatPeriod),
+                    Value = new UnsignedInt(s5.HeartbeatPeriod),
                 });
             }
 
             if (s5.Timeout != null)
             {
-                s4.Channel.Extension.Add(new r4.Extension()
+                s4.Channel.Extension.Add(new Extension()
                 {
                     Url = ExtensionUrlTimeout,
-                    Value = new r4.UnsignedInt(s5.Timeout),
+                    Value = new UnsignedInt(s5.Timeout),
                 });
             }
 
             switch (s5.Content)
             {
                 case r5.Subscription.SubscriptionPayloadContent.Empty:
-                    s4.Channel.PayloadElement.Extension = new List<r4.Extension>()
+                    s4.Channel.PayloadElement.Extension = new List<Extension>()
                     {
-                        new r4.Extension()
+                        new Extension()
                         {
                             Url = ExtensionUrlContent,
-                            Value = new r4.Code("empty"),
+                            Value = new Code("empty"),
                         },
                     };
                     break;
 
                 case r5.Subscription.SubscriptionPayloadContent.IdOnly:
-                    s4.Channel.PayloadElement.Extension = new List<r4.Extension>()
+                    s4.Channel.PayloadElement.Extension = new List<Extension>()
                     {
-                        new r4.Extension()
+                        new Extension()
                         {
                             Url = ExtensionUrlContent,
-                            Value = new r4.Code("id-only"),
+                            Value = new Code("id-only"),
                         },
                     };
                     break;
 
                 case r5.Subscription.SubscriptionPayloadContent.FullResource:
-                    s4.Channel.PayloadElement.Extension = new List<r4.Extension>()
+                    s4.Channel.PayloadElement.Extension = new List<Extension>()
                     {
-                        new r4.Extension()
+                        new Extension()
                         {
                             Url = ExtensionUrlContent,
-                            Value = new r4.Code("full-resource"),
+                            Value = new Code("full-resource"),
                         },
                     };
                     break;
@@ -518,11 +489,11 @@ namespace argonaut_subscription_server_proxy.Backport
                     {
                         if (addedCount++ == 0)
                         {
-                            sb.Append("?");
+                            sb.Append('?');
                         }
                         else
                         {
-                            sb.Append("&");
+                            sb.Append('&');
                         }
 
                         sb.Append(value);

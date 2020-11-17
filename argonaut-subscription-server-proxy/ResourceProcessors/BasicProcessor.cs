@@ -22,6 +22,7 @@ using r4 = fhir4.Hl7.Fhir.Model;
 using r4s = fhir4.Hl7.Fhir.Serialization;
 using r5 = fhir5.Hl7.Fhir.Model;
 using r5s = fhir5.Hl7.Fhir.Serialization;
+using Hl7.Fhir.Model;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -159,7 +160,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                                 basic.Code.Coding.Any())
                             {
                                 // look for codes we want
-                                foreach (r5.Coding coding in basic.Code.Coding)
+                                foreach (Coding coding in basic.Code.Coding)
                                 {
                                     if (coding.System.Equals("http://hl7.org/fhir/resource-types", StringComparison.Ordinal) &&
                                         coding.Code.Equals("R5SubscriptionTopic", StringComparison.Ordinal))

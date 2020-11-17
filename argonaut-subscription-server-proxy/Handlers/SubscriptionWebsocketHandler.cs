@@ -15,6 +15,7 @@ using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace argonaut_subscription_server_proxy.Handlers
 {
@@ -61,7 +62,7 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <param name="matchUrl">      URL to match.</param>
         public SubscriptionWebsocketHandler(
             RequestDelegate nextDelegate,
-            IApplicationLifetime appLifetime,
+            IHostApplicationLifetime appLifetime,
             IConfiguration iConfiguration,
             string matchUrl)
         {

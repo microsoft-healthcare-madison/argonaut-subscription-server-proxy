@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Backport;
 using argonaut_subscription_server_proxy.Managers;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -182,7 +183,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         }
 
         /// <summary>Process the operation topic list R4.</summary>
-        /// <param name="context"> [in,out] The context.</param>
         /// <param name="response">[in,out] The response.</param>
         internal static void ProcessOperationTopicListR4(
             ref HttpResponseMessage response)
@@ -191,7 +191,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             foreach (r5.SubscriptionTopic topic in SubscriptionTopicManager.GetTopicList())
             {
-                topics.Add("subscription-topic-canonical", new r4.Canonical(topic.Url));
+                topics.Add("subscription-topic-canonical", new Canonical(topic.Url));
             }
 
             ProcessorUtils.SerializeR4(ref response, topics);
@@ -228,7 +228,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 Type = r4.Bundle.BundleType.Searchset,
                 Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new r4.Meta(),
+                Meta = new Meta(),
                 Entry = new List<r4.Bundle.EntryComponent>(),
             };
 
@@ -282,7 +282,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 Type = r5.Bundle.BundleType.Searchset,
                 Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new r5.Meta(),
+                Meta = new Meta(),
                 Entry = new List<r5.Bundle.EntryComponent>(),
             };
 

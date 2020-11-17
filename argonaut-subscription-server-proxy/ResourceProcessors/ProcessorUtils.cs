@@ -10,12 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using r4 = fhir4.Hl7.Fhir.Model;
 using r4s = fhir4.Hl7.Fhir.Serialization;
 using r5 = fhir5.Hl7.Fhir.Model;
 using r5s = fhir5.Hl7.Fhir.Serialization;
-
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -33,7 +33,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>Serialize via R4.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
-        internal static void SerializeR4(ref HttpResponseMessage response, r4.Resource resource)
+        internal static void SerializeR4(ref HttpResponseMessage response, Resource resource)
         {
             r4s.FhirJsonSerializer serializer = new r4s.FhirJsonSerializer(null);
 
@@ -46,7 +46,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>Serialize via R5</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
-        internal static void SerializeR5(ref HttpResponseMessage response, r5.Resource resource)
+        internal static void SerializeR5(ref HttpResponseMessage response, Resource resource)
         {
             r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer(null);
 

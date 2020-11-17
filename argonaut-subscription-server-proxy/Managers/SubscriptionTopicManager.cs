@@ -12,6 +12,7 @@ using System.Linq;
 using fhir5.Hl7.Fhir.Model;
 using fhir5.Hl7.Fhir.Serialization;
 using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 

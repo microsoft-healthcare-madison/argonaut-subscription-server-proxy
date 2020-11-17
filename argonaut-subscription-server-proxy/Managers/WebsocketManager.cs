@@ -64,7 +64,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="guid">Unique identifier.</param>
         public static void UnregisterClient(Guid guid)
         {
-            if (guid == null)
+            if (guid == Guid.Empty)
             {
                 return;
             }
@@ -83,7 +83,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetClient(Guid guid, out WebsocketClientInformation client)
         {
-            if (guid == null)
+            if (guid == Guid.Empty)
             {
                 client = null;
                 return false;
@@ -144,7 +144,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool RemoveSubscriptionFromClient(string subscriptionId, Guid clientGuid)
         {
-            if (string.IsNullOrEmpty(subscriptionId) || (clientGuid == null))
+            if (string.IsNullOrEmpty(subscriptionId) || (clientGuid == Guid.Empty))
             {
                 return false;
             }
