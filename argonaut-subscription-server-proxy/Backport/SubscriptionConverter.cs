@@ -27,6 +27,9 @@ namespace argonaut_subscription_server_proxy.Backport
         private const string ExtensionUrlTimeout = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-timeout";
         private const string ExtensionUrlContent = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content";
 
+        private const string ExtensionNotificationUrlLocaltion = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-notification-url-location";
+        private const string ExtensionMaxCount = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-max-count";
+
         private const string CanonicalChannelType = "http://hl7.org/fhir/ValueSet/subscription-channel-type";
 
         /// <summary>Converts a FHIR R4 Subscription to FHIR R5.</summary>
@@ -219,6 +222,22 @@ namespace argonaut_subscription_server_proxy.Backport
                             if ((ext.Value != null) && (ext.Value is UnsignedInt))
                             {
                                 s5.Timeout = ((UnsignedInt)ext.Value).Value;
+                            }
+
+                            break;
+
+                        case ExtensionNotificationUrlLocaltion:
+                            if ((ext.Value != null) && (ext.Value is Code))
+                            {
+                                // TODO: Need December 2020 R5 build
+                            }
+
+                            break;
+
+                        case ExtensionMaxCount:
+                            if ((ext.Value != null) && (ext.Value is PositiveInt))
+                            {
+                                // TODO: Need December 2020 R5 Build
                             }
 
                             break;
@@ -502,6 +521,12 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 s4.Criteria = sb.ToString();
             }
+
+            // TODO: Need December 2020 R5 build to add NotificationUrlLocation
+            s4.Channel.AddExtension(ExtensionNotificationUrlLocaltion, new Code("full-url"));
+
+            // TODO: Need December 2020 R5 build to add MaxCount
+            s4.Channel.AddExtension(ExtensionMaxCount, new PositiveInt(10));
 
             return s4;
         }
