@@ -336,7 +336,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 out r5.Subscription subscription,
                 out HttpStatusCode statusCode,
                 out string failureContent,
-                false,
                 true);
 
             // check for errors

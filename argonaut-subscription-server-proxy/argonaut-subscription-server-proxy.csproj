@@ -22,6 +22,7 @@
     <Compile Remove="Models\ResourceTrigger.cs" />
     <Compile Remove="Models\Subscription.cs" />
     <Compile Remove="Models\Topic.cs" />
+    <Compile Remove="ResourceProcessors\BasicProcessor.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -49,9 +49,6 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of identifier locks.</summary>
         private Dictionary<string, object> _idLockDict;
 
-        /// <summary>List of identifiers for the basic subscriptions.</summary>
-        private HashSet<string> _basicSubscriptionIds;
-
         /// <summary>A random-number generator for this class.</summary>
         private Random _rand;
 
@@ -90,7 +87,6 @@ namespace argonaut_subscription_server_proxy.Managers
             _idFhirVersionDict = new Dictionary<string, int>();
             _idEventCountDict = new Dictionary<string, long>();
             _idLockDict = new Dictionary<string, object>();
-            _basicSubscriptionIds = new HashSet<string>();
             _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
             _resourceSubscriptionDictLock = new object();
             _rand = new Random();
@@ -150,11 +146,10 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
-        /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
         /// <returns>The subscriptions bundle.</returns>
-        public static Bundle GetSubscriptionsBundle(bool wrapInBasic = false)
+        public static Bundle GetSubscriptionsBundle()
         {
-            return _instance._GetSubscriptionsBundle(wrapInBasic);
+            return _instance._GetSubscriptionsBundle();
         }
 
         /// <summary>Gets subscriptions bundle r 4.</summary>
@@ -166,15 +161,14 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Adds or updates a Subscription.</summary>
         /// <param name="subscription">The subscription.</param>
-        /// <param name="useBasic">    (Optional) True to use basic.</param>
-        public static void AddOrUpdate(Subscription subscription, bool useBasic = false)
+        public static void AddOrUpdate(Subscription subscription)
         {
             if (subscription == null)
             {
                 return;
             }
 
-            _instance._AddOrUpdate(subscription, useBasic);
+            _instance._AddOrUpdate(subscription);
         }
 
         /// <summary>Gets a subscription.</summary>
@@ -195,14 +189,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
-        /// <param name="useBasic">      (Optional) True to use basic.</param>
         /// <param name="isR4">          (Optional) True if is r 4, false if not.</param>
         public static void HandlePost(
                                         string content,
                                         out Subscription subscription,
                                         out HttpStatusCode statusCode,
                                         out string failureContent,
-                                        bool useBasic = false,
                                         bool isR4 = false)
         {
             _instance._HandlePost(
@@ -210,7 +202,6 @@ namespace argonaut_subscription_server_proxy.Managers
                 out subscription,
                 out statusCode,
                 out failureContent,
-                useBasic,
                 isR4);
         }
 
@@ -240,14 +231,6 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>A string.</returns>
         public static string UrlForSubscription(string subscriptionId)
         {
-            if (_instance._basicSubscriptionIds.Contains(subscriptionId))
-            {
-                return new Uri(
-                    new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
-                    new Uri($"Basic/{subscriptionId}", UriKind.Relative))
-                    .ToString();
-            }
-
             return new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"Subscription/{subscriptionId}", UriKind.Relative))
@@ -305,24 +288,6 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        /// <summary>Attempts to get basic serialized subscription a string from the given string.</summary>
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="serialized">    [out] The serialized.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetBasicSerialized(string subscriptionId, out string serialized)
-        {
-            if (TryGetSubscription(subscriptionId, out Subscription subscription))
-            {
-                Basic basic = _instance._WrapInBasic(subscription);
-                serialized = _instance._r5Serializer.SerializeToString(basic);
-
-                return true;
-            }
-
-            serialized = null;
-            return false;
-        }
-
         /// <summary>Determine if 'subscriptionId' exists.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -342,46 +307,9 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._idSubscriptionDict.ContainsKey(subscriptionId);
         }
 
-        /// <summary>Wrap in basic.</summary>
-        /// <param name="subscription">The subscription.</param>
-        /// <returns>A Basic.</returns>
-        public static Basic WrapInBasic(Subscription subscription)
-        {
-            if (subscription == null)
-            {
-                return null;
-            }
-
-            return _instance._WrapInBasic(subscription);
-        }
-
-        /// <summary>Wrap in basic.</summary>
-        /// <param name="subscription">The subscription.</param>
-        /// <returns>A Basic.</returns>
-        private Basic _WrapInBasic(Subscription subscription)
-        {
-            return new Basic()
-            {
-                Id = subscription.Id,
-                Code = new CodeableConcept(
-                    "http://hl7.org/fhir/resource-types",
-                    "R5Subscription",
-                    "Backported R5 Subscription"),
-                Extension = new List<Extension>()
-                {
-                    new Extension()
-                    {
-                        Url = "http://hl7.org/fhir/StructureDefinition/json-embedded-resource",
-                        Value = new FhirString(_r5Serializer.SerializeToString(subscription)),
-                    },
-                },
-            };
-        }
-
         /// <summary>Gets subscriptions bundle.</summary>
-        /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
         /// <returns>The subscriptions bundle.</returns>
-        private Bundle _GetSubscriptionsBundle(bool wrapInBasic = false)
+        private Bundle _GetSubscriptionsBundle()
         {
             Bundle bundle = new Bundle()
             {
@@ -399,7 +327,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 bundle.Entry.Add(new Bundle.EntryComponent()
                 {
                     FullUrl = Program.UrlForResourceId("Subscription", subscription.Id),
-                    Resource = wrapInBasic ? (Resource)WrapInBasic(subscription) : (Resource)subscription,
+                    Resource = (Resource)subscription,
                     Search = new Bundle.SearchComponent()
                     {
                         Mode = Bundle.SearchEntryMode.Match,
@@ -460,8 +388,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 string component = components[componentIndex];
 
                 // make sure that we hit a 'Subscription' component
-                if (component.Equals("subscription", StringComparison.OrdinalIgnoreCase) ||
-                    component.Equals("basic", StringComparison.OrdinalIgnoreCase))
+                if (component.Equals("subscription", StringComparison.OrdinalIgnoreCase))
                 {
                     foundSubscriptionComponent = true;
                     continue;
@@ -584,11 +511,6 @@ namespace argonaut_subscription_server_proxy.Managers
             if (_idLockDict.ContainsKey(id))
             {
                 _idLockDict.Remove(id);
-            }
-
-            if (_basicSubscriptionIds.Contains(id))
-            {
-                _basicSubscriptionIds.Remove(id);
             }
 
             // log this addition
@@ -850,14 +772,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
-        /// <param name="useBasic">      (Optional) True to use basic.</param>
         /// <param name="isR4">          (Optional) True if is r 4, false if not.</param>
         private void _HandlePost(
                                     string content,
                                     out Subscription subscription,
                                     out HttpStatusCode statusCode,
                                     out string failureContent,
-                                    bool useBasic = false,
                                     bool isR4 = false)
         {
             subscription = null;
@@ -931,7 +851,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.End = new DateTimeOffset(maxEnd.ToUniversalTime());
                 }
 
-                _AddOrUpdate(subscription, useBasic, isR4);
+                _AddOrUpdate(subscription, isR4);
 
                 bool shouldSendHandshake = false;
 
@@ -988,10 +908,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Adds or updates a Topic.</summary>
         /// <param name="subscription">The subscription.</param>
-        /// <param name="useBasic">    (Optional) True to use basic.</param>
         /// <param name="isR4">        (Optional) True if is r 4, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool _AddOrUpdate(Subscription subscription, bool useBasic = false, bool isR4 = false)
+        private bool _AddOrUpdate(Subscription subscription, bool isR4 = false)
         {
             // check for an existing subscription (may need to remove URL for cleanup)
             if (_idSubscriptionDict.ContainsKey(subscription.Id))
@@ -1019,12 +938,7 @@ namespace argonaut_subscription_server_proxy.Managers
             // add to the main dictionaries
             _idSubscriptionDict.Add(subscription.Id, subscription);
             _idEventCountDict.Add(subscription.Id, 0);
-            _idFhirVersionDict.Add(subscription.Id, (isR4 || useBasic) ? 4 : 5);
-
-            if (useBasic && (!_basicSubscriptionIds.Contains(subscription.Id)))
-            {
-                _basicSubscriptionIds.Add(subscription.Id);
-            }
+            _idFhirVersionDict.Add(subscription.Id, isR4 ? 4 : 5);
 
             // log this addition
             Console.WriteLine($" <<< added Subscription:" +
