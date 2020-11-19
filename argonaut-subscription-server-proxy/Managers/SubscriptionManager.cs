@@ -1364,12 +1364,16 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>
         /// Attempts to get subscription status r 4 the r4.Parameters from the given string.
         /// </summary>
-        /// <param name="id">    The identifier.</param>
-        /// <param name="status">[out] The status.</param>
+        /// <param name="id">                  The identifier.</param>
+        /// <param name="status">              [out] The status.</param>
+        /// <param name="eventsInNotification">The events in notification.</param>
+        /// <param name="isForQuery">          True if is for query, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscriptionStatusR4(
             string id,
-            out r4.Parameters status)
+            out r4.Parameters status,
+            int eventsInNotification,
+            bool isForQuery)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -1386,11 +1390,10 @@ namespace argonaut_subscription_server_proxy.Managers
             long eventCount = _instance._idEventCountDict[subscription.Id];
 
             status = new r4.Parameters();
-            status.Add("subscription-url", new FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
-            status.Add("subscription-topic-url", new FhirUri(subscription.Topic.Url));
-            status.Add("type", new Code("query-status"));
-            status.Add("subscription-event-count", new UnsignedInt((int)eventCount));
-            status.Add("bundle-event-count", new UnsignedInt(0));
+            status.Add("subscription", new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)));
+            status.Add("topic", new FhirUri(subscription.Topic.Url));
+            status.Add("events-since-subscription-start", new UnsignedInt((int)eventCount));
+            status.Add("events-in-notification", new UnsignedInt(eventsInNotification));
 
             switch (subscription.Status)
             {
@@ -1413,18 +1416,42 @@ namespace argonaut_subscription_server_proxy.Managers
                     break;
             }
 
+            if (isForQuery)
+            {
+                status.Add("type", new Code("query-status"));
+            }
+            else if (eventsInNotification == 0)
+            {
+                if (eventCount == 0)
+                {
+                    status.Add("type", new Code("handshake"));
+                }
+                else
+                {
+                    status.Add("type", new Code("heartbeat"));
+                }
+            }
+            else
+            {
+                status.Add("type", new Code("event-notification"));
+            }
+
             return true;
         }
 
         /// <summary>
         /// Attempts to get subscription status the SubscriptionStatus from the given Subscription.
         /// </summary>
-        /// <param name="id">    The identifier.</param>
-        /// <param name="status">[out] The status.</param>
+        /// <param name="id">                  The identifier.</param>
+        /// <param name="status">              [out] The status.</param>
+        /// <param name="eventsInNotification">The events in notification.</param>
+        /// <param name="isForQuery">          True if is for query, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscriptionStatus(
             string id,
-            out SubscriptionStatus status)
+            out SubscriptionStatus status,
+            int eventsInNotification,
+            bool isForQuery)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -1443,12 +1470,31 @@ namespace argonaut_subscription_server_proxy.Managers
             status = new SubscriptionStatus()
             {
                 EventsSinceSubscriptionStart = eventCount,
-                EventsInNotification = 0,
+                EventsInNotification = eventsInNotification,
                 Status = subscription.Status,
                 Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
                 Topic = new Canonical(subscription.Topic.Reference),
-                Type = SubscriptionStatus.SubscriptionNotificationType.QueryStatus,
             };
+
+            if (isForQuery)
+            {
+                status.Type = SubscriptionStatus.SubscriptionNotificationType.QueryStatus;
+            }
+            else if (eventsInNotification == 0)
+            {
+                if (eventCount == 0)
+                {
+                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Handshake;
+                }
+                else
+                {
+                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Heartbeat;
+                }
+            }
+            else
+            {
+                status.Type = SubscriptionStatus.SubscriptionNotificationType.EventNotification;
+            }
 
             return true;
         }
@@ -1459,11 +1505,13 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="content">               The content.</param>
         /// <param name="bundle">                [out] The bundle.</param>
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
+        /// <param name="isForQuery">            True if is for query, false if not.</param>
         public static void BundleForSubscriptionNotificationR4(
             Subscription subscription,
             Resource content,
             out r4.Bundle bundle,
-            out long subscriptionEventCount)
+            out long subscriptionEventCount,
+            bool isForQuery)
         {
             if (subscription == null)
             {
@@ -1492,54 +1540,14 @@ namespace argonaut_subscription_server_proxy.Managers
                 Entry = new List<r4.Bundle.EntryComponent>(),
             };
 
-            r4.Parameters status = new r4.Parameters();
-            status.Add("subscription-url", new FhirUri(Program.UrlForResourceId("Subscription", subscription.Id)));
-            status.Add("subscription-topic-url", new FhirUri(subscription.Topic.Url));
-            status.Add("subscription-event-count", new UnsignedInt((int)subscriptionEventCount));
-            status.Add("bundle-event-count", new UnsignedInt((content == null) ? 0 : 1));
-
-            switch (subscription.Status)
+            if (TryGetSubscriptionStatusR4(subscription.Id, out r4.Parameters status, (content == null) ? 0 : 1, isForQuery))
             {
-                case SubscriptionState.Active:
-                    status.Add("status", new Code("active"));
-                    break;
-
-                case SubscriptionState.Error:
-                    status.Add("status", new Code("error"));
-                    break;
-
-                case SubscriptionState.Off:
-                    status.Add("status", new Code("off"));
-                    break;
-
-                case SubscriptionState.Requested:
-                    status.Add("status", new Code("requested"));
-                    break;
-                default:
-                    break;
-            }
-
-            if (content == null)
-            {
-                if (subscriptionEventCount == 0)
+                bundle.Entry.Add(new r4.Bundle.EntryComponent()
                 {
-                    status.Add("type", new Code("handshake"));
-                }
-                else
-                {
-                    status.Add("type", new Code("heartbeat"));
-                }
+                    FullUrl = Program.UrlForResourceId(status.TypeName, status.Id),
+                    Resource = status,
+                });
             }
-            else
-            {
-                status.Add("type", new Code("event-notification"));
-            }
-
-            bundle.Entry.Add(new r4.Bundle.EntryComponent()
-            {
-                FullUrl = Program.UrlForResourceId(status.TypeName, status.Id),
-                Resource = status,
-            });
 
             // check if we are adding contents
             if ((content != null) && (subscription.Content != Subscription.SubscriptionPayloadContent.Empty))
@@ -1568,15 +1576,17 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Bundle for subscription notification.</summary>
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
-        /// <param name="subscription">The subscription.</param>
-        /// <param name="content">     The content.</param>
-        /// <param name="bundle">      [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">  [out] Number of events.</param>
+        /// <param name="subscription">          The subscription.</param>
+        /// <param name="content">               The content.</param>
+        /// <param name="bundle">                [out] The bundle.</param>
+        /// <param name="subscriptionEventCount">[out] Number of events.</param>
+        /// <param name="isForQuery">            True if is for query, false if not.</param>
         public static void BundleForSubscriptionNotification(
             Subscription subscription,
             Resource content,
             out Bundle bundle,
-            out long subscriptionEventCount)
+            out long subscriptionEventCount,
+            bool isForQuery)
         {
             if (subscription == null)
             {
@@ -1606,32 +1616,10 @@ namespace argonaut_subscription_server_proxy.Managers
                 Entry = new List<Bundle.EntryComponent>(),
             };
 
-            SubscriptionStatus status = new SubscriptionStatus()
+            if (TryGetSubscriptionStatus(subscription.Id, out SubscriptionStatus status, (content == null) ? 0 : 1, false))
             {
-                EventsSinceSubscriptionStart = subscriptionEventCount,
-                EventsInNotification = (content == null) ? 0 : 1,
-                Status = subscription.Status,
-                Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
-                Topic = new Canonical(subscription.Topic.Reference),
-            };
-
-            if (content == null)
-            {
-                if (subscriptionEventCount == 0)
-                {
-                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Handshake;
-                }
-                else
-                {
-                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Heartbeat;
-                }
+                bundle.AddResourceEntry(status, Program.UrlForResourceId(status.TypeName, status.Id));
             }
-            else
-            {
-                status.Type = SubscriptionStatus.SubscriptionNotificationType.EventNotification;
-            }
-
-            bundle.AddResourceEntry(status, Program.UrlForResourceId(status.TypeName, status.Id));
 
             // check if we are adding contents
             if ((content != null) && (subscription.Content != Subscription.SubscriptionPayloadContent.Empty))
@@ -2025,20 +2013,18 @@ namespace argonaut_subscription_server_proxy.Managers
                 subscription,
                 content,
                 out r4.Bundle bundle,
-                out long subscriptionEventCount);
+                out long subscriptionEventCount,
+                false);
 
             string json = _r4Serializer.SerializeToString(bundle);
 
-            // check for a rest-hook
             if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.rest_hook.Code)
             {
-                // **** send via hook ***
                 TryNotifyRestHook(subscription, json, contentType, contentId, subscriptionEventCount);
             }
 
             if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.email.Code)
             {
-                // send via email
                 TryNotifyEmail(subscription, json, contentType, contentId, subscriptionEventCount);
             }
 
@@ -2074,7 +2060,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 subscription,
                 content,
                 out Bundle bundle,
-                out long subscriptionEventCount);
+                out long subscriptionEventCount,
+                false);
 
             string json = _r5Serializer.SerializeToString(bundle);
 

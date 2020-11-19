@@ -234,7 +234,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             foreach (string id in ids)
             {
-                if (SubscriptionManager.TryGetSubscriptionStatusR4(id, out r4.Parameters status))
+                if (SubscriptionManager.TryGetSubscriptionStatusR4(id, out r4.Parameters status, 0, true))
                 {
                     bundle.Entry.Add(new r4.Bundle.EntryComponent()
                     {
@@ -288,7 +288,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             foreach (string id in ids)
             {
-                if (SubscriptionManager.TryGetSubscriptionStatus(id, out r5.SubscriptionStatus status))
+                if (SubscriptionManager.TryGetSubscriptionStatus(id, out r5.SubscriptionStatus status, 0, true))
                 {
                     bundle.Entry.Add(new r5.Bundle.EntryComponent()
                     {
