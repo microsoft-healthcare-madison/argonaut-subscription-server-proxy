@@ -328,7 +328,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             // grab the message body to look at
             System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
-            string requestContent = requestReader.ReadToEnd();
+            string requestContent = requestReader.ReadToEndAsync().Result;
 
             // check to see if the manager does anything with this text
             SubscriptionManager.HandlePost(
@@ -441,7 +441,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             // grab the message body to look at
             System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
-            string requestContent = requestReader.ReadToEnd();
+            string requestContent = requestReader.ReadToEndAsync().Result;
 
             // check to see if the manager does anything with this text
             SubscriptionManager.HandlePost(

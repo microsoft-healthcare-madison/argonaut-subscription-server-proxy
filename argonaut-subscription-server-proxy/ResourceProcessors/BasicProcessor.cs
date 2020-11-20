@@ -149,7 +149,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         {
                             // grab the message body to look at
                             System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body);
-                            string requestContent = requestReader.ReadToEnd();
+                            string requestContent = requestReader.ReadToEndAsync().Result;
 
                             r5s.FhirJsonParser parser = new r5s.FhirJsonParser();
                             r5.Basic basic = parser.Parse<r5.Basic>(requestContent);

@@ -144,7 +144,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
                     using (Stream responseStream = webResp.GetResponseStream())
                     using (StreamReader responseStreamReader = new StreamReader(responseStream))
                     {
-                        value = responseStreamReader.ReadToEnd();
+                        value = responseStreamReader.ReadToEndAsync().Result;
                         if (value.Length > 0)
                         {
                             object jo = null;
@@ -185,7 +185,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
                         using (Stream responseStream = ((HttpWebResponse)we.Response).GetResponseStream())
                         using (StreamReader responseStreamReader = new StreamReader(responseStream))
                         {
-                            value = responseStreamReader.ReadToEnd();
+                            value = responseStreamReader.ReadToEndAsync().Result;
                             response.Add("data", value);
                         }
                     }
