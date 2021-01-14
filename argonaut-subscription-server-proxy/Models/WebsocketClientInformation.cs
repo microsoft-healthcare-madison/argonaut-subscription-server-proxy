@@ -11,6 +11,16 @@ namespace argonaut_subscription_server_proxy.Models
     /// <summary>Information about the websocket client.</summary>
     public class WebsocketClientInformation
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebsocketClientInformation"/> class.
+        /// </summary>
+        public WebsocketClientInformation()
+        {
+            MessageQ = new ConcurrentQueue<string>();
+            SubscriptionIdSet = new HashSet<string>();
+            BoundTokenGuids = new HashSet<Guid>();
+        }
+
         /// <summary>Gets or sets the UID.</summary>
         /// <value>The UID.</value>
         public Guid Uid { get; set; }
@@ -26,6 +36,9 @@ namespace argonaut_subscription_server_proxy.Models
         /// <summary>Gets or sets the set the subscription identifiers belongs to.</summary>
         /// <value>The subscription identifiers set.</value>
         public HashSet<string> SubscriptionIdSet { get; set; }
+
+        /// <summary>Gets or sets the bound token guids.</summary>
+        public HashSet<Guid> BoundTokenGuids { get; set; }
 
         /// <summary>Client payload types.</summary>
         public sealed class WebsocketPayloadTypes

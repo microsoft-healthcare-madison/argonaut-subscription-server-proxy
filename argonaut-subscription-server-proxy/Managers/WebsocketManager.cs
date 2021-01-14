@@ -8,6 +8,7 @@ extern alias fhir5;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using argonaut_subscription_server_proxy.Models;
 using r4 = fhir4.Hl7.Fhir.Model;
 using r4s = fhir4.Hl7.Fhir.Serialization;
@@ -25,7 +26,11 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of unique identifier informations.</summary>
         private Dictionary<Guid, WebsocketClientInformation> _guidInfoDict;
 
+        /// <summary>Dictionary of subscription infos.</summary>
         private Dictionary<string, List<WebsocketClientInformation>> _subscriptionInfosDict;
+
+        /// <summary>Dictionary of websocket subscription binding tokens.</summary>
+        private Dictionary<Guid, SubscriptionWsBindingToken> _guidTokenDict;
 
         /// <summary>
         /// Prevents a default instance of the
@@ -35,6 +40,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             _guidInfoDict = new Dictionary<Guid, WebsocketClientInformation>();
             _subscriptionInfosDict = new Dictionary<string, List<WebsocketClientInformation>>();
+            _guidTokenDict = new Dictionary<Guid, SubscriptionWsBindingToken>();
         }
 
         /// <summary>Initializes this object.</summary>
@@ -75,9 +81,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        /// <summary>
-        /// Attempts to get client a WebsocketClientInformation from the given GUID.
-        /// </summary>
+        /// <summary>Attempts to get client a WebsocketClientInformation from the given GUID.</summary>
         /// <param name="guid">  Unique identifier.</param>
         /// <param name="client">[out] The client.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -106,18 +110,129 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
+        /// <summary>Registers the token described by token.</summary>
+        /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
+        /// <param name="token">The token.</param>
+        public static void RegisterToken(SubscriptionWsBindingToken token)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            _instance._guidTokenDict.Add(token.Token, token);
+        }
+
+        /// <summary>Bind client with token.</summary>
+        /// <param name="tokenGuid"> Unique identifier for the token.</param>
+        /// <param name="clientGuid">Unique identifier for the client.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        public static bool BindClientWithToken(Guid tokenGuid, Guid clientGuid)
+        {
+            if (!_instance._guidTokenDict.ContainsKey(tokenGuid))
+            {
+                return false;
+            }
+
+            if (!_instance._guidInfoDict.ContainsKey(clientGuid))
+            {
+                return false;
+            }
+
+            if (!_instance._guidTokenDict[tokenGuid].BindToClient(clientGuid))
+            {
+                return false;
+            }
+
+            _instance._guidInfoDict[clientGuid].BoundTokenGuids.Add(tokenGuid);
+
+            foreach (string subscriptionId in _instance._guidTokenDict[tokenGuid].SubscriptionIds)
+            {
+                if (!_instance._guidInfoDict[clientGuid].SubscriptionIdSet.Contains(subscriptionId))
+                {
+                    _instance._guidInfoDict[clientGuid].SubscriptionIdSet.Add(subscriptionId);
+                }
+
+                if (!_instance._subscriptionInfosDict.ContainsKey(subscriptionId))
+                {
+                    _instance._subscriptionInfosDict.Add(subscriptionId, new List<WebsocketClientInformation>());
+                    _instance._subscriptionInfosDict[subscriptionId].Add(_instance._guidInfoDict[clientGuid]);
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>Expires and Removes the token described by tokenGuid.</summary>
+        /// <param name="tokenGuid">Unique identifier for the token.</param>
+        public static void ExpireToken(Guid tokenGuid)
+        {
+            if (!_instance._guidTokenDict.ContainsKey(tokenGuid))
+            {
+                return;
+            }
+
+            Guid clientGuid = _instance._guidTokenDict[tokenGuid].BoundClient;
+
+            if (clientGuid == Guid.Empty)
+            {
+                _instance._guidTokenDict.Remove(tokenGuid);
+                return;
+            }
+
+            if (!_instance._guidInfoDict.ContainsKey(clientGuid))
+            {
+                _instance._guidTokenDict.Remove(tokenGuid);
+                return;
+            }
+
+            SubscriptionWsBindingToken token = _instance._guidTokenDict[tokenGuid];
+            WebsocketClientInformation clientInfo = _instance._guidInfoDict[clientGuid];
+
+            // if the client only has one token (this one), deactivate everything
+            if (clientInfo.BoundTokenGuids.Count == 1)
+            {
+                foreach (string subscriptionId in token.SubscriptionIds)
+                {
+                    RemoveSubscriptionFromClient(subscriptionId, clientGuid);
+                }
+            }
+
+            // TODO: for now, just assume it has been replaced with a newer replica
+            _instance._guidTokenDict.Remove(tokenGuid);
+            _instance._guidInfoDict[clientGuid].BoundTokenGuids.Remove(tokenGuid);
+
+            return;
+        }
+
+        /// <summary>Removes the expired tokens.</summary>
+        public static void RemoveExpiredTokens()
+        {
+            DateTime now = DateTime.Now;
+
+            List<SubscriptionWsBindingToken> tokens = _instance._guidTokenDict.Values.ToList();
+            foreach (SubscriptionWsBindingToken token in tokens)
+            {
+                if (token.ExpiresAt > now)
+                {
+                    ExpireToken(token.Token);
+                }
+            }
+        }
+
         /// <summary>Adds a subscription to client to 'clientGuid'.</summary>
         /// <param name="subscriptionId">Identifier for the subscription.</param>
         /// <param name="clientGuid">    Unique identifier for the client.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool AddSubscriptionToClient(string subscriptionId, Guid clientGuid)
         {
-            if (string.IsNullOrEmpty(subscriptionId) || (clientGuid == null))
+            if (string.IsNullOrEmpty(subscriptionId))
             {
                 return false;
             }
 
-            if (!SubscriptionManager.Exists(subscriptionId))
+            if ((!SubscriptionManagerR4.Exists(subscriptionId)) &&
+                (!SubscriptionManagerR5.Exists(subscriptionId)))
             {
                 return false;
             }
@@ -187,30 +302,33 @@ namespace argonaut_subscription_server_proxy.Managers
 
             foreach (WebsocketClientInformation client in _instance._subscriptionInfosDict[subscription.Id])
             {
-                string clientMessage = string.Empty;
+                // add this message to this client's queue (caller should have set it up correctly)
+                client.MessageQ.Enqueue(json);
 
-                // determine the type of message this client wants
-                switch (client.PayloadType)
-                {
-                    case WebsocketClientInformation.WebsocketPayloadTypes.Empty:
-                    case WebsocketClientInformation.WebsocketPayloadTypes.FullResource:
-                    case WebsocketClientInformation.WebsocketPayloadTypes.IdOnly:
+                //string clientMessage = string.Empty;
 
-                        // serialize our bundle as our message
-                        clientMessage = json;
+                //// determine the type of message this client wants
+                //switch (client.PayloadType)
+                //{
+                //    case WebsocketClientInformation.WebsocketPayloadTypes.Empty:
+                //    case WebsocketClientInformation.WebsocketPayloadTypes.FullResource:
+                //    case WebsocketClientInformation.WebsocketPayloadTypes.IdOnly:
 
-                        break;
+                //        // serialize our bundle as our message
+                //        clientMessage = json;
 
-                    case WebsocketClientInformation.WebsocketPayloadTypes.R4:
+                //        break;
 
-                        // send a notification
-                        clientMessage = $"ping {subscription.Id}";
+                //    case WebsocketClientInformation.WebsocketPayloadTypes.R4:
 
-                        break;
-                }
+                //        // send a notification
+                //        clientMessage = $"ping {subscription.Id}";
 
-                // add this message to this client's queue
-                client.MessageQ.Enqueue(clientMessage);
+                //        break;
+                //}
+
+                //// add this message to this client's queue
+                //client.MessageQ.Enqueue(clientMessage);
             }
         }
 

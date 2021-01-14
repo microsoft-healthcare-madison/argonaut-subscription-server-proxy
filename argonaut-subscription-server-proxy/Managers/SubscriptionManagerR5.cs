@@ -1,9 +1,8 @@
-﻿// <copyright file="SubscriptionManager.cs" company="Microsoft Corporation">
+﻿// <copyright file="SubscriptionManagerR5.cs" company="Microsoft Corporation">
 //     Copyright (c) Microsoft Corporation. All rights reserved.
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir4;
 extern alias fhir5;
 
 using System;
@@ -25,23 +24,17 @@ using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using r4 = fhir4.Hl7.Fhir.Model;
-using r4r = fhir4.Hl7.Fhir.Rest;
-using r4s = fhir4.Hl7.Fhir.Serialization;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
     /// <summary>Manager for subscriptions.</summary>
-    public class SubscriptionManager
+    public class SubscriptionManagerR5
     {
         /// <summary>The instance for singleton pattern.</summary>
-        private static SubscriptionManager _instance;
+        private static SubscriptionManagerR5 _instance;
 
         /// <summary>Dictionary of subscriptions, by ID.</summary>
         private Dictionary<string, Subscription> _idSubscriptionDict;
-
-        /// <summary>Dictionary of identifier fhir versions.</summary>
-        private Dictionary<string, int> _idFhirVersionDict;
 
         /// <summary>Dictionary of identifier status.</summary>
         private Dictionary<string, long> _idEventCountDict;
@@ -57,34 +50,24 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private HashSet<string> _supportedChannelTypes;
 
-        private Queue<FhirClient> _r5ClientQ;
-        private object _r5ClientQLock;
-
-        private Queue<r4r.FhirClient> _r4ClientQ;
-        private object _r4ClientQLock;
+        private Queue<FhirClient> _clientQ;
+        private object _clientQLock;
 
         private Thread _cleanUpThread;
 
-        /// <summary>The SendPulse email client.</summary>
-        private SendPulse.Sendpulse _sendpulseClient;
-
         private CamelCasePropertyNamesContractResolver _contractResolver;
 
-        private FhirJsonSerializer _r5Serializer;
-        private FhirJsonParser _r5Parser;
-
-        private r4s.FhirJsonSerializer _r4Serializer;
-        private r4s.FhirJsonParser _r4Parser;
+        private FhirJsonSerializer _fhirSerializer;
+        private FhirJsonParser _fhirParser;
 
         /// <summary>
         /// Prevents a default instance of the
-        /// <see cref="SubscriptionManager"/> class from being created.
+        /// <see cref="SubscriptionManagerR5"/> class from being created.
         /// </summary>
-        private SubscriptionManager()
+        private SubscriptionManagerR5()
         {
             // create our index objects
             _idSubscriptionDict = new Dictionary<string, Subscription>();
-            _idFhirVersionDict = new Dictionary<string, int>();
             _idEventCountDict = new Dictionary<string, long>();
             _idLockDict = new Dictionary<string, object>();
             _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
@@ -97,37 +80,19 @@ namespace argonaut_subscription_server_proxy.Managers
                 "email",
             };
 
-            _r5ClientQ = new Queue<FhirClient>();
-            _r5ClientQLock = new object();
-
-            _r4ClientQ = new Queue<r4r.FhirClient>();
-            _r4ClientQLock = new object();
+            _clientQ = new Queue<FhirClient>();
+            _clientQLock = new object();
 
             // create our clean-up thread
             _cleanUpThread = new Thread(new ThreadStart(CleanUpThreadFunc));
             _cleanUpThread.IsBackground = true;
             _cleanUpThread.Start();
 
-            if (string.IsNullOrEmpty(Program.Configuration["Sendpulse_User_Id"]) ||
-                string.IsNullOrEmpty(Program.Configuration["Sendpulse_Secret"]))
-            {
-                Console.WriteLine("Email information not found, will be disabled!");
-                _sendpulseClient = null;
-            }
-            else
-            {
-                // create our email client
-                _sendpulseClient = new SendPulse.Sendpulse(
-                    Program.Configuration["Sendpulse_User_Id"],
-                    Program.Configuration["Sendpulse_Secret"]);
-            }
 
             // serialization related
             _contractResolver = new CamelCasePropertyNamesContractResolver();
-            _r5Serializer = new FhirJsonSerializer();
-            _r5Parser = new FhirJsonParser();
-            _r4Serializer = new r4s.FhirJsonSerializer();
-            _r4Parser = new r4s.FhirJsonParser();
+            _fhirSerializer = new FhirJsonSerializer();
+            _fhirParser = new FhirJsonParser();
         }
 
         /// <summary>Initializes this object.</summary>
@@ -152,57 +117,22 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._GetSubscriptionsBundle();
         }
 
-        /// <summary>Gets subscriptions bundle r 4.</summary>
-        /// <returns>The subscriptions bundle r 4.</returns>
-        public static r4.Bundle GetSubscriptionsBundleR4()
-        {
-            return _instance._GetSubscriptionsBundleR4();
-        }
-
-        /// <summary>Adds or updates a Subscription.</summary>
-        /// <param name="subscription">The subscription.</param>
-        public static void AddOrUpdate(Subscription subscription)
-        {
-            if (subscription == null)
-            {
-                return;
-            }
-
-            _instance._AddOrUpdate(subscription);
-        }
-
-        /// <summary>Gets a subscription.</summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>The subscription.</returns>
-        public static Subscription GetSubscription(string id)
-        {
-            if (string.IsNullOrEmpty(id) || (!_instance._idSubscriptionDict.ContainsKey(id)))
-            {
-                return null;
-            }
-
-            return _instance._idSubscriptionDict[id];
-        }
-
         /// <summary>Handles a POST of a Subscription object.</summary>
         /// <param name="content">       The content.</param>
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
-        /// <param name="isR4">          (Optional) True if is r 4, false if not.</param>
         public static void HandlePost(
-                                        string content,
-                                        out Subscription subscription,
-                                        out HttpStatusCode statusCode,
-                                        out string failureContent,
-                                        bool isR4 = false)
+            string content,
+            out Subscription subscription,
+            out HttpStatusCode statusCode,
+            out string failureContent)
         {
             _instance._HandlePost(
                 content,
                 out subscription,
                 out statusCode,
-                out failureContent,
-                isR4);
+                out failureContent);
         }
 
         /// <summary>Handles the delete described by request.</summary>
@@ -233,7 +163,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             return new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
-                new Uri($"Subscription/{subscriptionId}", UriKind.Relative))
+                new Uri($"/r5/Subscription/{subscriptionId}", UriKind.Relative))
                 .ToString();
         }
 
@@ -253,24 +183,6 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        /// <summary>
-        /// Attempts to get subscription r 4 a r4.Subscription from the given string.
-        /// </summary>
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="subscription">  [out] The subscription.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetSubscriptionR4(string subscriptionId, out r4.Subscription subscription)
-        {
-            if (_instance._idSubscriptionDict.ContainsKey(subscriptionId))
-            {
-                subscription = SubscriptionConverter.ToR4(_instance._idSubscriptionDict[subscriptionId]);
-                return true;
-            }
-
-            subscription = null;
-            return false;
-        }
-
         /// <summary>Attempts to get serialized subscription a string from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="serialized">    [out] The serialized.</param>
@@ -279,7 +191,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             if (TryGetSubscription(subscriptionId, out Subscription subscription))
             {
-                serialized = _instance._r5Serializer.SerializeToString(subscription);
+                serialized = _instance._fhirSerializer.SerializeToString(subscription);
 
                 return true;
             }
@@ -326,43 +238,11 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 bundle.Entry.Add(new Bundle.EntryComponent()
                 {
-                    FullUrl = Program.UrlForResourceId("Subscription", subscription.Id),
+                    FullUrl = Program.UrlForR5ResourceId("Subscription", subscription.Id),
                     Resource = (Resource)subscription,
                     Search = new Bundle.SearchComponent()
                     {
                         Mode = Bundle.SearchEntryMode.Match,
-                    },
-                });
-            }
-
-            // return our bundle
-            return bundle;
-        }
-
-        /// <summary>Gets subscriptions bundle r 4.</summary>
-        /// <returns>The subscriptions bundle r 4.</returns>
-        private r4.Bundle _GetSubscriptionsBundleR4()
-        {
-            r4.Bundle bundle = new r4.Bundle()
-            {
-                Type = r4.Bundle.BundleType.Searchset,
-                Total = _idSubscriptionDict.Count,
-                Meta = new Meta()
-                {
-                    LastUpdated = new DateTimeOffset(DateTime.Now.ToUniversalTime()),
-                },
-                Entry = new List<r4.Bundle.EntryComponent>(),
-            };
-
-            foreach (Subscription subscription in _idSubscriptionDict.Values)
-            {
-                bundle.Entry.Add(new r4.Bundle.EntryComponent()
-                {
-                    FullUrl = Program.UrlForResourceId("Subscription", subscription.Id),
-                    Resource = (Resource)SubscriptionConverter.ToR4(subscription),
-                    Search = new r4.Bundle.SearchComponent()
-                    {
-                        Mode = r4.Bundle.SearchEntryMode.Match,
                     },
                 });
             }
@@ -504,9 +384,6 @@ namespace argonaut_subscription_server_proxy.Managers
             // remove from status
             _idEventCountDict.Remove(id);
 
-            // remove from version tracking
-            _idFhirVersionDict.Remove(id);
-
             // remove from the lock dictionary
             if (_idLockDict.ContainsKey(id))
             {
@@ -567,53 +444,6 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        /// <summary>Gets encounter patient groups.</summary>
-        /// <param name="encounter">The encounter.</param>
-        /// <param name="groups">   [out] The list.</param>
-        private void GetEncounterPatientGroupKeysR4(r4.Encounter encounter, out List<string> groups)
-        {
-            r4r.FhirClient client = null;
-            groups = new List<string>();
-
-            // attempt to get groups this patient may belong to
-            try
-            {
-                // get a FHIR client
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                if (!TryGetFhirClientR4(out client))
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                {
-                    return;
-                }
-
-                // ask for the groups for this patient
-                r4.Bundle results = client.Search<r4.Group>(new string[] { $"member={encounter.Subject.Reference}" });
-
-                if ((results != null) &&
-                    (results.Entry != null) &&
-                    (results.Entry.Count > 0))
-                {
-                    // traverse entries
-                    foreach (r4.Bundle.EntryComponent entry in results.Entry)
-                    {
-                        groups.Add($"patient:{entry.Resource.TypeName}/{entry.Resource.Id}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ProcessEncounter <<< failed to get groups, ignoring: {ex.Message}");
-            }
-            finally
-            {
-                if (client != null)
-                {
-                    // return to our queue
-                    ReturnFhirClientR4ToQ(ref client);
-                }
-            }
-        }
-
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
@@ -622,7 +452,6 @@ namespace argonaut_subscription_server_proxy.Managers
             List<Subscription> subscriptions = new List<Subscription>();
 
             Encounter e5 = null;
-            r4.Encounter e4 = null;
 
             // check to see if this resource is tracked (any subscriptions)
             if (!_resourceSubscriptionDict.ContainsKey("Encounter"))
@@ -637,8 +466,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 if ((!string.IsNullOrEmpty(content)) && (content.Length > 20))
                 {
                     // attempt to parse this encounter
-                    e4 = _r4Parser.Parse<r4.Encounter>(content);
-                    e5 = _r5Parser.Parse<Encounter>(content);
+                    e5 = _fhirParser.Parse<Encounter>(content);
                 }
             }
             catch (Exception)
@@ -647,33 +475,33 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // check for not having an encounter
-            if (e4 == null)
+            if (e5 == null)
             {
-                r4r.FhirClient client = null;
+                FhirClient client = null;
 
                 // attempt to retrieve the encounter
                 try
                 {
                     // get a FHIR client
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                    if (!TryGetFhirClientR4(out client))
+                    if (!TryGetFhirClient(out client))
 #pragma warning restore CA2000 // Dispose objects before losing scope
                     {
                         return;
                     }
 
                     // read the specified resource
-                    e4 = client.Read<r4.Encounter>(location);
+                    e5 = client.Read<Encounter>(location);
                 }
                 finally
                 {
                     // return the client
-                    ReturnFhirClientR4ToQ(ref client);
+                    ReturnFhirClientToQ(ref client);
                 }
             }
 
             // check for no resource
-            if (e4 == null)
+            if (e5 == null)
             {
                 Console.WriteLine("Could not get Encounter resource!");
                 return;
@@ -686,10 +514,10 @@ namespace argonaut_subscription_server_proxy.Managers
                 List<string> searchKeys = new List<string>();
 
                 // add our patient match key
-                searchKeys.Add($"patient:{e4.Subject.Reference}");
+                searchKeys.Add($"patient:{e5.Subject.Reference}");
 
                 // get the groups this patient belongs to
-                GetEncounterPatientGroupKeysR4(e4, out List<string> patientGroupKeys);
+                GetEncounterPatientGroupKeys(e5, out List<string> patientGroupKeys);
 
                 // add our patient group keys
                 searchKeys.AddRange(patientGroupKeys);
@@ -710,15 +538,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // notify all subscriptions
                 foreach (Subscription subscription in subscriptions)
                 {
-                    if (_idFhirVersionDict.ContainsKey(subscription.Id) &&
-                        (_idFhirVersionDict[subscription.Id] == 4))
-                    {
-                        TryNotifySubscriptionR4(subscription.Id, e4);
-                    }
-                    else
-                    {
-                        TryNotifySubscription(subscription.Id, e5);
-                    }
+                    TryNotifySubscription(subscription.Id, e5);
                 }
             }
             catch (Exception ex)
@@ -772,13 +592,11 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">  [out] The subscription.</param>
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
-        /// <param name="isR4">          (Optional) True if is r 4, false if not.</param>
         private void _HandlePost(
                                     string content,
                                     out Subscription subscription,
                                     out HttpStatusCode statusCode,
-                                    out string failureContent,
-                                    bool isR4 = false)
+                                    out string failureContent)
         {
             subscription = null;
             statusCode = System.Net.HttpStatusCode.Created;
@@ -787,19 +605,7 @@ namespace argonaut_subscription_server_proxy.Managers
             // attempt to parse our content into a subscription request
             try
             {
-                // parse the subscription
-                if (isR4)
-                {
-                    r4.Subscription s4 = _r4Parser.Parse<r4.Subscription>(content);
-                    if (s4 != null)
-                    {
-                        subscription = SubscriptionConverter.ToR5(s4);
-                    }
-                }
-                else
-                {
-                    subscription = _r5Parser.Parse<Subscription>(content);
-                }
+                subscription = _fhirParser.Parse<Subscription>(content);
 
                 // check for no parsed object
                 if (subscription == null)
@@ -851,7 +657,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.End = new DateTimeOffset(maxEnd.ToUniversalTime());
                 }
 
-                _AddOrUpdate(subscription, isR4);
+                _AddOrUpdate(subscription);
 
                 bool shouldSendHandshake = false;
 
@@ -908,9 +714,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Adds or updates a Topic.</summary>
         /// <param name="subscription">The subscription.</param>
-        /// <param name="isR4">        (Optional) True if is r 4, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool _AddOrUpdate(Subscription subscription, bool isR4 = false)
+        private bool _AddOrUpdate(Subscription subscription)
         {
             // check for an existing subscription (may need to remove URL for cleanup)
             if (_idSubscriptionDict.ContainsKey(subscription.Id))
@@ -924,11 +729,6 @@ namespace argonaut_subscription_server_proxy.Managers
                 _idEventCountDict.Remove(subscription.Id);
             }
 
-            if (_idFhirVersionDict.ContainsKey(subscription.Id))
-            {
-                _idFhirVersionDict.Remove(subscription.Id);
-            }
-
             // create a lock object for this subscription
             if (!_idLockDict.ContainsKey(subscription.Id))
             {
@@ -938,7 +738,6 @@ namespace argonaut_subscription_server_proxy.Managers
             // add to the main dictionaries
             _idSubscriptionDict.Add(subscription.Id, subscription);
             _idEventCountDict.Add(subscription.Id, 0);
-            _idFhirVersionDict.Add(subscription.Id, isR4 ? 4 : 5);
 
             // log this addition
             Console.WriteLine($" <<< added Subscription:" +
@@ -1011,9 +810,9 @@ namespace argonaut_subscription_server_proxy.Managers
                 else
                 {
                     // loop over resource types
-                    foreach (ResourceType? resourceType in topic.ResourceTrigger.ResourceType)
+                    foreach (Code<fhir5.Hl7.Fhir.Model.ResourceType> resourceType in topic.ResourceTrigger.ResourceTypeElement)
                     {
-                        if ((resourceType == null) || (!resourceType.HasValue))
+                        if (resourceType == null)
                         {
                             continue;
                         }
@@ -1216,17 +1015,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            bool notified = false;
-
-            if (_idFhirVersionDict.ContainsKey(subscription.Id) &&
-                (_idFhirVersionDict[subscription.Id] == 4))
-            {
-                notified = TryNotifySubscriptionR4(subscriptionId, null);
-            }
-            else
-            {
-                notified = TryNotifySubscription(subscriptionId, null);
-            }
+            bool notified = TryNotifySubscription(subscriptionId, null);
 
             // attempt to send the notification
             if (notified)
@@ -1259,11 +1048,11 @@ namespace argonaut_subscription_server_proxy.Managers
         private bool TryGetFhirClient(out FhirClient client)
         {
             // check to see if we can get a client from the queue
-            lock (_r5ClientQLock)
+            lock (_clientQLock)
             {
-                if (_r5ClientQ.Count > 0)
+                if (_clientQ.Count > 0)
                 {
-                    client = _r5ClientQ.Dequeue();
+                    client = _clientQ.Dequeue();
                     return true;
                 }
 
@@ -1271,7 +1060,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 try
                 {
                     client = new FhirClient(
-                        Program.FhirServerUrl,
+                        Program.FhirServerUrlR5,
                         new Hl7.Fhir.Rest.FhirClientSettings()
                         {
                             PreferredFormat = Hl7.Fhir.Rest.ResourceFormat.Json,
@@ -1285,7 +1074,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // log for reference
                     Console.WriteLine($"SubscriptionMananger.TryGetFhirClient <<<" +
-                        $" failed url: {Program.FhirServerUrl}," +
+                        $" failed url: {Program.FhirServerUrlR5}," +
                         $" exception: {ex.Message}");
                 }
             }
@@ -1300,143 +1089,11 @@ namespace argonaut_subscription_server_proxy.Managers
         private void ReturnFhirClientToQ(ref FhirClient client)
         {
             // thread safe
-            lock (_r5ClientQLock)
+            lock (_clientQLock)
             {
-                _r5ClientQ.Enqueue(client);
+                _clientQ.Enqueue(client);
                 client = null;
             }
-        }
-
-        /// <summary>Attempts to get fhir client a FhirClient from the given string.</summary>
-        /// <param name="client">[out] The client.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TryGetFhirClientR4(out r4r.FhirClient client)
-        {
-            // check to see if we can get a client from the queue
-            lock (_r4ClientQLock)
-            {
-                if (_r4ClientQ.Count > 0)
-                {
-                    client = _r4ClientQ.Dequeue();
-                    return true;
-                }
-
-                // attempt to create our client
-                try
-                {
-                    client = new r4r.FhirClient(
-                        Program.FhirServerUrl,
-                        new Hl7.Fhir.Rest.FhirClientSettings()
-                        {
-                            PreferredFormat = Hl7.Fhir.Rest.ResourceFormat.Json,
-                            PreferredReturn = Hl7.Fhir.Rest.Prefer.ReturnRepresentation,
-                        });
-
-                    // valid
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    // log for reference
-                    Console.WriteLine($"SubscriptionMananger.TryGetFhirClientR4 <<<" +
-                        $" failed url: {Program.FhirServerUrl}," +
-                        $" exception: {ex.Message}");
-                }
-            }
-
-            // still here means failure
-            client = null;
-            return false;
-        }
-
-        /// <summary>Returns fhir client to q.</summary>
-        /// <param name="client">[out] The client.</param>
-        private void ReturnFhirClientR4ToQ(ref r4r.FhirClient client)
-        {
-            // thread safe
-            lock (_r4ClientQLock)
-            {
-                _r4ClientQ.Enqueue(client);
-                client = null;
-            }
-        }
-
-        /// <summary>
-        /// Attempts to get subscription status r 4 the r4.Parameters from the given string.
-        /// </summary>
-        /// <param name="id">                  The identifier.</param>
-        /// <param name="status">              [out] The status.</param>
-        /// <param name="eventsInNotification">The events in notification.</param>
-        /// <param name="isForQuery">          True if is for query, false if not.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetSubscriptionStatusR4(
-            string id,
-            out r4.Parameters status,
-            int eventsInNotification,
-            bool isForQuery)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                status = null;
-                return false;
-            }
-
-            if (!TryGetSubscription(id, out Subscription subscription))
-            {
-                status = null;
-                return false;
-            }
-
-            long eventCount = _instance._idEventCountDict[subscription.Id];
-
-            status = new r4.Parameters();
-            status.Add("subscription", new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)));
-            status.Add("topic", new FhirUri(subscription.Topic.Url));
-            status.Add("events-since-subscription-start", new UnsignedInt((int)eventCount));
-            status.Add("events-in-notification", new UnsignedInt(eventsInNotification));
-
-            switch (subscription.Status)
-            {
-                case SubscriptionState.Active:
-                    status.Add("status", new Code("active"));
-                    break;
-
-                case SubscriptionState.Error:
-                    status.Add("status", new Code("error"));
-                    break;
-
-                case SubscriptionState.Off:
-                    status.Add("status", new Code("off"));
-                    break;
-
-                case SubscriptionState.Requested:
-                    status.Add("status", new Code("requested"));
-                    break;
-                default:
-                    break;
-            }
-
-            if (isForQuery)
-            {
-                status.Add("type", new Code("query-status"));
-            }
-            else if (eventsInNotification == 0)
-            {
-                if (eventCount == 0)
-                {
-                    status.Add("type", new Code("handshake"));
-                }
-                else
-                {
-                    status.Add("type", new Code("heartbeat"));
-                }
-            }
-            else
-            {
-                status.Add("type", new Code("event-notification"));
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -1472,7 +1129,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 EventsSinceSubscriptionStart = eventCount,
                 EventsInNotification = eventsInNotification,
                 Status = subscription.Status,
-                Subscription = new ResourceReference(Program.UrlForResourceId("Subscription", subscription.Id)),
+                Subscription = new ResourceReference(Program.UrlForR5ResourceId("Subscription", subscription.Id)),
                 Topic = new Canonical(subscription.Topic.Reference),
             };
 
@@ -1499,94 +1156,17 @@ namespace argonaut_subscription_server_proxy.Managers
             return true;
         }
 
-        /// <summary>Bundle for subscription notification r 4.</summary>
-        /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
-        /// <param name="subscription">          The subscription.</param>
-        /// <param name="content">               The content.</param>
-        /// <param name="bundle">                [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">[out] Number of events.</param>
-        /// <param name="isForQuery">            True if is for query, false if not.</param>
-        public static void BundleForSubscriptionNotificationR4(
-            Subscription subscription,
-            Resource content,
-            out r4.Bundle bundle,
-            out long subscriptionEventCount,
-            bool isForQuery)
-        {
-            if (subscription == null)
-            {
-                throw new ArgumentNullException(nameof(subscription));
-            }
-
-            // check our event count
-            lock (_instance._idLockDict[subscription.Id])
-            {
-                // get the event count
-                subscriptionEventCount = _instance._idEventCountDict[subscription.Id];
-
-                // check if we are incrementing the event
-                if (content != null)
-                {
-                    _instance._idEventCountDict[subscription.Id] = ++subscriptionEventCount;
-                }
-            }
-
-            // create a bundle for this message message
-            bundle = new r4.Bundle()
-            {
-                Type = r4.Bundle.BundleType.History,
-                Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Meta(),
-                Entry = new List<r4.Bundle.EntryComponent>(),
-            };
-
-            if (TryGetSubscriptionStatusR4(subscription.Id, out r4.Parameters status, (content == null) ? 0 : 1, isForQuery))
-            {
-                bundle.Entry.Add(new r4.Bundle.EntryComponent()
-                {
-                    FullUrl = Program.UrlForResourceId(status.TypeName, status.Id),
-                    Resource = status,
-                });
-            }
-
-            // check if we are adding contents
-            if ((content != null) && (subscription.Content != Subscription.SubscriptionPayloadContent.Empty))
-            {
-                // add depending on type
-                if (subscription.Content == Subscription.SubscriptionPayloadContent.IdOnly)
-                {
-                    // add the URL, but no resource
-                    bundle.Entry.Add(new r4.Bundle.EntryComponent()
-                    {
-                        FullUrl = Program.UrlForResourceId(content.TypeName, content.Id),
-                    });
-
-                }
-                else
-                {
-                    // add the URL and the resource
-                    bundle.Entry.Add(new r4.Bundle.EntryComponent()
-                    {
-                        FullUrl = Program.UrlForResourceId(content.TypeName, content.Id),
-                        Resource = content,
-                    });
-                }
-            }
-        }
-
         /// <summary>Bundle for subscription notification.</summary>
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
         /// <param name="subscription">          The subscription.</param>
         /// <param name="content">               The content.</param>
         /// <param name="bundle">                [out] The bundle.</param>
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
-        /// <param name="isForQuery">            True if is for query, false if not.</param>
         public static void BundleForSubscriptionNotification(
             Subscription subscription,
             Resource content,
             out Bundle bundle,
-            out long subscriptionEventCount,
-            bool isForQuery)
+            out long subscriptionEventCount)
         {
             if (subscription == null)
             {
@@ -1618,7 +1198,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (TryGetSubscriptionStatus(subscription.Id, out SubscriptionStatus status, (content == null) ? 0 : 1, false))
             {
-                bundle.AddResourceEntry(status, Program.UrlForResourceId(status.TypeName, status.Id));
+                bundle.AddResourceEntry(status, Program.UrlForR5ResourceId(status.TypeName, status.Id));
             }
 
             // check if we are adding contents
@@ -1628,12 +1208,12 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (subscription.Content == Subscription.SubscriptionPayloadContent.IdOnly)
                 {
                     // add the URL, but no resource
-                    bundle.AddResourceEntry(null, Program.UrlForResourceId(content.TypeName, content.Id));
+                    bundle.AddResourceEntry(null, Program.UrlForR5ResourceId(content.TypeName, content.Id));
                 }
                 else
                 {
                     // add the URL and the resource
-                    bundle.AddResourceEntry(content, Program.UrlForResourceId(content.TypeName, content.Id));
+                    bundle.AddResourceEntry(content, Program.UrlForR5ResourceId(content.TypeName, content.Id));
                 }
             }
         }
@@ -1653,388 +1233,6 @@ namespace argonaut_subscription_server_proxy.Managers
             };
         }
 
-        /// <summary>Attempts to notify REST hook a Resource from the given Subscription.</summary>
-        /// <param name="subscription">          The subscription.</param>
-        /// <param name="json">                  The content.</param>
-        /// <param name="contentType">           Type of the content.</param>
-        /// <param name="contentId">             [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">Number of bundle events.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TryNotifyRestHook(
-            Subscription subscription,
-            string json,
-            string contentType,
-            string contentId,
-            long subscriptionEventCount)
-        {
-            HttpRequestMessage request = null;
-
-            // send the request to the endpoint
-            try
-            {
-                // build our request
-                request = new HttpRequestMessage()
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(subscription.Endpoint),
-                    Content = new StringContent(json, Encoding.UTF8, "application/fhir+json"),
-                };
-
-                // check for additional headers
-                if ((subscription.Header != null) && subscription.Header.Any())
-                {
-                    // add headers
-                    foreach (string header in subscription.Header)
-                    {
-                        if (string.IsNullOrEmpty(header))
-                        {
-                            continue;
-                        }
-
-                        // parse the existing header
-                        int seperatorLoc = header.IndexOf(':', StringComparison.Ordinal);
-
-                        if (seperatorLoc < 1)
-                        {
-                            continue;
-                        }
-
-                        // add this header (skip the seperator and the following space)
-                        request.Headers.Add(header.Substring(0, seperatorLoc), header.Substring(seperatorLoc + 2));
-                    }
-                }
-
-                // send our request
-                HttpResponseMessage response = Program.RestClient.SendAsync(request).Result;
-
-                // check the status code
-                if ((response.StatusCode != System.Net.HttpStatusCode.OK) &&
-                    (response.StatusCode != System.Net.HttpStatusCode.Accepted) &&
-                    (response.StatusCode != System.Net.HttpStatusCode.NoContent))
-                {
-                    // failure
-                    Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
-                        $" {subscription.Endpoint}" +
-                        $" returned: {response.StatusCode}");
-
-                    // done
-                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                    //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-
-                    return false;
-                }
-
-                // check to see if we need to clear an error
-                if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
-                {
-                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
-                    //_idSubscriptionDict[subscription.Id].Error = null;
-                }
-
-                // tell the user
-                if (string.IsNullOrEmpty(contentId))
-                {
-                    string messageType = (subscriptionEventCount == 0) ? "handshake" : "heartbeat";
-
-                    Console.WriteLine($" <<< sent REST" +
-                        $" {subscription.Id} ({subscription.Endpoint})" +
-                        $" a {messageType} message");
-                }
-                else
-                {
-                    Console.WriteLine($" <<< sent REST" +
-                        $" {subscription.Id} ({subscription.Endpoint})" +
-                        $" notification for: {Program.UrlForResourceId(contentType, contentId)}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
-                    $" {subscription.Endpoint}" +
-                    $" caused exception: {ex.Message}");
-
-                _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
-
-                return false;
-            }
-            finally
-            {
-                if (request != null)
-                {
-                    request.Dispose();
-                    request = null;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>Gets email text.</summary>
-        /// <param name="subscription">The subscription.</param>
-        /// <param name="content">     The content.</param>
-        /// <param name="contentId">   [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">  [out] Number of events.</param>
-        /// <returns>The email text.</returns>
-        private string GetEmailText(
-                                    Subscription subscription,
-                                    string content,
-                                    string contentId,
-                                    long subscriptionEventCount)
-        {
-            // check for no content
-            if (string.IsNullOrEmpty(contentId) && (subscriptionEventCount == 0))
-            {
-                return "This is a handshake message";
-            }
-
-            if (string.IsNullOrEmpty(contentId))
-            {
-                return "This is a heartbeat message";
-            }
-
-            // act depending on payload type
-            switch (subscription.Content)
-            {
-                case Subscription.SubscriptionPayloadContent.Empty:
-                    return $"You have a new Health notification, please check with your provider via your portal.";
-
-                case Subscription.SubscriptionPayloadContent.IdOnly:
-                    return $"You have a new Health notification ({contentId}), please check with your provider via your portal.";
-
-                case Subscription.SubscriptionPayloadContent.FullResource:
-                    return "Picture it: a nice email relevant to this resource.";
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// SMTP send mail From:
-        /// https://github.com/sendpulse/sendpulse-rest-api-csharp/blob/master/Sendpulse-rest-api/Examples.cs.
-        /// </summary>
-        /// <param name="sp">         The sp.</param>
-        /// <param name="from_name">  Name of from.</param>
-        /// <param name="from_email"> from email.</param>
-        /// <param name="name_to">    The name to.</param>
-        /// <param name="email_to">   The email to.</param>
-        /// <param name="html">       The HTML.</param>
-        /// <param name="text">       The text.</param>
-        /// <param name="subject">    The subject.</param>
-        /// <param name="attachments">The attachments.</param>
-        private static void smtpSendMail(
-            SendPulse.Sendpulse sp,
-            string from_name,
-            string from_email,
-            string name_to,
-            string email_to,
-            string html,
-            string text,
-            string subject,
-            Dictionary<string, string> attachments)
-        {
-            Dictionary<string, object> from = new Dictionary<string, object>();
-            from.Add("name", from_name);
-            from.Add("email", from_email);
-            ArrayList to = new ArrayList();
-            Dictionary<string, object> elementto = new Dictionary<string, object>();
-            elementto.Add("name", name_to);
-            elementto.Add("email", email_to);
-            to.Add(elementto);
-            Dictionary<string, object> emaildata = new Dictionary<string, object>();
-            emaildata.Add("html", html);
-            emaildata.Add("text", text);
-            emaildata.Add("subject", subject);
-            emaildata.Add("from", from);
-            emaildata.Add("to", to);
-            if (attachments.Count > 0)
-            {
-                emaildata.Add("attachments_binary", attachments);
-            }
-
-            Dictionary<string, object> result = sp.smtpSendMail(emaildata);
-            Console.WriteLine($"Response Status {result["http_code"]}");
-            Console.WriteLine($"Result {result["data"]}");
-            Console.ReadKey();
-        }
-
-        /// <summary>Attempts to notify email a Resource from the given Subscription.</summary>
-        /// <param name="subscription">    The subscription.</param>
-        /// <param name="json">            The content.</param>
-        /// <param name="contentTypeName"> Name of the content type.</param>
-        /// <param name="contentId">       [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">Number of bundle events.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TryNotifyEmail(
-            Subscription subscription,
-            string json,
-            string contentTypeName,
-            string contentId,
-            long subscriptionEventCount)
-        {
-            if (_sendpulseClient == null)
-            {
-                Console.WriteLine($" <<< attempted EMAIL" +
-                    $" {subscription.Id} ({subscription.Endpoint})" +
-                    $" NOT SENT!");
-                return false;
-            }
-
-            // send the request to the endpoint
-            try
-            {
-                // grab mime type
-                string mimeType = subscription.ContentType.ToLowerInvariant();
-
-                string body = string.Empty;
-
-                // act on mime type
-                if (mimeType.StartsWith("text/plain", StringComparison.Ordinal))
-                {
-                    body = GetEmailText(subscription, json, contentId, subscriptionEventCount);
-                }
-
-                if (mimeType.StartsWith("text/html", StringComparison.Ordinal))
-                {
-                    body = GetEmailText(subscription, json, contentId, subscriptionEventCount);
-                }
-
-                // check for attachments
-                Dictionary<string, string> attachments = new Dictionary<string, string>();
-
-                if (mimeType.Contains("attach", StringComparison.Ordinal))
-                {
-                    // convert to base 64
-                    string attachmentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-
-                    // add our attachment
-                    attachments.Add("fhirBundle.json", attachmentBase64);
-                }
-
-                // check for handshake
-                if (subscriptionEventCount == 0)
-                {
-                    // send our email message
-                    smtpSendMail(
-                        _sendpulseClient,
-                        "Argonaut Subscriptions",
-                        Program.Configuration["Sendpulse_Sender"],
-                        subscription.Endpoint,
-                        subscription.Endpoint,
-                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}",
-                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}",
-                        $"FHIR Notification - {subscription.Id} - New Registration",
-                        attachments);
-
-                    Console.WriteLine($" <<< sent EMAIL" +
-                        $" {subscription.Id} ({subscription.Endpoint})" +
-                        $" a handshake message");
-
-                    return true;
-                }
-
-                // check for heartbeat
-                if (string.IsNullOrEmpty(json) && (subscriptionEventCount != 0))
-                {
-                    // send our email message
-                    smtpSendMail(
-                        _sendpulseClient,
-                        "Argonaut Subscriptions",
-                        Program.Configuration["Sendpulse_Sender"],
-                        subscription.Endpoint,
-                        subscription.Endpoint,
-                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}.  Letting you know nothing has happened.",
-                        $"Subscription: {subscription.Id} on server: {Program.Configuration["Server_Public_Url"]}.  Letting you know nothing has happened.",
-                        $"FHIR Notification - {subscription.Id} - Nothing New",
-                        attachments);
-
-                    Console.WriteLine($" <<< sent EMAIL" +
-                        $" {subscription.Id} ({subscription.Endpoint})" +
-                        $" a heartbeat message");
-
-                    return true;
-                }
-
-                // send our email message
-                smtpSendMail(
-                    _sendpulseClient,
-                    "Argonaut Subscriptions",
-                    Program.Configuration["Sendpulse_Sender"],
-                    subscription.Endpoint,
-                    subscription.Endpoint,
-                    mimeType.StartsWith("text/html", StringComparison.Ordinal) ? body : string.Empty,
-                    mimeType.StartsWith("text/plain", StringComparison.Ordinal) ? body : string.Empty,
-                    $"FHIR Notification - {subscription.Id} - {Program.UrlForResourceId(contentTypeName, contentId)}",
-                    attachments);
-
-                Console.WriteLine($" <<< sent EMAIL" +
-                    $" {subscription.Id} ({subscription.Endpoint})" +
-                    $" notification for: {Program.UrlForResourceId(contentTypeName, contentId)}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SubscriptionManager.TryNotifyRestHook <<< request to" +
-                    $" {subscription.Endpoint}" +
-                    $" caused exception: {ex.Message}");
-
-                _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString(ex.Message, -1);
-
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to notify subscription r 4 a Resource from the given string.
-        /// </summary>
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="content">       (Optional) The content.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TryNotifySubscriptionR4(string subscriptionId, Resource content = null)
-        {
-            // sanity checks
-            if (string.IsNullOrEmpty(subscriptionId) ||
-                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
-            {
-                // fail
-                return false;
-            }
-
-            string contentType = (content == null) ? string.Empty : content.TypeName;
-            string contentId = (content == null) ? string.Empty : content.Id;
-
-            // get the subscription
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
-
-            // get our bundle we want to send
-            BundleForSubscriptionNotificationR4(
-                subscription,
-                content,
-                out r4.Bundle bundle,
-                out long subscriptionEventCount,
-                false);
-
-            string json = _r4Serializer.SerializeToString(bundle);
-
-            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.rest_hook.Code)
-            {
-                TryNotifyRestHook(subscription, json, contentType, contentId, subscriptionEventCount);
-            }
-
-            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.email.Code)
-            {
-                TryNotifyEmail(subscription, json, contentType, contentId, subscriptionEventCount);
-            }
-
-            // ALWAYS look for websocket connections for now, allows for binding a socket to another subscription
-            WebsocketManager.QueueMessagesForSubscription(subscription, json);
-
-            // done
-            return true;
-        }
-
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="content">       (Optional) The content.</param>
@@ -2049,7 +1247,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            string contentType = (content == null) ? string.Empty : content.TypeName;
+            string contentTypeName = (content == null) ? string.Empty : content.TypeName;
             string contentId = (content == null) ? string.Empty : content.Id;
 
             // get the subscription
@@ -2060,26 +1258,73 @@ namespace argonaut_subscription_server_proxy.Managers
                 subscription,
                 content,
                 out Bundle bundle,
-                out long subscriptionEventCount,
-                false);
+                out long subscriptionEventCount);
 
-            string json = _r5Serializer.SerializeToString(bundle);
+            string json = _fhirSerializer.SerializeToString(bundle);
 
             // check for a rest-hook
             if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.rest_hook.Code)
             {
-                // **** send via hook ***
-                TryNotifyRestHook(subscription, json, contentType, contentId, subscriptionEventCount);
+                // send via hook
+                bool notified = NotificationManager.TryNotifyRestHook(
+                    subscription.Id,
+                    subscription.Endpoint,
+                    subscription.Header,
+                    json,
+                    contentTypeName,
+                    contentId,
+                    subscriptionEventCount);
+
+                if (notified)
+                {
+                    // check to see if we need to clear an error
+                    if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                    {
+                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                        //_idSubscriptionDict[subscription.Id].Error = null;
+                    }
+                }
+                else
+                {
+                    // done
+                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
+                    //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+                }
             }
 
             if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.email.Code)
             {
                 // send via email
-                TryNotifyEmail(subscription, json, contentType, contentId, subscriptionEventCount);
+                bool notified = NotificationManager.TryNotifyEmail(
+                    subscription.Id,
+                    subscription.Endpoint,
+                    subscription.ContentType,
+                    subscription.Content.ToString(),
+                    json,
+                    contentTypeName,
+                    contentId,
+                    subscriptionEventCount);
+
+                if (notified)
+                {
+                    // check to see if we need to clear an error
+                    if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                    {
+                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                    }
+                }
+                else
+                {
+                    // done
+                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
+                }
             }
 
-            // ALWAYS look for websocket connections for now, allows for binding a socket to another subscription
-            WebsocketManager.QueueMessagesForSubscription(subscription, json);
+            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.websocket.Code)
+            {
+                // send via websocket
+                WebsocketManager.QueueMessagesForSubscription(subscription, json);
+            }
 
             // done
             return true;
@@ -2130,7 +1375,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             if (_instance == null)
             {
-                _instance = new SubscriptionManager();
+                _instance = new SubscriptionManagerR5();
             }
         }
     }

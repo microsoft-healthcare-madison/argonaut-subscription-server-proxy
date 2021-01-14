@@ -49,6 +49,12 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <summary>The keepalive thread.</summary>
         private Thread _keepaliveThread;
 
+        /// <summary>The keepalive task.</summary>
+        private Task _keepaliveTask;
+
+        /// <summary>The keepalive cancel source.</summary>
+        private CancellationTokenSource _keepaliveCancelSource;
+
         /// <summary>The keepalive lock object.</summary>
         private object _keepaliveLockObject;
 
@@ -66,6 +72,11 @@ namespace argonaut_subscription_server_proxy.Handlers
             IConfiguration iConfiguration,
             string matchUrl)
         {
+            if (appLifetime == null)
+            {
+                throw new ArgumentNullException(nameof(appLifetime));
+            }
+
             _config = iConfiguration;
             _nextDelegate = nextDelegate;
             _applicationStopping = appLifetime.ApplicationStopping;
@@ -73,6 +84,8 @@ namespace argonaut_subscription_server_proxy.Handlers
 
             _clientMessageTimeoutDict = new ConcurrentDictionary<Guid, long>();
             _keepaliveThread = null;
+            _keepaliveTask = null;
+            _keepaliveCancelSource = new CancellationTokenSource();
             _keepaliveLockObject = new object();
         }
 
@@ -210,7 +223,7 @@ namespace argonaut_subscription_server_proxy.Handlers
             try
             {
                 // loop while there are clients
-                while (_clientMessageTimeoutDict.Count > 0)
+                while (!_clientMessageTimeoutDict.IsEmpty)
                 {
                     long currentTicks = DateTime.Now.Ticks;
                     string keepaliveTime = string.Format(CultureInfo.InvariantCulture, "{0:o}", DateTime.Now.ToUniversalTime());
@@ -467,7 +480,8 @@ namespace argonaut_subscription_server_proxy.Handlers
                                 : id;
 
                             // make sure this subscription exists
-                            if (!SubscriptionManager.Exists(subscriptionId))
+                            if ((!SubscriptionManagerR4.Exists(subscriptionId)) &&
+                                (!SubscriptionManagerR5.Exists(subscriptionId)))
                             {
                                 continue;
                             }
@@ -475,6 +489,20 @@ namespace argonaut_subscription_server_proxy.Handlers
                             // register this subscription to this client
                             WebsocketManager.AddSubscriptionToClient(subscriptionId, clientGuid);
                         }
+                    }
+
+                    if (message.StartsWith("bind-with-token ", StringComparison.Ordinal))
+                    {
+                        // grab the rest of the content
+                        message = message.Replace("bind-with-token ", string.Empty, StringComparison.Ordinal);
+
+                        if (!Guid.TryParse(message, out Guid tokenGuid))
+                        {
+                            continue;
+                        }
+
+                        // register this token to this client
+                        WebsocketManager.BindClientWithToken(tokenGuid, clientGuid);
                     }
 
                     if (message.StartsWith("unbind ", StringComparison.Ordinal))

@@ -22,6 +22,28 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     /// <summary>A processor utilities.</summary>
     public abstract class ProcessorUtils
     {
+        ///// <summary>The fifth parser.</summary>
+        //private static r5s.FhirJsonParser _parserR5 = new r5s.FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
+        //{
+        //    AcceptUnknownMembers = true,
+        //    AllowUnrecognizedEnums = true,
+        //    PermissiveParsing = true,
+        //});
+
+        /// <summary>The R4 serializer.</summary>
+        private static r4s.FhirJsonSerializer _serializerR4 = new r4s.FhirJsonSerializer(new Hl7.Fhir.Serialization.SerializerSettings()
+        {
+            AppendNewLine = false,
+            Pretty = false,
+        });
+
+        /// <summary>The R5 serializer.</summary>
+        private static r5s.FhirJsonSerializer _serializerR5 = new r5s.FhirJsonSerializer(new Hl7.Fhir.Serialization.SerializerSettings()
+        {
+            AppendNewLine = false,
+            Pretty = false,
+        });
+
         /// <summary>The path split characters.</summary>
         private static readonly char[] _pathSplitChars =
         {
@@ -35,10 +57,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="resource">The resource.</param>
         internal static void SerializeR4(ref HttpResponseMessage response, Resource resource)
         {
-            r4s.FhirJsonSerializer serializer = new r4s.FhirJsonSerializer(null);
-
             // serialize the bundle of subscriptions
-            response.Content = new StringContent(serializer.SerializeToString(resource));
+            response.Content = new StringContent(_serializerR4.SerializeToString(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
             response.StatusCode = System.Net.HttpStatusCode.OK;
         }
@@ -48,10 +68,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="resource">The resource.</param>
         internal static void SerializeR5(ref HttpResponseMessage response, Resource resource)
         {
-            r5s.FhirJsonSerializer serializer = new r5s.FhirJsonSerializer(null);
-
             // serialize the bundle of subscriptions
-            response.Content = new StringContent(serializer.SerializeToString(resource));
+            response.Content = new StringContent(_serializerR5.SerializeToString(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
             response.StatusCode = System.Net.HttpStatusCode.OK;
         }
@@ -85,12 +103,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="request">The request.</param>
         /// <returns>The FHIR server URL.</returns>
 #pragma warning disable CA1055 // Uri return values should not be strings
-        public static string GetFhirServerUrl(HttpRequest request)
+        public static string GetFhirServerUrlR5(HttpRequest request)
 #pragma warning restore CA1055 // Uri return values should not be strings
         {
             if (request == null)
             {
-                return Program.FhirServerUrl;
+                return Program.FhirServerUrlR5;
             }
 
             if (request.Headers.ContainsKey(Program._proxyHeaderKey) &&
@@ -99,7 +117,28 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 return request.Headers[Program._proxyHeaderKey][0];
             }
 
-            return Program.FhirServerUrl;
+            return Program.FhirServerUrlR5;
+        }
+
+        /// <summary>Gets FHIR server URL.</summary>
+        /// <param name="request">The request.</param>
+        /// <returns>The FHIR server URL.</returns>
+#pragma warning disable CA1055 // Uri return values should not be strings
+        public static string GetFhirServerUrlR4(HttpRequest request)
+#pragma warning restore CA1055 // Uri return values should not be strings
+        {
+            if (request == null)
+            {
+                return Program.FhirServerUrlR4;
+            }
+
+            if (request.Headers.ContainsKey(Program._proxyHeaderKey) &&
+                (request.Headers[Program._proxyHeaderKey].Count > 0))
+            {
+                return request.Headers[Program._proxyHeaderKey][0];
+            }
+
+            return Program.FhirServerUrlR4;
         }
 
         /// <summary>Query if 'request' is operation.</summary>

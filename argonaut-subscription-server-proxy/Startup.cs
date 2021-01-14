@@ -61,36 +61,54 @@ namespace argonaut_subscription_server_proxy
                 .AllowAnyMethod()
                 .AllowAnyHeader());
 
-            string fhirServerUrl = Program.Configuration.GetValue<string>("Server_FHIR_Url");
-            Uri fhirServerUri = new Uri(fhirServerUrl);
-            string basePath = fhirServerUri.AbsolutePath;
-            string fhirServerForwardBase = fhirServerUrl.Replace(basePath, string.Empty, StringComparison.OrdinalIgnoreCase);
+            //string fhirServerUrl = Program.Configuration.GetValue<string>("Server_FHIR_Url");
+            //Uri fhirServerUri = new Uri(fhirServerUrl);
+            //string basePath = fhirServerUri.AbsolutePath;
+            //string fhirServerForwardBase = fhirServerUrl.Replace(basePath, string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            if (!basePath.EndsWith('/'))
-            {
-                basePath += "/";
-            }
+            //if (!basePath.EndsWith('/'))
+            //{
+            //    basePath += "/";
+            //}
 
             // enable websockets
             app.UseWebSockets();
 
             // setup Subscription websockets
-            app.UseMiddleware<SubscriptionWebsocketHandler>("/subscriptions/websocketurl");
+            app.UseMiddleware<SubscriptionWebsocketHandler>(Program.WebsocketUrl);
+            app.UseMiddleware<SubscriptionWebsocketHandler>($"/r4{Program.WebsocketUrl}");
+            app.UseMiddleware<SubscriptionWebsocketHandler>($"/r5{Program.WebsocketUrl}");
 
             // handle specific routes we want to intercept
             app
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/metadata", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessor.Process))
+                    context => context.Request.Path.StartsWithSegments($"/r4/metadata", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessorR4.Process))
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/SubscriptionTopic", StringComparison.Ordinal),
-                    appInner => ResourceProcessors.SubscriptionTopicProcessor.ProcessRequest(appInner, fhirServerUrl))
+                    context => context.Request.Path.StartsWithSegments($"/r5/metadata", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessorR5.Process))
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/Subscription", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessor.Process))
+                    context => context.Request.Path.StartsWithSegments($"/r5/SubscriptionTopic", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionTopicProcessorR5.Process))
                 .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/Encounter", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessor.Process))
+                    context => context.Request.Path.StartsWithSegments($"/r4/Subscription", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessorR4.Process))
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r5/Subscription", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessorR5.Process))
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r4/Encounter", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessorR4.Process))
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r5/Encounter", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessorR5.Process))
+
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r4", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessorR4.Process))
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r5", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessorR5.Process))
 
                 // .UseWhen(
                 //    context => context.Request.Path.StartsWithSegments($"/Basic", StringComparison.Ordinal),
@@ -99,7 +117,7 @@ namespace argonaut_subscription_server_proxy
 
             app.UseWhen(
                 context => true,
-                appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessor.Process));
+                appInner => appInner.RunProxy(ResourceProcessors.InvalidRequestProcessor.Process));
 
             // default to proxying all other requests
             //app.RunProxy(context => context

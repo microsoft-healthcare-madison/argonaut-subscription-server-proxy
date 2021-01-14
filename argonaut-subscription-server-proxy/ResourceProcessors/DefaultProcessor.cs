@@ -3,6 +3,7 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
@@ -23,6 +24,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
                 {
                     fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+                }
+
+                if (context.Request.Path.Value.Length > 4)
+                {
+                    context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
                 }
 
                 // proxy this call

@@ -70,6 +70,20 @@ namespace argonaut_subscription_server_proxy.Managers
             return _instance._titleTopicDict.Values.ToList<SubscriptionTopic>();
         }
 
+        /// <summary>Gets topic URL list.</summary>
+        /// <returns>The topic URL list.</returns>
+        public static List<string> GetTopicUrlList()
+        {
+            List<string> topics = new List<string>();
+
+            foreach (SubscriptionTopic topic in _instance._titleTopicDict.Values)
+            {
+                topics.Add(topic.Url);
+            }
+
+            return topics;
+        }
+
         /// <summary>Gets topics bundle.</summary>
         /// <param name="wrapInBasic">(Optional) True to wrap in basic.</param>
         /// <returns>The topics bundle.</returns>
@@ -238,7 +252,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 bundle.Entry.Add(new Bundle.EntryComponent()
                 {
-                    FullUrl = Program.UrlForResourceId("SubscriptionTopic", topic.Id),
+                    FullUrl = Program.UrlForR5ResourceId("SubscriptionTopic", topic.Id),
                     Resource = wrapInBasic ? (Resource)WrapInBasic(topic) : (Resource)topic,
                     Search = new Bundle.SearchComponent()
                     {
@@ -255,7 +269,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         private void _AddOrUpdate(SubscriptionTopic topic)
         {
-            string localUrl = Program.UrlForResourceId("SubscriptionTopic", topic.Title);
+            string localUrl = Program.UrlForR5ResourceId("SubscriptionTopic", topic.Title);
 
             // check for local url already existing
             if (_localUrlTopicDict.ContainsKey(localUrl))

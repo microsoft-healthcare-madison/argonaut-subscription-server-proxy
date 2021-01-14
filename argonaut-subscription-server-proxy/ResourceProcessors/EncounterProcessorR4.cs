@@ -1,4 +1,4 @@
-﻿// <copyright file="EncounterProcessor.cs" company="Microsoft Corporation">
+﻿// <copyright file="EncounterProcessorR4.cs" company="Microsoft Corporation">
 //     Copyright (c) Microsoft Corporation. All rights reserved.
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
@@ -12,14 +12,19 @@ using ProxyKit;
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     /// <summary>An encounter processor.</summary>
-    public abstract class EncounterProcessor
+    public abstract class EncounterProcessorR4
     {
         /// <summary>Process the request.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
         internal static async Task<HttpResponseMessage> Process(HttpContext context)
         {
-            string fhirServerUrl = ProcessorUtils.GetFhirServerUrl(context.Request);
+            string fhirServerUrl = ProcessorUtils.GetFhirServerUrlR4(context.Request);
+
+            if (context.Request.Path.Value.Length > 4)
+            {
+                context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
+            }
 
             // context.Request.Headers["Accept-Encoding"] = "";
             // proxy this call
@@ -40,7 +45,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     if (response.IsSuccessStatusCode)
                     {
                         // run this Encounter through our Subscription Manager
-                        SubscriptionManager.ProcessEncounter(
+                        SubscriptionManagerR4.ProcessEncounter(
                             responseContent,
                             response.Headers.Location);
                     }
