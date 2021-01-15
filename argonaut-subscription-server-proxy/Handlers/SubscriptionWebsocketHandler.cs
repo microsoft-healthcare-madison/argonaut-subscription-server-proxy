@@ -28,9 +28,6 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <summary>The send sleep delay in milliseconds.</summary>
         private const int _sendSleepDelayMs = 100;
 
-        /// <summary>The keepalive timeout in ticks.</summary>
-        private const long _keepaliveTimeoutTicks = 29 * TimeSpan.TicksPerSecond;         // 29 seconds
-
         /// <summary>   The configuration. </summary>
         private readonly IConfiguration _config;
 
@@ -282,12 +279,6 @@ namespace argonaut_subscription_server_proxy.Handlers
                     // register our client
                     WebsocketManager.RegisterClient(client);
 
-                    // add our client to the dictionary to send keepalives
-                    _clientMessageTimeoutDict.TryAdd(client.Uid, DateTime.Now.Ticks + _keepaliveTimeoutTicks);
-
-                    // make sure our keepalive thread is running
-                    StartKeepaliveThread();
-
                     // create a cancellation token source so we can cancel our read/write tasks
                     CancellationTokenSource processCancelSource = new CancellationTokenSource();
 
@@ -393,8 +384,7 @@ namespace argonaut_subscription_server_proxy.Handlers
                         true,
                         cancelToken).ConfigureAwait(false);
 
-                    // update our keepalive timeout
-                    _clientMessageTimeoutDict[clientGuid] = DateTime.Now.Ticks + _keepaliveTimeoutTicks;
+                    WebsocketManager.UpdateTimeoutForSentMessage(clientGuid);
                 }
 
                 // keep looping

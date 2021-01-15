@@ -7,6 +7,7 @@ extern alias fhir4;
 extern alias fhir5;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using argonaut_subscription_server_proxy.Models;
@@ -20,6 +21,9 @@ namespace argonaut_subscription_server_proxy.Managers
     /// <summary>Manager for websockets.</summary>
     public class WebsocketManager
     {
+        /// <summary>The keepalive timeout in ticks.</summary>
+        private const long _keepaliveTimeoutTicks = 29 * TimeSpan.TicksPerSecond;         // 29 seconds
+
         /// <summary>The instance for singleton pattern.</summary>
         private static WebsocketManager _instance;
 
@@ -32,6 +36,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of websocket subscription binding tokens.</summary>
         private Dictionary<Guid, SubscriptionWsBindingToken> _guidTokenDict;
 
+        /// <summary>The FHIR R4 clients and timeouts.</summary>
+        private ConcurrentDictionary<Guid, long> _clientsAndTimeouts;
+
         /// <summary>
         /// Prevents a default instance of the
         /// <see cref="WebsocketManager"/> class from being created.
@@ -41,6 +48,7 @@ namespace argonaut_subscription_server_proxy.Managers
             _guidInfoDict = new Dictionary<Guid, WebsocketClientInformation>();
             _subscriptionInfosDict = new Dictionary<string, List<WebsocketClientInformation>>();
             _guidTokenDict = new Dictionary<Guid, SubscriptionWsBindingToken>();
+            _clientsAndTimeouts = new ConcurrentDictionary<Guid, long>();
         }
 
         /// <summary>Initializes this object.</summary>
@@ -64,6 +72,11 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 _instance._guidInfoDict.Add(client.Uid, client);
             }
+
+            if (!_instance._clientsAndTimeouts.ContainsKey(client.Uid))
+            {
+                _instance._clientsAndTimeouts.TryAdd(client.Uid, DateTime.Now.Ticks + _keepaliveTimeoutTicks);
+            }
         }
 
         /// <summary>Unregisters the client described by GUID.</summary>
@@ -79,6 +92,55 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 _instance._guidInfoDict.Remove(guid);
             }
+
+            if (_instance._clientsAndTimeouts.ContainsKey(guid))
+            {
+                _instance._clientsAndTimeouts.TryRemove(guid, out long _);
+            }
+        }
+
+        /// <summary>Process the keepalives.</summary>
+        /// <param name="currentTicks">The current ticks.</param>
+        /// <param name="timeString">  The time string.</param>
+        public static void ProcessKeepalives(long currentTicks, string timeString)
+        {
+            List<Guid> clientsToRemove = new List<Guid>();
+
+            // traverse the dictionary looking for clients we need to send messages to
+            foreach (KeyValuePair<Guid, long> kvp in _instance._clientsAndTimeouts)
+            {
+                // check timeout
+                if (currentTicks > kvp.Value)
+                {
+                    // enqueue a message for this client
+                    if (WebsocketManager.TryGetClient(kvp.Key, out WebsocketClientInformation client))
+                    {
+                        // enqueue a keepalive message
+                        client.MessageQ.Enqueue($"keepalive {timeString}");
+                    }
+                    else
+                    {
+                        // client is gone, stop sending (cannot remove inside iterator)
+                        clientsToRemove.Add(kvp.Key);
+                    }
+                }
+            }
+
+            if (clientsToRemove.Count > 0)
+            {
+                foreach (Guid clientGuid in clientsToRemove)
+                {
+                    _instance._clientsAndTimeouts.TryRemove(clientGuid, out _);
+                }
+            }
+        }
+
+        /// <summary>Updates the timeout for sent message described by clientGuid.</summary>
+        /// <param name="clientGuid">Unique identifier for the client.</param>
+        public static void UpdateTimeoutForSentMessage(Guid clientGuid)
+        {
+            // update our keepalive timeout
+            _instance._clientsAndTimeouts[clientGuid] = DateTime.Now.Ticks + _keepaliveTimeoutTicks;
         }
 
         /// <summary>Attempts to get client a WebsocketClientInformation from the given GUID.</summary>

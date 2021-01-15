@@ -20,12 +20,6 @@ namespace argonaut_subscription_server_proxy.Services
     /// <summary>A service for accessing web socket keep alives information.</summary>
     public class WebsocketHeartbeatService : IHostedService, IDisposable
     {
-        /// <summary>The FHIR R4 clients and timeouts.</summary>
-        private ConcurrentDictionary<Guid, long> _r4ClientsAndTimeouts;
-
-        /// <summary>The FHIR R5 clients and timeouts.</summary>
-        private ConcurrentDictionary<Guid, long> _r5ClientsAndTimeouts;
-
         /// <summary>The callback timer.</summary>
         private Timer _timer;
         private bool _disposedValue;
@@ -42,53 +36,7 @@ namespace argonaut_subscription_server_proxy.Services
             long currentTicks = DateTime.Now.Ticks;
             string heartbeatTime = string.Format(CultureInfo.InvariantCulture, "{0:o}", DateTime.Now.ToUniversalTime());
 
-            ProcessHeartbeats(_r4ClientsAndTimeouts, currentTicks, heartbeatTime);
-            ProcessHeartbeats(_r5ClientsAndTimeouts, currentTicks, heartbeatTime);
-        }
-
-        /// <summary>Process the heartbeats.</summary>
-        /// <param name="clientsAndTimeouts">The clients and timeouts.</param>
-        /// <param name="currentTicks">      The current ticks.</param>
-        /// <param name="heartbeatTime">     The heartbeat time.</param>
-        private void ProcessHeartbeats(
-            ConcurrentDictionary<Guid, long> clientsAndTimeouts,
-            long currentTicks,
-            string heartbeatTime)
-        {
-            if (_r4ClientsAndTimeouts.IsEmpty)
-            {
-                return;
-            }
-
-            List<Guid> clientsToRemove = new List<Guid>();
-
-            // traverse the dictionary looking for clients we need to send messages to
-            foreach (KeyValuePair<Guid, long> kvp in clientsAndTimeouts)
-            {
-                // check timeout
-                if (currentTicks > kvp.Value)
-                {
-                    // enqueue a message for this client
-                    if (WebsocketManager.TryGetClient(kvp.Key, out WebsocketClientInformation client))
-                    {
-                        // enqueue a keepalive message
-                        client.MessageQ.Enqueue($"heartbeat {heartbeatTime}");
-                    }
-                    else
-                    {
-                        // client is gone, stop sending (cannot remove inside iterator)
-                        clientsToRemove.Add(kvp.Key);
-                    }
-                }
-            }
-
-            if (!clientsToRemove.IsNullOrEmpty())
-            {
-                foreach (Guid clientGuid in clientsToRemove)
-                {
-                    clientsAndTimeouts.TryRemove(clientGuid, out _);
-                }
-            }
+            WebsocketManager.ProcessKeepalives(currentTicks, heartbeatTime);
         }
 
         /// <summary>Triggered when the application host is ready to start the service.</summary>
@@ -97,9 +45,6 @@ namespace argonaut_subscription_server_proxy.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("Websocket Keepalive Service Started.");
-
-            _r4ClientsAndTimeouts = new ConcurrentDictionary<Guid, long>();
-            _r5ClientsAndTimeouts = new ConcurrentDictionary<Guid, long>();
 
             _timer = new Timer(
                 CheckAndSendHeartbeats,
@@ -136,9 +81,6 @@ namespace argonaut_subscription_server_proxy.Services
                 {
                     _timer?.Dispose();
                 }
-
-                _r4ClientsAndTimeouts = null;
-                _r5ClientsAndTimeouts = null;
 
                 _disposedValue = true;
             }
