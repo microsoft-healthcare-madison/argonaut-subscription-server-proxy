@@ -22,7 +22,8 @@ namespace argonaut_subscription_server_proxy.Backport
     /// <summary>A subscription converter.</summary>
     public abstract class SubscriptionConverter
     {
-        private const string ExtensionUrlTopic = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-topic-canonical";
+        private const string ExtensionUrlFilterCriteria = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-filter-criteria";
+
         private const string ExtensionUrlHeartbeat = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-heartbeat-period";
         private const string ExtensionUrlTimeout = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-timeout";
         private const string ExtensionUrlContent = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content";
@@ -154,38 +155,18 @@ namespace argonaut_subscription_server_proxy.Backport
                     return null;
             }
 
-            if ((s4.Extension == null) ||
-                (s4.Extension.Count == 0))
+            if (!string.IsNullOrEmpty(s4.Criteria))
             {
-                return null;
-            }
-
-            foreach (Extension ext in s4.Extension)
-            {
-                if (ext.Url == ExtensionUrlTopic)
-                {
-                    if (ext.Value is FhirUri)
-                    {
-                        s5.Topic = new ResourceReference(((FhirUri)ext.Value).Value);
-                        break;
-                    }
-                    else if (ext.Value is Canonical)
-                    {
-                        s5.Topic = new ResourceReference(((Canonical)ext.Value).Value);
-                        break;
-                    }
-                }
+                s5.Topic = new ResourceReference(s4.Criteria);
             }
 
             if (s5.Topic == null)
             {
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-                Console.WriteLine($"R4 Subscription requires Extension: {ExtensionUrlTopic}");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                Console.WriteLine($"R4 Subscription requires a Topic in criteria: {s4.Criteria}");
                 return null;
             }
 
-            if (!SubscriptionTopicManager.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
+            if (!SubscriptionTopicManagerR5.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
             {
                 Console.WriteLine($"Unknown R4 SubscriptionTopic: {s5.Topic.Reference}");
                 return null;
@@ -222,14 +203,6 @@ namespace argonaut_subscription_server_proxy.Backport
                             if ((ext.Value != null) && (ext.Value is UnsignedInt))
                             {
                                 s5.Timeout = ((UnsignedInt)ext.Value).Value;
-                            }
-
-                            break;
-
-                        case ExtensionNotificationUrlLocaltion:
-                            if ((ext.Value != null) && (ext.Value is Code))
-                            {
-                                // TODO: Need December 2020 R5 build
                             }
 
                             break;
@@ -274,34 +247,47 @@ namespace argonaut_subscription_server_proxy.Backport
                 }
             }
 
-            if (!string.IsNullOrEmpty(s4.Criteria))
+            if (s4.CriteriaElement.HasExtensions())
             {
-                string criteria = s4.Criteria;
-                string resource = topic.ResourceTrigger.ResourceType.First().Value.ToString();
-
-                if (!criteria.StartsWith(resource, StringComparison.Ordinal))
+                foreach (Extension ext in s4.CriteriaElement.Extension)
                 {
-                    Console.WriteLine(
-                        $"R4 Subscription Criteria: {criteria}" +
-                        $" must match SubscriptionTopic.resourceTrigger.resourceType: {resource}");
-                    return null;
-                }
-
-                // remove initial resource type plus the ?
-                criteria = criteria.Substring(resource.Length + 1);
-
-                string[] components = criteria.Split('&');
-
-                if (components.Length > 0)
-                {
-                    s5.FilterBy = new List<r5.Subscription.FilterByComponent>();
-                }
-
-                foreach (string component in components)
-                {
-                    if (TryExpandFilter(component, out r5.Subscription.FilterByComponent filter))
+                    if (ext.Url != ExtensionUrlFilterCriteria)
                     {
-                        s5.FilterBy.Add(filter);
+                        continue;
+                    }
+
+                    if (!(ext.Value is FhirString))
+                    {
+                        continue;
+                    }
+
+                    string filter = ext.Value.ToString();
+
+                    string resource = topic.ResourceTrigger.ResourceType.First().Value.ToString();
+                    if (!filter.StartsWith(resource, StringComparison.Ordinal))
+                    {
+                        Console.WriteLine(
+                            $"R4 Subscription Filter: {filter}" +
+                            $" must match SubscriptionTopic.resourceTrigger.resourceType: {resource}");
+                        return null;
+                    }
+
+                    // remove initial resource type plus the ?
+                    filter = filter.Substring(resource.Length + 1);
+
+                    string[] components = filter.Split('&');
+
+                    if (components.Length > 0)
+                    {
+                        s5.FilterBy = new List<r5.Subscription.FilterByComponent>();
+                    }
+
+                    foreach (string component in components)
+                    {
+                        if (TryExpandFilter(component, out r5.Subscription.FilterByComponent filterComponent))
+                        {
+                            s5.FilterBy.Add(filterComponent);
+                        }
                     }
                 }
             }
@@ -324,7 +310,7 @@ namespace argonaut_subscription_server_proxy.Backport
                 return null;
             }
 
-            if (!SubscriptionTopicManager.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
+            if (!SubscriptionTopicManagerR5.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
             {
                 Console.WriteLine($"Unknown R5 SubscriptionTopic: {s5.Topic.Reference}");
                 return null;
@@ -434,12 +420,7 @@ namespace argonaut_subscription_server_proxy.Backport
                     break;
             }
 
-            s4.Extension.Add(new Extension()
-            {
-                Url = ExtensionUrlTopic,
-                Value = new FhirUri(s5.Topic.Url),
-                // Value = new r4.Canonical(s5.Topic.Url),
-            });
+            s4.Criteria = s5.Topic.Url.ToString();
 
             if (s5.HeartbeatPeriod != null)
             {
@@ -519,7 +500,7 @@ namespace argonaut_subscription_server_proxy.Backport
                     }
                 }
 
-                s4.Criteria = sb.ToString();
+                s4.CriteriaElement.AddExtension(ExtensionUrlFilterCriteria, new FhirString(sb.ToString()));
             }
 
             // TODO: Need December 2020 R5 build to add NotificationUrlLocation

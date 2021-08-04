@@ -61,16 +61,6 @@ namespace argonaut_subscription_server_proxy
                 .AllowAnyMethod()
                 .AllowAnyHeader());
 
-            //string fhirServerUrl = Program.Configuration.GetValue<string>("Server_FHIR_Url");
-            //Uri fhirServerUri = new Uri(fhirServerUrl);
-            //string basePath = fhirServerUri.AbsolutePath;
-            //string fhirServerForwardBase = fhirServerUrl.Replace(basePath, string.Empty, StringComparison.OrdinalIgnoreCase);
-
-            //if (!basePath.EndsWith('/'))
-            //{
-            //    basePath += "/";
-            //}
-
             // enable websockets
             app.UseWebSockets();
 
@@ -87,6 +77,9 @@ namespace argonaut_subscription_server_proxy
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/r5/metadata", StringComparison.Ordinal),
                     appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessorR5.Process))
+                .UseWhen(
+                    context => context.Request.Path.StartsWithSegments($"/r4/SubscriptionTopic", StringComparison.Ordinal),
+                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionTopicProcessorR4.Process))
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/r5/SubscriptionTopic", StringComparison.Ordinal),
                     appInner => appInner.RunProxy(ResourceProcessors.SubscriptionTopicProcessorR5.Process))
@@ -109,20 +102,11 @@ namespace argonaut_subscription_server_proxy
                 .UseWhen(
                     context => context.Request.Path.StartsWithSegments($"/r5", StringComparison.Ordinal),
                     appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessorR5.Process))
-
-                // .UseWhen(
-                //    context => context.Request.Path.StartsWithSegments($"/Basic", StringComparison.Ordinal),
-                //    appInner => ResourceProcessors.BasicProcessor.ProcessRequest(appInner, fhirServerUrl))
                 ;
 
             app.UseWhen(
                 context => true,
                 appInner => appInner.RunProxy(ResourceProcessors.InvalidRequestProcessor.Process));
-
-            // default to proxying all other requests
-            //app.RunProxy(context => context
-            //    .ForwardTo(fhirServerUrl)
-            //    .Send());
         }
     }
 }

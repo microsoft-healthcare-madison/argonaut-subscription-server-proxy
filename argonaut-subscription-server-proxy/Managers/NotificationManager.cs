@@ -22,7 +22,7 @@ namespace argonaut_subscription_server_proxy.Managers
         private static NotificationManager _instance;
 
         /// <summary>The SendPulse email client.</summary>
-        private static SendPulse.Sendpulse _sendpulseClient;
+        private SendPulse.Sendpulse _sendpulseClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationManager"/> class.
@@ -192,13 +192,13 @@ namespace argonaut_subscription_server_proxy.Managers
             // act depending on payload type
             switch (content)
             {
-                case fhirP5.SubscriptionContentCodes.EMPTY:
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralEmpty:
                     return $"You have a new Health notification, please check with your provider via your portal.";
 
-                case fhirP5.SubscriptionContentCodes.ID_ONLY:
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralIdOnly:
                     return $"You have a new Health notification ({contentId}), please check with your provider via your portal.";
 
-                case fhirP5.SubscriptionContentCodes.FULL_RESOURCE:
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralFullResource:
                     return "Picture it: a nice email relevant to this resource.";
             }
 
@@ -274,7 +274,7 @@ namespace argonaut_subscription_server_proxy.Managers
             string contentId,
             long subscriptionEventCount)
         {
-            if (_sendpulseClient == null)
+            if (_instance._sendpulseClient == null)
             {
                 Console.WriteLine($" <<< attempted EMAIL" +
                     $" {subscriptionId} ({endpoint})" +
@@ -318,7 +318,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // send our email message
                     smtpSendMail(
-                        _sendpulseClient,
+                        _instance._sendpulseClient,
                         "Argonaut Subscriptions",
                         Program.Configuration["Sendpulse_Sender"],
                         endpoint,
@@ -340,7 +340,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     // send our email message
                     smtpSendMail(
-                        _sendpulseClient,
+                        _instance._sendpulseClient,
                         "Argonaut Subscriptions",
                         Program.Configuration["Sendpulse_Sender"],
                         endpoint,
@@ -359,7 +359,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // send our email message
                 smtpSendMail(
-                    _sendpulseClient,
+                    _instance._sendpulseClient,
                     "Argonaut Subscriptions",
                     Program.Configuration["Sendpulse_Sender"],
                     endpoint,

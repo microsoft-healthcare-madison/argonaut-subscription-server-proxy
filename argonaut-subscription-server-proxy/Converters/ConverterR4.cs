@@ -54,14 +54,14 @@ namespace argonaut_subscription_server_proxy.Converters
         /// <summary>Converts an R5 subscription to another FHIR version.</summary>
         /// <param name="status5">The SubscriptionStatus.</param>
         /// <returns>The desired version of a SubscriptionStatus.</returns>
-        public static r4.Parameters StatusFromR5(r5.SubscriptionStatus status5)
+        public static Parameters StatusFromR5(r5.SubscriptionStatus status5)
         {
             if (status5 == null)
             {
                 return null;
             }
 
-            r4.Parameters status4 = new r4.Parameters();
+            Parameters status4 = new Parameters();
 
             status4.Add("subscription", new ResourceReference(Program.UrlForR5ResourceId("Subscription", status5.Subscription.Reference)));
             status4.Add("topic", new FhirUri(status5.Topic));
@@ -119,7 +119,7 @@ namespace argonaut_subscription_server_proxy.Converters
         /// <summary>Converts a different FHIR version SubscriptionStatus to R5.</summary>
         /// <param name="status4">The SubscriptionStatus.</param>
         /// <returns>R5 SubscriptionStatus.</returns>
-        public static r5.SubscriptionStatus StatusToR5(r4.Parameters status4)
+        public static r5.SubscriptionStatus StatusToR5(Parameters status4)
         {
             if (status4 == null)
             {
@@ -128,7 +128,7 @@ namespace argonaut_subscription_server_proxy.Converters
 
             r5.SubscriptionStatus status5 = new r5.SubscriptionStatus();
 
-            foreach (r4.Parameters.ParameterComponent param in status4.Parameter)
+            foreach (Parameters.ParameterComponent param in status4.Parameter)
             {
                 switch (param.Name)
                 {
@@ -173,7 +173,7 @@ namespace argonaut_subscription_server_proxy.Converters
                 return null;
             }
 
-            if (!SubscriptionTopicManager.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
+            if (!SubscriptionTopicManagerR5.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
             {
                 Console.WriteLine($"Unknown R5 SubscriptionTopic: {s5.Topic.Reference}");
                 return null;
@@ -532,7 +532,7 @@ namespace argonaut_subscription_server_proxy.Converters
                 return null;
             }
 
-            if (!SubscriptionTopicManager.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
+            if (!SubscriptionTopicManagerR5.TryGetTopic(s5.Topic.Reference, out r5.SubscriptionTopic topic))
             {
                 Console.WriteLine($"Unknown R4 SubscriptionTopic: {s5.Topic.Reference}");
                 return null;
@@ -672,9 +672,9 @@ namespace argonaut_subscription_server_proxy.Converters
         /// <summary>Topic list from r 5.</summary>
         /// <param name="t5List">The topics.</param>
         /// <returns>The r4.Parameters.</returns>
-        public static r4.Parameters TopicListFromR5(List<r5.SubscriptionTopic> t5List)
+        public static Parameters TopicListFromR5(List<r5.SubscriptionTopic> t5List)
         {
-            r4.Parameters t4 = new r4.Parameters();
+            Parameters t4 = new Parameters();
 
             if (t5List == null)
             {
@@ -699,7 +699,7 @@ namespace argonaut_subscription_server_proxy.Converters
                 return null;
             }
 
-            if (!SubscriptionTopicManager.TryGetTopic(t4, out r5.SubscriptionTopic t5))
+            if (!SubscriptionTopicManagerR5.TryGetTopic(t4, out r5.SubscriptionTopic t5))
             {
                 Console.WriteLine($"Unknown R5 SubscriptionTopic: {t4}");
                 return null;
@@ -711,7 +711,7 @@ namespace argonaut_subscription_server_proxy.Converters
         /// <summary>Topic list to r 5.</summary>
         /// <param name="t4">The R4 topic list (Parameters object)</param>
         /// <returns>A List&lt;r5.SubscriptionTopic&gt;.</returns>
-        public static List<r5.SubscriptionTopic> TopicListToR5(r4.Parameters t4)
+        public static List<r5.SubscriptionTopic> TopicListToR5(Parameters t4)
         {
             List<r5.SubscriptionTopic> t5List = new List<r5.SubscriptionTopic>();
 
@@ -720,7 +720,7 @@ namespace argonaut_subscription_server_proxy.Converters
                 return t5List;
             }
 
-            foreach (r4.Parameters.ParameterComponent param in t4.Parameter)
+            foreach (Parameters.ParameterComponent param in t4.Parameter)
             {
                 if ((param.Name == ParameterTopicName) &&
                     (param.Value != null))
@@ -751,7 +751,7 @@ namespace argonaut_subscription_server_proxy.Converters
                         continue;
                     }
 
-                    if (!SubscriptionTopicManager.TryGetTopic(topicUrl, out r5.SubscriptionTopic t5))
+                    if (!SubscriptionTopicManagerR5.TryGetTopic(topicUrl, out r5.SubscriptionTopic t5))
                     {
                         Console.WriteLine($"Unknown R5 SubscriptionTopic: {topicUrl}");
                         return null;

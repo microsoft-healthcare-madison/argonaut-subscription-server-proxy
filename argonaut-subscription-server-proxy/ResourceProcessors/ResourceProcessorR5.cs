@@ -19,7 +19,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
         internal static async Task<HttpResponseMessage> Process(HttpContext context)
         {
-            bool isR4 = ProcessorUtils.IsR4(context.Request);
             string fhirServerUrl = ProcessorUtils.GetFhirServerUrlR5(context.Request);
 
             // determine if we need to ask the server for a current version of the resource
@@ -37,6 +36,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     break;
             }
 
+            // remove our path prefix
             if (context.Request.Path.Value.Length > 4)
             {
                 context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
@@ -47,23 +47,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             // send to server and await response
             HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
-
-            //// get copies of data when we care
-            //switch (context.Request.Method.ToUpperInvariant())
-            //{
-            //    case "PUT":
-            //    case "POST":
-            //        // grab the message body to look at
-            //        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            //        // run this Encounter through our Subscription Manager
-            //        SubscriptionManager.ProcessEncounter(responseContent, response.Headers.Location);
-            //        break;
-
-            //    default:
-            //        // just proxy
-            //        break;
-            //}
 
             // return the results of the proxied call
             return response;

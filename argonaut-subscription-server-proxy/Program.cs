@@ -87,7 +87,8 @@ namespace argonaut_subscription_server_proxy
             RestClient = new HttpClient();
 
             // initialize managers
-            SubscriptionTopicManager.Init();
+            SubscriptionTopicManagerR4.Init();
+            SubscriptionTopicManagerR5.Init();
             SubscriptionManagerR4.Init();
             SubscriptionManagerR5.Init();
             WebsocketManager.Init();
@@ -115,8 +116,7 @@ namespace argonaut_subscription_server_proxy
             WebHost.CreateDefaultBuilder(args)
                 .UseUrls(Configuration["Server_Internal_Url"])
                 .UseKestrel()
-                .UseStartup<Startup>()
-                ;
+                .UseStartup<Startup>();
 
         /// <summary>URL for resource identifier.</summary>
         /// <param name="resource">The resource.</param>

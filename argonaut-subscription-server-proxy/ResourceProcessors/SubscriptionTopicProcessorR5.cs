@@ -57,7 +57,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="response">[in,out] The response message.</param>
         internal static void ProcessGet(ref HttpContext context, ref HttpResponseMessage response)
         {
-            ProcessorUtils.SerializeR5(ref response, SubscriptionTopicManager.GetTopicsBundle());
+            ProcessorUtils.SerializeR5(ref response, SubscriptionTopicManagerR5.GetTopicsBundle());
         }
     }
 }

@@ -15,6 +15,7 @@
     <Compile Remove="Models\Coding.cs" />
     <Compile Remove="Models\Criteria.cs" />
     <Compile Remove="Models\CriteriaByQuery.cs" />
+    <Compile Remove="Models\fhir_p5.cs" />
     <Compile Remove="Models\FilterParameter.cs" />
     <Compile Remove="Models\FilterSpecification.cs" />
     <Compile Remove="Models\Payload.cs" />
@@ -30,12 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hl7.Fhir.R4" Version="2.0.0" />
-    <PackageReference Include="Hl7.Fhir.R5" Version="2.0.0" />
+    <PackageReference Include="Hl7.Fhir.R4" Version="3.2.0" />
+    <PackageReference Include="Hl7.Fhir.R5" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -51,6 +52,10 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Fhir\R4B\" />
   </ItemGroup>
 
   <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">

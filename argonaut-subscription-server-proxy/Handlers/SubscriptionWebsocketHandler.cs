@@ -20,7 +20,7 @@ using Microsoft.Extensions.Hosting;
 namespace argonaut_subscription_server_proxy.Handlers
 {
     /// <summary>A subscription websocket handler.</summary>
-    public class SubscriptionWebsocketHandler
+    public class SubscriptionWebsocketHandler : IDisposable
     {
         /// <summary>Size of the message buffer.</summary>
         private const int _messageBufferSize = 1024 * 8;            // 8 KB
@@ -43,17 +43,14 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <summary>URL to match.</summary>
         private readonly string _matchUrl;
 
-        /// <summary>The keepalive thread.</summary>
-        private Thread _keepaliveThread;
-
-        /// <summary>The keepalive task.</summary>
-        private Task _keepaliveTask;
-
         /// <summary>The keepalive cancel source.</summary>
         private CancellationTokenSource _keepaliveCancelSource;
 
         /// <summary>The keepalive lock object.</summary>
         private object _keepaliveLockObject;
+
+        /// <summary>If this object has been disposed.</summary>
+        private bool _disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the
@@ -80,8 +77,6 @@ namespace argonaut_subscription_server_proxy.Handlers
             _matchUrl = matchUrl;
 
             _clientMessageTimeoutDict = new ConcurrentDictionary<Guid, long>();
-            _keepaliveThread = null;
-            _keepaliveTask = null;
             _keepaliveCancelSource = new CancellationTokenSource();
             _keepaliveLockObject = new object();
         }
@@ -152,7 +147,7 @@ namespace argonaut_subscription_server_proxy.Handlers
 
         /// <summary>Tests queueing messages.</summary>
         /// <param name="clientGuid">Unique identifier for the client.</param>
-        private void TestQueueingMessages(Guid clientGuid)
+        private static void TestQueueingMessages(Guid clientGuid)
         {
             bool done = false;
             long messageNumber = 0;
@@ -175,93 +170,6 @@ namespace argonaut_subscription_server_proxy.Handlers
             }
         }
 
-        /// <summary>Starts keepalive thread.</summary>
-        private void StartKeepaliveThread()
-        {
-            // make sure that we are not starting two at the same time
-            lock (_keepaliveLockObject)
-            {
-                // check to see if our thread is running
-                if ((_keepaliveThread != null) &&
-                    (_keepaliveThread.ThreadState.HasFlag(System.Threading.ThreadState.WaitSleepJoin) ||
-                     _keepaliveThread.ThreadState.HasFlag(System.Threading.ThreadState.Running)))
-                {
-                    return;
-                }
-
-                // kill any old threads
-                if (_keepaliveThread != null)
-                {
-                    try
-                    {
-                        _keepaliveThread.Abort();
-                        _keepaliveThread = null;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-                // create our thread
-                _keepaliveThread = new Thread(new ThreadStart(KeepaliveThreadFunc));
-
-                // set to background to make sure the thread doesn't keep our process alive
-                _keepaliveThread.IsBackground = true;
-
-                // start our thread
-                _keepaliveThread.Start();
-            }
-        }
-
-        /// <summary>Keepalive thread function.</summary>
-        private void KeepaliveThreadFunc()
-        {
-            List<Guid> clientsToRemove = new List<Guid>();
-            try
-            {
-                // loop while there are clients
-                while (!_clientMessageTimeoutDict.IsEmpty)
-                {
-                    long currentTicks = DateTime.Now.Ticks;
-                    string keepaliveTime = string.Format(CultureInfo.InvariantCulture, "{0:o}", DateTime.Now.ToUniversalTime());
-
-                    // traverse the dictionary looking for clients we need to send messages to
-                    foreach (KeyValuePair<Guid, long> kvp in _clientMessageTimeoutDict)
-                    {
-                        // check timeout
-                        if (currentTicks > kvp.Value)
-                        {
-                            // enqueue a message for this client
-                            if (WebsocketManager.TryGetClient(kvp.Key, out WebsocketClientInformation client))
-                            {
-                                // enqueue a keepalive message
-                                client.MessageQ.Enqueue($"keepalive {keepaliveTime}");
-                            }
-                            else
-                            {
-                                // client is gone, stop sending (cannot remove inside iterator)
-                                clientsToRemove.Add(kvp.Key);
-                            }
-                        }
-                    }
-
-                    // remove any clients we need to remove
-                    foreach (Guid clientGuid in clientsToRemove)
-                    {
-                        _clientMessageTimeoutDict.TryRemove(clientGuid, out _);
-                    }
-
-                    clientsToRemove.Clear();
-
-                    Thread.Sleep(1000);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SubscriptionWebsocketHandler.KeepaliveThreadFunc <<< exception: {ex.Message}");
-            }
-        }
-
         /// <summary>Accept and process web socket.</summary>
         /// <param name="context">The context.</param>
         /// <param name="client"> The client.</param>
@@ -280,51 +188,53 @@ namespace argonaut_subscription_server_proxy.Handlers
                     WebsocketManager.RegisterClient(client);
 
                     // create a cancellation token source so we can cancel our read/write tasks
-                    CancellationTokenSource processCancelSource = new CancellationTokenSource();
+                    using (CancellationTokenSource processCancelSource = new CancellationTokenSource())
 
                     // link our local close with the application lifetime close for simplicity
-                    CancellationToken cancelToken = CancellationTokenSource.CreateLinkedTokenSource(
-                        _applicationStopping,
-                        processCancelSource.Token).Token;
-
-                    Task[] webSocketTasks = new Task[2];
-
-                    // create send task
-                    webSocketTasks[0] = Task.Run(async () =>
+                    using (CancellationTokenSource linkedSource =
+                        CancellationTokenSource.CreateLinkedTokenSource(_applicationStopping, processCancelSource.Token))
                     {
-                        try
-                        {
-                            await WriteClientMessages(webSocket, client.Uid, cancelToken).ConfigureAwait(false);
-                        }
-                        finally
-                        {
-                            // **** cancel read if write task has exited ***
-                            processCancelSource.Cancel();
-                        }
-                    });
+                        CancellationToken cancelToken = linkedSource.Token;
 
-                    // create receive task
-                    webSocketTasks[1] = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await ReadClientMessages(webSocket, client.Uid, cancelToken).ConfigureAwait(false);
-                        }
-                        finally
-                        {
-                            // cancel write if read task has exited
-                            processCancelSource.Cancel();
-                        }
-                    });
+                        Task[] webSocketTasks = new Task[2];
 
-                    // start tasks and wait for them to complete
-                    await Task.WhenAll(webSocketTasks).ConfigureAwait(false);
+                        // create send task
+                        webSocketTasks[0] = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await WriteClientMessages(webSocket, client.Uid, cancelToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                // cancel read if write task has exited
+                                processCancelSource.Cancel();
+                            }
+                        });
 
-                    // close our web socket (do not allow cancel)
-                    await webSocket.CloseAsync(
-                        WebSocketCloseStatus.EndpointUnavailable,
-                        "Connection closing",
-                        CancellationToken.None).ConfigureAwait(false);
+                        // create receive task
+                        webSocketTasks[1] = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await ReadClientMessages(webSocket, client.Uid, cancelToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                // cancel write if read task has exited
+                                processCancelSource.Cancel();
+                            }
+                        });
+
+                        // start tasks and wait for them to complete
+                        await Task.WhenAll(webSocketTasks).ConfigureAwait(false);
+
+                        // close our web socket (do not allow cancel)
+                        await webSocket.CloseAsync(
+                            WebSocketCloseStatus.EndpointUnavailable,
+                            "Connection closing",
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             }
             catch (WebSocketException wsEx)
@@ -345,7 +255,7 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <param name="clientGuid"> Unique identifier for the client.</param>
         /// <param name="cancelToken">A token that allows processing to be canceled.</param>
         /// <returns>An asynchronous result.</returns>
-        private async Task WriteClientMessages(
+        private static async Task WriteClientMessages(
             WebSocket webSocket,
             Guid clientGuid,
             CancellationToken cancelToken)
@@ -357,18 +267,22 @@ namespace argonaut_subscription_server_proxy.Handlers
                 return;
             }
 
-            // loop until cancelled
             while (!cancelToken.IsCancellationRequested)
             {
                 // do not bubble errors here
                 try
                 {
-                    // **** check for a message ***
+                    // check for a message
                     if (!client.MessageQ.TryDequeue(out string message))
                     {
-                        // wait and prevent exceptions
-                        await Task.Delay(_sendSleepDelayMs, cancelToken)
-                            .ContinueWith(_ => Task.CompletedTask);
+                        try
+                        {
+                            await Task.Delay(_sendSleepDelayMs, cancelToken).ConfigureAwait(true);
+                        }
+                        finally
+                        {
+                            // ignore errors
+                        }
 
                         // go to next loop
                         continue;
@@ -386,8 +300,6 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                     WebsocketManager.UpdateTimeoutForSentMessage(clientGuid);
                 }
-
-                // keep looping
                 catch (Exception ex)
                 {
                     Console.WriteLine($"SubscriptionWebsocketHandler.WriteClientMessages" +
@@ -404,12 +316,11 @@ namespace argonaut_subscription_server_proxy.Handlers
         /// <param name="clientGuid"> Unique identifier for the client.</param>
         /// <param name="cancelToken">A token that allows processing to be cancelled.</param>
         /// <returns>An asynchronous result.</returns>
-        private async Task ReadClientMessages(
-                                              WebSocket webSocket,
-                                              Guid clientGuid,
-                                              CancellationToken cancelToken)
+        private static async Task ReadClientMessages(
+            WebSocket webSocket,
+            Guid clientGuid,
+            CancellationToken cancelToken)
         {
-            // get the client object
             if (!WebsocketManager.TryGetClient(clientGuid, out WebsocketClientInformation client))
             {
                 // nothing to do here (will cancel on exit)
@@ -514,8 +425,6 @@ namespace argonaut_subscription_server_proxy.Handlers
                         }
                     }
                 }
-
-                // keep looping
                 catch (Exception ex)
                 {
                     Console.WriteLine($"SubscriptionWebsocketHandler.ReadClientMessages" +
@@ -525,6 +434,40 @@ namespace argonaut_subscription_server_proxy.Handlers
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged
+        /// resources.
+        /// </summary>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to
+        ///  release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                    _keepaliveCancelSource.Dispose();
+                    _keepaliveCancelSource = null;
+                }
+
+                // free unmanaged resources (unmanaged objects) and override finalizer
+                // set large fields to null
+                _disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged
+        /// resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

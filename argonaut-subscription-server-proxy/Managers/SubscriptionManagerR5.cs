@@ -88,7 +88,6 @@ namespace argonaut_subscription_server_proxy.Managers
             _cleanUpThread.IsBackground = true;
             _cleanUpThread.Start();
 
-
             // serialization related
             _contractResolver = new CamelCasePropertyNamesContractResolver();
             _fhirSerializer = new FhirJsonSerializer();
@@ -635,7 +634,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // check for the topic
                 if ((subscription.Topic == null) ||
-                    (!SubscriptionTopicManager.IsImplemented(subscription.Topic.Reference)))
+                    (!SubscriptionTopicManagerR5.IsImplemented(subscription.Topic.Reference)))
                 {
                     statusCode = HttpStatusCode.BadRequest;
                     failureContent = $"Invalid SubscriptionTopic: {subscription.Topic}!";
@@ -663,7 +662,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (subscription.ChannelType != null)
                 {
-                    if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.rest_hook.Code)
+                    if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
                     {
                         if (string.IsNullOrEmpty(subscription.Endpoint) ||
                             (!Uri.TryCreate(subscription.Endpoint, UriKind.Absolute, out _)))
@@ -677,7 +676,7 @@ namespace argonaut_subscription_server_proxy.Managers
                         shouldSendHandshake = true;
                     }
 
-                    if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.email.Code)
+                    if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
                     {
                         // email sends handshake
                         shouldSendHandshake = true;
@@ -746,7 +745,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 $" {subscription.Content})");
 
             // get the topic for this subscription
-            SubscriptionTopic topic = SubscriptionTopicManager.GetTopic(
+            SubscriptionTopic topic = SubscriptionTopicManagerR5.GetTopic(
                 Program.ResourceIdFromReference(subscription.Topic.Reference));
 
             // check for unknown topic
@@ -1222,7 +1221,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="message">The message.</param>
         /// <param name="errno">  (Optional) The errno.</param>
         /// <returns>A CodeableConcept[].</returns>
-        private List<CodeableConcept> ErrorConceptForString(string message, int errno = 1)
+        private static List<CodeableConcept> ErrorConceptForString(string message, int errno = 1)
         {
             return new List<CodeableConcept>()
             {
@@ -1263,7 +1262,7 @@ namespace argonaut_subscription_server_proxy.Managers
             string json = _fhirSerializer.SerializeToString(bundle);
 
             // check for a rest-hook
-            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.rest_hook.Code)
+            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
             {
                 // send via hook
                 bool notified = NotificationManager.TryNotifyRestHook(
@@ -1280,19 +1279,19 @@ namespace argonaut_subscription_server_proxy.Managers
                     // check to see if we need to clear an error
                     if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
                     {
+                        // _idSubscriptionDict[subscription.Id].Error = null;
                         _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
-                        //_idSubscriptionDict[subscription.Id].Error = null;
                     }
                 }
                 else
                 {
                     // done
+                    // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
                     _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                    //_idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
                 }
             }
 
-            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.email.Code)
+            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
             {
                 // send via email
                 bool notified = NotificationManager.TryNotifyEmail(
@@ -1320,7 +1319,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
-            if (subscription.ChannelType.Code == fhirP5.SubscriptionChannelType.websocket.Code)
+            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Websocket.Code)
             {
                 // send via websocket
                 WebsocketManager.QueueMessagesForSubscription(subscription, json);

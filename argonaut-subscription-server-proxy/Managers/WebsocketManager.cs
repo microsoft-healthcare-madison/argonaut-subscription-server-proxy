@@ -80,22 +80,22 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Unregisters the client described by GUID.</summary>
-        /// <param name="guid">Unique identifier.</param>
-        public static void UnregisterClient(Guid guid)
+        /// <param name="clientGuid">Unique identifier for the client.</param>
+        public static void UnregisterClient(Guid clientGuid)
         {
-            if (guid == Guid.Empty)
+            if (clientGuid == Guid.Empty)
             {
                 return;
             }
 
-            if (_instance._guidInfoDict.ContainsKey(guid))
+            if (_instance._guidInfoDict.ContainsKey(clientGuid))
             {
-                _instance._guidInfoDict.Remove(guid);
+                _instance._guidInfoDict.Remove(clientGuid);
             }
 
-            if (_instance._clientsAndTimeouts.ContainsKey(guid))
+            if (_instance._clientsAndTimeouts.ContainsKey(clientGuid))
             {
-                _instance._clientsAndTimeouts.TryRemove(guid, out long _);
+                _instance._clientsAndTimeouts.TryRemove(clientGuid, out long _);
             }
         }
 
@@ -144,22 +144,22 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Attempts to get client a WebsocketClientInformation from the given GUID.</summary>
-        /// <param name="guid">  Unique identifier.</param>
+        /// <param name="clientGuid">  Unique identifier.</param>
         /// <param name="client">[out] The client.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetClient(Guid guid, out WebsocketClientInformation client)
+        public static bool TryGetClient(Guid clientGuid, out WebsocketClientInformation client)
         {
-            if (guid == Guid.Empty)
+            if (clientGuid == Guid.Empty)
             {
                 client = null;
                 return false;
             }
 
             // check for this client existing
-            if (_instance._guidInfoDict.ContainsKey(guid))
+            if (_instance._guidInfoDict.ContainsKey(clientGuid))
             {
                 // set our client object
-                client = _instance._guidInfoDict[guid];
+                client = _instance._guidInfoDict[clientGuid];
 
                 // success
                 return true;
@@ -366,31 +366,6 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // add this message to this client's queue (caller should have set it up correctly)
                 client.MessageQ.Enqueue(json);
-
-                //string clientMessage = string.Empty;
-
-                //// determine the type of message this client wants
-                //switch (client.PayloadType)
-                //{
-                //    case WebsocketClientInformation.WebsocketPayloadTypes.Empty:
-                //    case WebsocketClientInformation.WebsocketPayloadTypes.FullResource:
-                //    case WebsocketClientInformation.WebsocketPayloadTypes.IdOnly:
-
-                //        // serialize our bundle as our message
-                //        clientMessage = json;
-
-                //        break;
-
-                //    case WebsocketClientInformation.WebsocketPayloadTypes.R4:
-
-                //        // send a notification
-                //        clientMessage = $"ping {subscription.Id}";
-
-                //        break;
-                //}
-
-                //// add this message to this client's queue
-                //client.MessageQ.Enqueue(clientMessage);
             }
         }
 

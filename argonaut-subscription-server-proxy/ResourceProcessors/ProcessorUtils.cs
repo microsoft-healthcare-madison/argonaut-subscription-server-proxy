@@ -22,14 +22,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
     /// <summary>A processor utilities.</summary>
     public abstract class ProcessorUtils
     {
-        ///// <summary>The fifth parser.</summary>
-        //private static r5s.FhirJsonParser _parserR5 = new r5s.FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
-        //{
-        //    AcceptUnknownMembers = true,
-        //    AllowUnrecognizedEnums = true,
-        //    PermissiveParsing = true,
-        //});
-
         /// <summary>The R4 serializer.</summary>
         private static r4s.FhirJsonSerializer _serializerR4 = new r4s.FhirJsonSerializer(new Hl7.Fhir.Serialization.SerializerSettings()
         {
@@ -52,23 +44,41 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             '&',
         };
 
-        /// <summary>Serialize via R4.</summary>
+        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <param name="response">[in,out] The response.</param>
+        /// <param name="resource">The resource.</param>
+        internal static void SerializeR4(ref HttpResponseMessage response, fhirCsR4.Models.Resource resource)
+        {
+            response.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(resource));
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
+            response.StatusCode = System.Net.HttpStatusCode.OK;
+        }
+
+        /// <summary>Serialize an R4 Firely resource.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
         internal static void SerializeR4(ref HttpResponseMessage response, Resource resource)
         {
-            // serialize the bundle of subscriptions
             response.Content = new StringContent(_serializerR4.SerializeToString(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
             response.StatusCode = System.Net.HttpStatusCode.OK;
         }
 
-        /// <summary>Serialize via R5</summary>
+        /// <summary>Serialize an R5 C# Basic resource.</summary>
+        /// <param name="response">[in,out] The response.</param>
+        /// <param name="resource">The resource.</param>
+        internal static void SerializeR5(ref HttpResponseMessage response, fhirCsR5.Models.Resource resource)
+        {
+            response.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(resource));
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
+            response.StatusCode = System.Net.HttpStatusCode.OK;
+        }
+
+        /// <summary>Serialize an R5 Firely resource.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
         internal static void SerializeR5(ref HttpResponseMessage response, Resource resource)
         {
-            // serialize the bundle of subscriptions
             response.Content = new StringContent(_serializerR5.SerializeToString(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
             response.StatusCode = System.Net.HttpStatusCode.OK;

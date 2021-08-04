@@ -24,16 +24,16 @@ namespace argonaut_subscription_server_proxy.SendPulse
         private readonly Uri _apiUri = new Uri(_apiUrl);
 
         /// <summary>Identifier for the user.</summary>
-        private string _userId = null;
+        private string _userId;
 
         /// <summary>The secret.</summary>
-        private string _secret = null;
+        private string _secret;
 
         /// <summary>Name of the token.</summary>
-        private string _tokenName = null;
+        private string _tokenName;
 
         /// <summary>The refresh token.</summary>
-        private int _refreshToken = 0;
+        private int _refreshToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Sendpulse"/>
@@ -58,12 +58,14 @@ namespace argonaut_subscription_server_proxy.SendPulse
                     Console.WriteLine("Could not connect to api, check your ID and SECRET");
                 }
             }
+
+            _refreshToken = 0;
         }
 
         /// <summary>Base 64 encode.</summary>
         /// <param name="plainText">The plain text.</param>
         /// <returns>A string.</returns>
-        public string Base64Encode(string plainText)
+        public static string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
@@ -74,7 +76,9 @@ namespace argonaut_subscription_server_proxy.SendPulse
         /// <returns>A string.</returns>
         public static string MD5(string input)
         {
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
             using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
             {
                 byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
                 byte[] hashBytes = md5.ComputeHash(inputBytes);
@@ -202,7 +206,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
         /// <summary>Makes request string.</summary>
         /// <param name="data">The data.</param>
         /// <returns>A string.</returns>
-        private string MakeRequestString(Dictionary<string, object> data)
+        private static string MakeRequestString(Dictionary<string, object> data)
         {
             string requeststring = string.Empty;
             foreach (var item in data)
@@ -260,7 +264,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
         /// <summary>Handles the result described by data.</summary>
         /// <param name="data">The data.</param>
         /// <returns>A Dictionary&lt;string,object&gt;.</returns>
-        private Dictionary<string, object> HandleResult(Dictionary<string, object> data)
+        private static Dictionary<string, object> HandleResult(Dictionary<string, object> data)
         {
             if (!data.ContainsKey("data") || data.Count == 0)
             {
@@ -278,7 +282,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
         /// <summary>Handles the error described by customMessage.</summary>
         /// <param name="customMessage">Message describing the custom.</param>
         /// <returns>A Dictionary&lt;string,object&gt;.</returns>
-        private Dictionary<string, object> HandleError(string customMessage)
+        private static Dictionary<string, object> HandleError(string customMessage)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             data.Add("is_error", true);
@@ -747,7 +751,7 @@ namespace argonaut_subscription_server_proxy.SendPulse
         }
 
         /// <summary>Remove sender.</summary>
-        /// <param name="email">.</param>
+        /// <param name="email">The email address.</param>
         /// <returns>A Dictionary&lt;string,object&gt;.</returns>
         public Dictionary<string, object> removeSender(string email)
         {
@@ -771,8 +775,8 @@ namespace argonaut_subscription_server_proxy.SendPulse
         }
 
         /// <summary>Activate sender using code from mail.</summary>
-        /// <param name="email">.</param>
-        /// <param name="code"> .</param>
+        /// <param name="email">The email address.</param>
+        /// <param name="code"> The code.</param>
         /// <returns>A Dictionary&lt;string,object&gt;.</returns>
         public Dictionary<string, object> activateSender(string email, string code)
         {
@@ -1002,14 +1006,20 @@ namespace argonaut_subscription_server_proxy.SendPulse
         }
 
         /// <summary>Get list of emails that was sent by SMTP.</summary>
-        /// <param name="limit">    .</param>
-        /// <param name="offset">   .</param>
-        /// <param name="fromDate"> .</param>
-        /// <param name="toDate">   .</param>
-        /// <param name="sender">   .</param>
-        /// <param name="recipient">.</param>
-        /// <returns>A Dictionary&lt;string,object&gt;.</returns>
-        public Dictionary<string, object> smtpListEmails(int limit, int offset, string fromDate, string toDate, string sender, string recipient)
+        /// <param name="limit">    The limit.</param>
+        /// <param name="offset">   The offset.</param>
+        /// <param name="fromDate"> from date.</param>
+        /// <param name="toDate">   to date.</param>
+        /// <param name="sender">   The sender.</param>
+        /// <param name="recipient">The recipient.</param>
+        /// <returns>A Dictionary of email info.</returns>
+        public Dictionary<string, object> smtpListEmails(
+            int limit,
+            int offset,
+            string fromDate,
+            string toDate,
+            string sender,
+            string recipient)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
             data.Add("limit", limit);
@@ -1380,9 +1390,9 @@ namespace argonaut_subscription_server_proxy.SendPulse
         }
 
         /// <summary>Set state for subscription.</summary>
-        /// <param name="id">   .</param>
-        /// <param name="state">.</param>
-        /// <returns>A Dictionary&lt;string,object&gt;.</returns>
+        /// <param name="id">   The identifier.</param>
+        /// <param name="state">The state.</param>
+        /// <returns>A Dictionary.</returns>
         public Dictionary<string, object> pushSetSubscriptionState(int id, int state)
         {
             if (id > 0)
@@ -1408,8 +1418,8 @@ namespace argonaut_subscription_server_proxy.SendPulse
         }
 
         /// <summary>Create new push campaign.</summary>
-        /// <param name="taskinfo">        .</param>
-        /// <param name="additionalParams">.</param>
+        /// <param name="taskinfo">        The taskinfo.</param>
+        /// <param name="additionalParams">Options for controlling the additional.</param>
         /// <returns>The new push task.</returns>
         public Dictionary<string, object> createPushTask(Dictionary<string, object> taskinfo, Dictionary<string, object> additionalParams)
         {
@@ -1916,13 +1926,14 @@ namespace argonaut_subscription_server_proxy.SendPulse
         /// <param name="messageLiveTime">(Optional) Message live time.</param>
         /// <param name="sendDate">       (Optional) Send date.</param>
         /// <returns>The viber campaign.</returns>
-        public Dictionary<string, object> sendViberCampaign(string recipients,
-                                                            int addressBookId,
-                                                            string message,
-                                                            int senderId,
-                                                            string additional,
-                                                            int messageLiveTime = 60,
-                                                            string sendDate = "now")
+        public Dictionary<string, object> sendViberCampaign(
+            string recipients,
+            int addressBookId,
+            string message,
+            int senderId,
+            string additional,
+            int messageLiveTime = 60,
+            string sendDate = "now")
         {
             if (addressBookId <= 0 && recipients.Length == 0)
             {

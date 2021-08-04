@@ -39,7 +39,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         });
 
         /// <summary>The FHIR parser.</summary>
-        private static FhirJsonParser _fhirParser = new FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings() {
+        private static FhirJsonParser _fhirParser = new FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
+        {
             AcceptUnknownMembers = true,
             AllowUnrecognizedEnums = true,
             PermissiveParsing = true,
@@ -254,7 +255,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         {
             Parameters topics = new Parameters();
 
-            foreach (string topicUrl in SubscriptionTopicManager.GetTopicUrlList())
+            foreach (string topicUrl in SubscriptionTopicManagerR5.GetTopicUrlList())
             {
                 topics.Add("subscription-topic-canonical", new Canonical(topicUrl));
             }
@@ -288,26 +289,26 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 }
             }
 
-            // create a bundle for this message message
-            Bundle bundle = new Bundle()
+            // create a bundle for this response
+            fhirCsR4.Models.Bundle bundle = new fhirCsR4.Models.Bundle()
             {
-                Type = Bundle.BundleType.Searchset,
-                Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Meta(),
-                Entry = new List<Bundle.EntryComponent>(),
+                Type = fhirCsR4.Models.BundleTypeCodes.SEARCHSET,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Meta = new fhirCsR4.Models.Meta(),
+                Entry = new List<fhirCsR4.Models.BundleEntry>(),
             };
 
             foreach (string id in ids)
             {
-                if (SubscriptionManagerR4.TryGetSubscriptionStatus(id, out Parameters status, 0, true))
+                if (SubscriptionManagerR4.TryGetSubscriptionStatus(id, out fhirCsR4.Models.SubscriptionStatus status, 0, true))
                 {
-                    bundle.Entry.Add(new Bundle.EntryComponent()
+                    bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                     {
-                        FullUrl = Program.UrlForR5ResourceId(status.TypeName, status.Id),
+                        FullUrl = Program.UrlForR4ResourceId("Subscription", id) + "/$status",
                         Resource = status,
-                        Search = new Bundle.SearchComponent()
+                        Search = new fhirCsR4.Models.BundleEntrySearch()
                         {
-                            Mode = Bundle.SearchEntryMode.Match,
+                            Mode = fhirCsR4.Models.BundleEntrySearchModeCodes.MATCH,
                         },
                     });
                 }
