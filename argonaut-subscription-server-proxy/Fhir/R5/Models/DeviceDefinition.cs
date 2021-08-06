@@ -281,6 +281,124 @@ namespace fhirCsR5.Models
     public const string OTHER = "other";
   }
   /// <summary>
+  /// What kind of device or device system this is.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionClassification>))]
+  public class DeviceDefinitionClassification : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Further information qualifying this classification of the device model.
+    /// </summary>
+    public List<RelatedArtifact> Justification { get; set; }
+    /// <summary>
+    /// A classification or risk class of the device model.
+    /// </summary>
+    public CodeableConcept Type { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (Type != null)
+      {
+        writer.WritePropertyName("type");
+        Type.SerializeJson(writer, options);
+      }
+
+      if ((Justification != null) && (Justification.Count != 0))
+      {
+        writer.WritePropertyName("justification");
+        writer.WriteStartArray();
+
+        foreach (RelatedArtifact valJustification in Justification)
+        {
+          valJustification.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "justification":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Justification = new List<RelatedArtifact>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.RelatedArtifact objJustification = new fhirCsR5.Models.RelatedArtifact();
+            objJustification.DeserializeJson(ref reader, options);
+            Justification.Add(objJustification);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Justification.Count == 0)
+          {
+            Justification = null;
+          }
+
+          break;
+
+        case "type":
+          Type = new fhirCsR5.Models.CodeableConcept();
+          Type.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// The capabilities supported on a  device, the standards to which the device conforms for a particular purpose, and used for the communication.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionSpecialization>))]
@@ -1388,6 +1506,95 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
+  /// An associated device, attached to, used with, communicating with or linking a previous or new device model to the focal device.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionLink>))]
+  public class DeviceDefinitionLink : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// A reference to the linked device.
+    /// </summary>
+    public CodeableReference RelatedDevice { get; set; }
+    /// <summary>
+    /// The type indicates the relationship of the related device to the device instance.
+    /// </summary>
+    public Coding Relation { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (Relation != null)
+      {
+        writer.WritePropertyName("relation");
+        Relation.SerializeJson(writer, options);
+      }
+
+      if (RelatedDevice != null)
+      {
+        writer.WritePropertyName("relatedDevice");
+        RelatedDevice.SerializeJson(writer, options);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "relatedDevice":
+          RelatedDevice = new fhirCsR5.Models.CodeableReference();
+          RelatedDevice.DeserializeJson(ref reader, options);
+          break;
+
+        case "relation":
+          Relation = new fhirCsR5.Models.Coding();
+          Relation.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// A substance used to create the material(s) of which the device is made.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionMaterial>))]
@@ -1488,6 +1695,489 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
+  /// Information aimed at providing directions for the usage of this model of device.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionGuideline>))]
+  public class DeviceDefinitionGuideline : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// A specific situation when a device should not be used because it may cause harm.
+    /// </summary>
+    public List<CodeableReference> Contraindication { get; set; }
+    /// <summary>
+    /// A clinical condition for which the device was designed to be used.
+    /// </summary>
+    public List<CodeableReference> Indication { get; set; }
+    /// <summary>
+    /// A description of the general purpose or medical use of the device or its function.
+    /// </summary>
+    public string IntendedUse { get; set; }
+    /// <summary>
+    /// Extension container element for IntendedUse
+    /// </summary>
+    public Element _IntendedUse { get; set; }
+    /// <summary>
+    /// A source of information or reference for this guideline.
+    /// </summary>
+    public List<RelatedArtifact> RelatedArtifact { get; set; }
+    /// <summary>
+    /// Detailed written and visual directions for the user on how to use the device.
+    /// </summary>
+    public string UsageInstruction { get; set; }
+    /// <summary>
+    /// Extension container element for UsageInstruction
+    /// </summary>
+    public Element _UsageInstruction { get; set; }
+    /// <summary>
+    /// The circumstances that form the setting for using the device.
+    /// </summary>
+    public List<UsageContext> UseContext { get; set; }
+    /// <summary>
+    /// Specific hazard alert information that a user needs to know before using the device.
+    /// </summary>
+    public List<CodeableReference> Warning { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if ((UseContext != null) && (UseContext.Count != 0))
+      {
+        writer.WritePropertyName("useContext");
+        writer.WriteStartArray();
+
+        foreach (UsageContext valUseContext in UseContext)
+        {
+          valUseContext.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (!string.IsNullOrEmpty(UsageInstruction))
+      {
+        writer.WriteString("usageInstruction", (string)UsageInstruction!);
+      }
+
+      if (_UsageInstruction != null)
+      {
+        writer.WritePropertyName("_usageInstruction");
+        _UsageInstruction.SerializeJson(writer, options);
+      }
+
+      if ((RelatedArtifact != null) && (RelatedArtifact.Count != 0))
+      {
+        writer.WritePropertyName("relatedArtifact");
+        writer.WriteStartArray();
+
+        foreach (RelatedArtifact valRelatedArtifact in RelatedArtifact)
+        {
+          valRelatedArtifact.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((Indication != null) && (Indication.Count != 0))
+      {
+        writer.WritePropertyName("indication");
+        writer.WriteStartArray();
+
+        foreach (CodeableReference valIndication in Indication)
+        {
+          valIndication.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((Contraindication != null) && (Contraindication.Count != 0))
+      {
+        writer.WritePropertyName("contraindication");
+        writer.WriteStartArray();
+
+        foreach (CodeableReference valContraindication in Contraindication)
+        {
+          valContraindication.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((Warning != null) && (Warning.Count != 0))
+      {
+        writer.WritePropertyName("warning");
+        writer.WriteStartArray();
+
+        foreach (CodeableReference valWarning in Warning)
+        {
+          valWarning.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (!string.IsNullOrEmpty(IntendedUse))
+      {
+        writer.WriteString("intendedUse", (string)IntendedUse!);
+      }
+
+      if (_IntendedUse != null)
+      {
+        writer.WritePropertyName("_intendedUse");
+        _IntendedUse.SerializeJson(writer, options);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "contraindication":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Contraindication = new List<CodeableReference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.CodeableReference objContraindication = new fhirCsR5.Models.CodeableReference();
+            objContraindication.DeserializeJson(ref reader, options);
+            Contraindication.Add(objContraindication);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Contraindication.Count == 0)
+          {
+            Contraindication = null;
+          }
+
+          break;
+
+        case "indication":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Indication = new List<CodeableReference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.CodeableReference objIndication = new fhirCsR5.Models.CodeableReference();
+            objIndication.DeserializeJson(ref reader, options);
+            Indication.Add(objIndication);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Indication.Count == 0)
+          {
+            Indication = null;
+          }
+
+          break;
+
+        case "intendedUse":
+          IntendedUse = reader.GetString();
+          break;
+
+        case "_intendedUse":
+          _IntendedUse = new fhirCsR5.Models.Element();
+          _IntendedUse.DeserializeJson(ref reader, options);
+          break;
+
+        case "relatedArtifact":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          RelatedArtifact = new List<RelatedArtifact>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.RelatedArtifact objRelatedArtifact = new fhirCsR5.Models.RelatedArtifact();
+            objRelatedArtifact.DeserializeJson(ref reader, options);
+            RelatedArtifact.Add(objRelatedArtifact);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (RelatedArtifact.Count == 0)
+          {
+            RelatedArtifact = null;
+          }
+
+          break;
+
+        case "usageInstruction":
+          UsageInstruction = reader.GetString();
+          break;
+
+        case "_usageInstruction":
+          _UsageInstruction = new fhirCsR5.Models.Element();
+          _UsageInstruction.DeserializeJson(ref reader, options);
+          break;
+
+        case "useContext":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          UseContext = new List<UsageContext>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.UsageContext objUseContext = new fhirCsR5.Models.UsageContext();
+            objUseContext.DeserializeJson(ref reader, options);
+            UseContext.Add(objUseContext);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (UseContext.Count == 0)
+          {
+            UseContext = null;
+          }
+
+          break;
+
+        case "warning":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Warning = new List<CodeableReference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.CodeableReference objWarning = new fhirCsR5.Models.CodeableReference();
+            objWarning.DeserializeJson(ref reader, options);
+            Warning.Add(objWarning);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Warning.Count == 0)
+          {
+            Warning = null;
+          }
+
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
+  /// Billing code or reference associated with the device.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinitionChargeItem>))]
+  public class DeviceDefinitionChargeItem : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// The code or reference for the charge item.
+    /// </summary>
+    public CodeableReference ChargeItemCode { get; set; }
+    /// <summary>
+    /// Coefficient applicable to the billing code.
+    /// </summary>
+    public Quantity Count { get; set; }
+    /// <summary>
+    /// A specific time period in which this charge item applies.
+    /// </summary>
+    public Period EffectivePeriod { get; set; }
+    /// <summary>
+    /// The context to which this charge item applies.
+    /// </summary>
+    public List<UsageContext> UseContext { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (ChargeItemCode != null)
+      {
+        writer.WritePropertyName("chargeItemCode");
+        ChargeItemCode.SerializeJson(writer, options);
+      }
+
+      if (Count != null)
+      {
+        writer.WritePropertyName("count");
+        Count.SerializeJson(writer, options);
+      }
+
+      if (EffectivePeriod != null)
+      {
+        writer.WritePropertyName("effectivePeriod");
+        EffectivePeriod.SerializeJson(writer, options);
+      }
+
+      if ((UseContext != null) && (UseContext.Count != 0))
+      {
+        writer.WritePropertyName("useContext");
+        writer.WriteStartArray();
+
+        foreach (UsageContext valUseContext in UseContext)
+        {
+          valUseContext.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "chargeItemCode":
+          ChargeItemCode = new fhirCsR5.Models.CodeableReference();
+          ChargeItemCode.DeserializeJson(ref reader, options);
+          break;
+
+        case "count":
+          Count = new fhirCsR5.Models.Quantity();
+          Count.DeserializeJson(ref reader, options);
+          break;
+
+        case "effectivePeriod":
+          EffectivePeriod = new fhirCsR5.Models.Period();
+          EffectivePeriod.DeserializeJson(ref reader, options);
+          break;
+
+        case "useContext":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          UseContext = new List<UsageContext>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.UsageContext objUseContext = new fhirCsR5.Models.UsageContext();
+            objUseContext.DeserializeJson(ref reader, options);
+            UseContext.Add(objUseContext);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (UseContext.Count == 0)
+          {
+            UseContext = null;
+          }
+
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// The characteristics, operational status and capabilities of a medical-related component of a medical device.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceDefinition>))]
@@ -1501,6 +2191,14 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<DeviceDefinitionCapability> Capability { get; set; }
     /// <summary>
+    /// Billing code or reference associated with the device.
+    /// </summary>
+    public List<DeviceDefinitionChargeItem> ChargeItem { get; set; }
+    /// <summary>
+    /// What kind of device or device system this is.
+    /// </summary>
+    public List<DeviceDefinitionClassification> Classification { get; set; }
+    /// <summary>
     /// used for troubleshooting etc.
     /// </summary>
     public List<ContactPoint> Contact { get; set; }
@@ -1508,6 +2206,10 @@ namespace fhirCsR5.Models
     /// The name or names of the device as given by the manufacturer.
     /// </summary>
     public List<DeviceDefinitionDeviceName> DeviceName { get; set; }
+    /// <summary>
+    /// Information aimed at providing directions for the usage of this model of device.
+    /// </summary>
+    public DeviceDefinitionGuideline Guideline { get; set; }
     /// <summary>
     /// A device that is part (for example a component) of the present device.
     /// </summary>
@@ -1520,6 +2222,10 @@ namespace fhirCsR5.Models
     /// Language code for the human-readable text strings produced by the device (all supported).
     /// </summary>
     public List<CodeableConcept> LanguageCode { get; set; }
+    /// <summary>
+    /// An associated device, attached to, used with, communicating with or linking a previous or new device model to the focal device.
+    /// </summary>
+    public List<DeviceDefinitionLink> Link { get; set; }
     /// <summary>
     /// A name of the manufacturer  or legal representative e.g. labeler. Whether this is the actual manufacturer or the labeler or responsible depends on implementation and jurisdiction.
     /// </summary>
@@ -1548,14 +2254,6 @@ namespace fhirCsR5.Models
     /// Descriptive information, usage information or implantation information that is not captured in an existing element.
     /// </summary>
     public List<Annotation> Note { get; set; }
-    /// <summary>
-    /// Access to on-line information about the device.
-    /// </summary>
-    public string OnlineInformation { get; set; }
-    /// <summary>
-    /// Extension container element for OnlineInformation
-    /// </summary>
-    public Element _OnlineInformation { get; set; }
     /// <summary>
     /// An organization that is responsible for the provision and ongoing maintenance of the device.
     /// </summary>
@@ -1588,10 +2286,6 @@ namespace fhirCsR5.Models
     /// The capabilities supported on a  device, the standards to which the device conforms for a particular purpose, and used for the communication.
     /// </summary>
     public List<DeviceDefinitionSpecialization> Specialization { get; set; }
-    /// <summary>
-    /// What kind of device or device system this is.
-    /// </summary>
-    public List<CodeableConcept> Type { get; set; }
     /// <summary>
     /// Unique device identifier (UDI) assigned to device label or package.  Note that the Device may include multiple udiCarriers as it either may include just the udiCarrier for the jurisdiction it is sold, or for multiple jurisdictions it could have been sold.
     /// </summary>
@@ -1684,14 +2378,14 @@ namespace fhirCsR5.Models
         _ModelNumber.SerializeJson(writer, options);
       }
 
-      if ((Type != null) && (Type.Count != 0))
+      if ((Classification != null) && (Classification.Count != 0))
       {
-        writer.WritePropertyName("type");
+        writer.WritePropertyName("classification");
         writer.WriteStartArray();
 
-        foreach (CodeableConcept valType in Type)
+        foreach (DeviceDefinitionClassification valClassification in Classification)
         {
-          valType.SerializeJson(writer, options, true);
+          valClassification.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -1839,15 +2533,17 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
-      if (!string.IsNullOrEmpty(OnlineInformation))
+      if ((Link != null) && (Link.Count != 0))
       {
-        writer.WriteString("onlineInformation", (string)OnlineInformation!);
-      }
+        writer.WritePropertyName("link");
+        writer.WriteStartArray();
 
-      if (_OnlineInformation != null)
-      {
-        writer.WritePropertyName("_onlineInformation");
-        _OnlineInformation.SerializeJson(writer, options);
+        foreach (DeviceDefinitionLink valLink in Link)
+        {
+          valLink.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
       }
 
       if ((Note != null) && (Note.Count != 0))
@@ -1877,6 +2573,25 @@ namespace fhirCsR5.Models
         foreach (DeviceDefinitionMaterial valMaterial in Material)
         {
           valMaterial.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (Guideline != null)
+      {
+        writer.WritePropertyName("guideline");
+        Guideline.SerializeJson(writer, options);
+      }
+
+      if ((ChargeItem != null) && (ChargeItem.Count != 0))
+      {
+        writer.WritePropertyName("chargeItem");
+        writer.WriteStartArray();
+
+        foreach (DeviceDefinitionChargeItem valChargeItem in ChargeItem)
+        {
+          valChargeItem.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -1917,6 +2632,60 @@ namespace fhirCsR5.Models
           if (Capability.Count == 0)
           {
             Capability = null;
+          }
+
+          break;
+
+        case "chargeItem":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          ChargeItem = new List<DeviceDefinitionChargeItem>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.DeviceDefinitionChargeItem objChargeItem = new fhirCsR5.Models.DeviceDefinitionChargeItem();
+            objChargeItem.DeserializeJson(ref reader, options);
+            ChargeItem.Add(objChargeItem);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (ChargeItem.Count == 0)
+          {
+            ChargeItem = null;
+          }
+
+          break;
+
+        case "classification":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Classification = new List<DeviceDefinitionClassification>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.DeviceDefinitionClassification objClassification = new fhirCsR5.Models.DeviceDefinitionClassification();
+            objClassification.DeserializeJson(ref reader, options);
+            Classification.Add(objClassification);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Classification.Count == 0)
+          {
+            Classification = null;
           }
 
           break;
@@ -1973,6 +2742,11 @@ namespace fhirCsR5.Models
             DeviceName = null;
           }
 
+          break;
+
+        case "guideline":
+          Guideline = new fhirCsR5.Models.DeviceDefinitionGuideline();
+          Guideline.DeserializeJson(ref reader, options);
           break;
 
         case "hasPart":
@@ -2056,6 +2830,33 @@ namespace fhirCsR5.Models
 
           break;
 
+        case "link":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Link = new List<DeviceDefinitionLink>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.DeviceDefinitionLink objLink = new fhirCsR5.Models.DeviceDefinitionLink();
+            objLink.DeserializeJson(ref reader, options);
+            Link.Add(objLink);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Link.Count == 0)
+          {
+            Link = null;
+          }
+
+          break;
+
         case "manufacturerString":
           ManufacturerString = reader.GetString();
           break;
@@ -2131,15 +2932,6 @@ namespace fhirCsR5.Models
             Note = null;
           }
 
-          break;
-
-        case "onlineInformation":
-          OnlineInformation = reader.GetString();
-          break;
-
-        case "_onlineInformation":
-          _OnlineInformation = new fhirCsR5.Models.Element();
-          _OnlineInformation.DeserializeJson(ref reader, options);
           break;
 
         case "owner":
@@ -2288,33 +3080,6 @@ namespace fhirCsR5.Models
           if (Specialization.Count == 0)
           {
             Specialization = null;
-          }
-
-          break;
-
-        case "type":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Type = new List<CodeableConcept>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.CodeableConcept objType = new fhirCsR5.Models.CodeableConcept();
-            objType.DeserializeJson(ref reader, options);
-            Type.Add(objType);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Type.Count == 0)
-          {
-            Type = null;
           }
 
           break;

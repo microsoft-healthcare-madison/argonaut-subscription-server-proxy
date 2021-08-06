@@ -12,7 +12,16 @@ namespace fhirCsR5.ValueSets
   public static class CitedArtifactStatusTypeCodes
   {
     /// <summary>
-    /// Active
+    /// The content that was not published yet has been approved for publication by the publisher and/or editor.
+    /// </summary>
+    public static readonly Coding Accepted = new Coding
+    {
+      Code = "accepted",
+      Display = "Accepted",
+      System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
+    };
+    /// <summary>
+    /// The content is considered complete for its current state by the content creator.
     /// </summary>
     public static readonly Coding Active = new Coding
     {
@@ -21,7 +30,16 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Archived
+    /// The content has been approved for a state transition, with the focus of approval described in the text associated with this coding.
+    /// </summary>
+    public static readonly Coding Approved = new Coding
+    {
+      Code = "approved",
+      Display = "Approved",
+      System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
+    };
+    /// <summary>
+    /// The content is retired or considered no longer current but still available as part of the public record.
     /// </summary>
     public static readonly Coding Archived = new Coding
     {
@@ -30,7 +48,16 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Draft
+    /// The content was originally constructed or composed.
+    /// </summary>
+    public static readonly Coding Created = new Coding
+    {
+      Code = "created",
+      Display = "Created",
+      System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
+    };
+    /// <summary>
+    /// The content is considered unfinished or incomplete and not representative of the current state desired by the content creator.
     /// </summary>
     public static readonly Coding Draft = new Coding
     {
@@ -39,7 +66,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Post review pre published
+    /// The content is in a state between the review(s) being completed and being published.
     /// </summary>
     public static readonly Coding PostReviewPrePublished = new Coding
     {
@@ -48,7 +75,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Pre review
+    /// The content is awaiting assignment and delivery to reviewer(s).
     /// </summary>
     public static readonly Coding PreReview = new Coding
     {
@@ -57,7 +84,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Published early form
+    /// The content is published but future changes to the published version are expected.
     /// </summary>
     public static readonly Coding PublishedEarlyForm = new Coding
     {
@@ -66,7 +93,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Published final form
+    /// The content is published and further changes to the content are not expected.
     /// </summary>
     public static readonly Coding PublishedFinalForm = new Coding
     {
@@ -75,7 +102,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Rejected
+    /// The content that was not published has been removed from consideration for publishing by a publisher or editor.
     /// </summary>
     public static readonly Coding Rejected = new Coding
     {
@@ -84,7 +111,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Retracted
+    /// The content that was published is removed from publication and should no longer be considered part of the public record.
     /// </summary>
     public static readonly Coding Retracted = new Coding
     {
@@ -93,7 +120,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Submitted
+    /// The content was sent to the publisher for consideration of publication.
     /// </summary>
     public static readonly Coding Submitted = new Coding
     {
@@ -102,7 +129,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Under review
+    /// The content is in a state of being reviewed.
     /// </summary>
     public static readonly Coding UnderReview = new Coding
     {
@@ -111,7 +138,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/cited-artifact-status-type"
     };
     /// <summary>
-    /// Withdrawn
+    /// The content that was not published has been removed from consideration for publishing by the submitter.
     /// </summary>
     public static readonly Coding Withdrawn = new Coding
     {
@@ -121,14 +148,29 @@ namespace fhirCsR5.ValueSets
     };
 
     /// <summary>
+    /// Literal for code: Accepted
+    /// </summary>
+    public const string LiteralAccepted = "accepted";
+
+    /// <summary>
     /// Literal for code: Active
     /// </summary>
     public const string LiteralActive = "active";
 
     /// <summary>
+    /// Literal for code: Approved
+    /// </summary>
+    public const string LiteralApproved = "approved";
+
+    /// <summary>
     /// Literal for code: Archived
     /// </summary>
     public const string LiteralArchived = "archived";
+
+    /// <summary>
+    /// Literal for code: Created
+    /// </summary>
+    public const string LiteralCreated = "created";
 
     /// <summary>
     /// Literal for code: Draft

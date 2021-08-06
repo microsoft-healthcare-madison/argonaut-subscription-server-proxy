@@ -11,6 +11,123 @@ using fhirCsR5.Serialization;
 namespace fhirCsR5.Models
 {
   /// <summary>
+  /// Substance may be used to describe a kind of substance, or a specific package/container of the substance: an instance.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceInstance>))]
+  public class SubstanceInstance : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// When the substance is no longer valid to use. For some substances, a single arbitrary date is used for expiry.
+    /// </summary>
+    public string Expiry { get; set; }
+    /// <summary>
+    /// Extension container element for Expiry
+    /// </summary>
+    public Element _Expiry { get; set; }
+    /// <summary>
+    /// Identifier associated with the package/container (usually a label affixed directly).
+    /// </summary>
+    public Identifier Identifier { get; set; }
+    /// <summary>
+    /// The amount of the substance.
+    /// </summary>
+    public Quantity Quantity { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (Identifier != null)
+      {
+        writer.WritePropertyName("identifier");
+        Identifier.SerializeJson(writer, options);
+      }
+
+      if (!string.IsNullOrEmpty(Expiry))
+      {
+        writer.WriteString("expiry", (string)Expiry!);
+      }
+
+      if (_Expiry != null)
+      {
+        writer.WritePropertyName("_expiry");
+        _Expiry.SerializeJson(writer, options);
+      }
+
+      if (Quantity != null)
+      {
+        writer.WritePropertyName("quantity");
+        Quantity.SerializeJson(writer, options);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "expiry":
+          Expiry = reader.GetString();
+          break;
+
+        case "_expiry":
+          _Expiry = new fhirCsR5.Models.Element();
+          _Expiry.DeserializeJson(ref reader, options);
+          break;
+
+        case "identifier":
+          Identifier = new fhirCsR5.Models.Identifier();
+          Identifier.DeserializeJson(ref reader, options);
+          break;
+
+        case "quantity":
+          Quantity = new fhirCsR5.Models.Quantity();
+          Quantity.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// A substance can be composed of other substances.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceIngredient>))]
@@ -130,7 +247,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// This could be a reference to an externally defined code.  It could also be a locally assigned code (e.g. a formulary),  optionally with translations to the standard drug codes.
     /// </summary>
-    public CodeableReference Code { get; set; }
+    public CodeableConcept Code { get; set; }
     /// <summary>
     /// A description of the substance - its appearance, handling requirements, and other usage notes.
     /// </summary>
@@ -140,14 +257,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _Description { get; set; }
     /// <summary>
-    /// When the substance is no longer valid to use. For some substances, a single arbitrary date is used for expiry.
-    /// </summary>
-    public string Expiry { get; set; }
-    /// <summary>
-    /// Extension container element for Expiry
-    /// </summary>
-    public Element _Expiry { get; set; }
-    /// <summary>
     /// This identifier is associated with the kind of substance in contrast to the  Substance.instance.identifier which is associated with the package/container.
     /// </summary>
     public List<Identifier> Identifier { get; set; }
@@ -156,13 +265,9 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<SubstanceIngredient> Ingredient { get; set; }
     /// <summary>
-    /// A boolean to indicate if this an instance of a substance or a kind of one (a definition).
+    /// Substance may be used to describe a kind of substance, or a specific package/container of the substance: an instance.
     /// </summary>
-    public bool Instance { get; set; }
-    /// <summary>
-    /// The amount of the substance.
-    /// </summary>
-    public Quantity Quantity { get; set; }
+    public List<SubstanceInstance> Instance { get; set; }
     /// <summary>
     /// A code to indicate if the substance is actively used.
     /// </summary>
@@ -200,8 +305,6 @@ namespace fhirCsR5.Models
 
         writer.WriteEndArray();
       }
-
-      writer.WriteBoolean("instance", Instance);
 
       if (!string.IsNullOrEmpty(Status))
       {
@@ -244,21 +347,17 @@ namespace fhirCsR5.Models
         _Description.SerializeJson(writer, options);
       }
 
-      if (!string.IsNullOrEmpty(Expiry))
+      if ((Instance != null) && (Instance.Count != 0))
       {
-        writer.WriteString("expiry", (string)Expiry!);
-      }
+        writer.WritePropertyName("instance");
+        writer.WriteStartArray();
 
-      if (_Expiry != null)
-      {
-        writer.WritePropertyName("_expiry");
-        _Expiry.SerializeJson(writer, options);
-      }
+        foreach (SubstanceInstance valInstance in Instance)
+        {
+          valInstance.SerializeJson(writer, options, true);
+        }
 
-      if (Quantity != null)
-      {
-        writer.WritePropertyName("quantity");
-        Quantity.SerializeJson(writer, options);
+        writer.WriteEndArray();
       }
 
       if ((Ingredient != null) && (Ingredient.Count != 0))
@@ -314,7 +413,7 @@ namespace fhirCsR5.Models
           break;
 
         case "code":
-          Code = new fhirCsR5.Models.CodeableReference();
+          Code = new fhirCsR5.Models.CodeableConcept();
           Code.DeserializeJson(ref reader, options);
           break;
 
@@ -325,15 +424,6 @@ namespace fhirCsR5.Models
         case "_description":
           _Description = new fhirCsR5.Models.Element();
           _Description.DeserializeJson(ref reader, options);
-          break;
-
-        case "expiry":
-          Expiry = reader.GetString();
-          break;
-
-        case "_expiry":
-          _Expiry = new fhirCsR5.Models.Element();
-          _Expiry.DeserializeJson(ref reader, options);
           break;
 
         case "identifier":
@@ -391,12 +481,30 @@ namespace fhirCsR5.Models
           break;
 
         case "instance":
-          Instance = reader.GetBoolean();
-          break;
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
 
-        case "quantity":
-          Quantity = new fhirCsR5.Models.Quantity();
-          Quantity.DeserializeJson(ref reader, options);
+          Instance = new List<SubstanceInstance>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.SubstanceInstance objInstance = new fhirCsR5.Models.SubstanceInstance();
+            objInstance.DeserializeJson(ref reader, options);
+            Instance.Add(objInstance);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Instance.Count == 0)
+          {
+            Instance = null;
+          }
+
           break;
 
         case "status":

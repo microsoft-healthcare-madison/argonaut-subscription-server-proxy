@@ -930,6 +930,95 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
+  /// An associated device, attached to, used with, communicating with or linking a previous or new device model to the focal device.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<DeviceLink>))]
+  public class DeviceLink : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// A reference to the linked device.
+    /// </summary>
+    public CodeableReference RelatedDevice { get; set; }
+    /// <summary>
+    /// The type indicates the relationship of the related device to the device instance.
+    /// </summary>
+    public Coding Relation { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (Relation != null)
+      {
+        writer.WritePropertyName("relation");
+        Relation.SerializeJson(writer, options);
+      }
+
+      if (RelatedDevice != null)
+      {
+        writer.WritePropertyName("relatedDevice");
+        RelatedDevice.SerializeJson(writer, options);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "relatedDevice":
+          RelatedDevice = new fhirCsR5.Models.CodeableReference();
+          RelatedDevice.DeserializeJson(ref reader, options);
+          break;
+
+        case "relation":
+          Relation = new fhirCsR5.Models.Coding();
+          Relation.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// A type of a manufactured item that is used in the provision of healthcare without being substantially changed through that activity. The device may be a medical or non-medical device.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<Device>))]
@@ -982,6 +1071,10 @@ namespace fhirCsR5.Models
     /// Certain attributes, like serial number and UDI Carrier (the HRF or AIDC barcode string) are not device instance identifiers as they are not consistently able to uniquely identify the instance of a device, thus are not appropriate to be used to value Device.identifier. The barcode string from a barcode present on a device label or package may identify the instance, include names given to the device in local usage, or may identify the type of device. If the identifier identifies the type of device, Device.type element should be used.
     /// </summary>
     public List<Identifier> Identifier { get; set; }
+    /// <summary>
+    /// An associated device, attached to, used with, communicating with or linking a previous or new device model to the focal device.
+    /// </summary>
+    public List<DeviceLink> Link { get; set; }
     /// <summary>
     /// The place where the device can be found.
     /// </summary>
@@ -1390,6 +1483,19 @@ namespace fhirCsR5.Models
         _Url.SerializeJson(writer, options);
       }
 
+      if ((Link != null) && (Link.Count != 0))
+      {
+        writer.WritePropertyName("link");
+        writer.WriteStartArray();
+
+        foreach (DeviceLink valLink in Link)
+        {
+          valLink.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
       if ((Note != null) && (Note.Count != 0))
       {
         writer.WritePropertyName("note");
@@ -1548,6 +1654,33 @@ namespace fhirCsR5.Models
           if (Identifier.Count == 0)
           {
             Identifier = null;
+          }
+
+          break;
+
+        case "link":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Link = new List<DeviceLink>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.DeviceLink objLink = new fhirCsR5.Models.DeviceLink();
+            objLink.DeserializeJson(ref reader, options);
+            Link.Add(objLink);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Link.Count == 0)
+          {
+            Link = null;
           }
 
           break;

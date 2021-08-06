@@ -609,7 +609,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public override string ResourceType => "QuestionnaireResponse";
     /// <summary>
-    /// Mapping a subject's answers to multiple choice options and determining what to put in the textual answer is a matter of interpretation.  Authoring by device would indicate that some portion of the questionnaire had been auto-populated.
+    /// Mapping a subject's answers to multiple choice options and determining what to put in the textual answer is a matter of interpretation. Authoring by device would indicate that some portion of the questionnaire had been auto-populated. Device should only be used if it directly determined the answers, not if it was merely used as a capture tool to record answers provided by others. In the latter case, information about the physical device, software, etc. would be captured using Provenance.
     /// </summary>
     public Reference Author { get; set; }
     /// <summary>
@@ -650,7 +650,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _Questionnaire { get; set; }
     /// <summary>
-    /// If not specified, no inference can be made about who provided the data.
+    /// If not specified, no inference can be made about who provided the data. Device should only be used if it directly determined the answers, not if it was merely used as a capture tool to record answers provided by others. In the latter case, information about the physical device, software, etc. would be captured using Provenance.
     /// </summary>
     public Reference Source { get; set; }
     /// <summary>

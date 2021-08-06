@@ -39,7 +39,16 @@ namespace fhirCsR5.ValueSets
       System = "http://hl7.org/fhir/subscription-notification-type"
     };
     /// <summary>
-    /// The status was generated in response to a query/request.
+    /// The status was generated in response to an event query/request.
+    /// </summary>
+    public static readonly Coding QueryEvent = new Coding
+    {
+      Code = "query-event",
+      Display = "Query Event",
+      System = "http://hl7.org/fhir/subscription-notification-type"
+    };
+    /// <summary>
+    /// The status was generated in response to a status query/request.
     /// </summary>
     public static readonly Coding QueryStatus = new Coding
     {
@@ -62,6 +71,11 @@ namespace fhirCsR5.ValueSets
     /// Literal for code: Heartbeat
     /// </summary>
     public const string LiteralHeartbeat = "heartbeat";
+
+    /// <summary>
+    /// Literal for code: QueryEvent
+    /// </summary>
+    public const string LiteralQueryEvent = "query-event";
 
     /// <summary>
     /// Literal for code: QueryStatus

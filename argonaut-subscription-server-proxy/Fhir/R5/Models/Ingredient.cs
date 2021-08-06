@@ -28,21 +28,17 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _MeasurementPoint { get; set; }
     /// <summary>
-    /// Strength expressed in terms of a reference substance. When there is a range of strengths, this represents the lower limit.
+    /// Strength expressed in terms of a reference substance.
     /// </summary>
     public Ratio StrengthRatio { get; set; }
     /// <summary>
-    /// Strength expressed in terms of a reference substance. When there is a range of strengths, this represents the lower limit.
+    /// Strength expressed in terms of a reference substance.
+    /// </summary>
+    public RatioRange StrengthRatioRange { get; set; }
+    /// <summary>
+    /// Strength expressed in terms of a reference substance.
     /// </summary>
     public Quantity StrengthQuantity { get; set; }
-    /// <summary>
-    /// Strength expressed in terms of a reference substance. When there is a range of strengths, this represents the upper limit.
-    /// </summary>
-    public Ratio StrengthHighLimitRatio { get; set; }
-    /// <summary>
-    /// Strength expressed in terms of a reference substance. When there is a range of strengths, this represents the upper limit.
-    /// </summary>
-    public Quantity StrengthHighLimitQuantity { get; set; }
     /// <summary>
     /// Relevant reference substance.
     /// </summary>
@@ -70,22 +66,16 @@ namespace fhirCsR5.Models
         StrengthRatio.SerializeJson(writer, options);
       }
 
+      if (StrengthRatioRange != null)
+      {
+        writer.WritePropertyName("strengthRatioRange");
+        StrengthRatioRange.SerializeJson(writer, options);
+      }
+
       if (StrengthQuantity != null)
       {
         writer.WritePropertyName("strengthQuantity");
         StrengthQuantity.SerializeJson(writer, options);
-      }
-
-      if (StrengthHighLimitRatio != null)
-      {
-        writer.WritePropertyName("strengthHighLimitRatio");
-        StrengthHighLimitRatio.SerializeJson(writer, options);
-      }
-
-      if (StrengthHighLimitQuantity != null)
-      {
-        writer.WritePropertyName("strengthHighLimitQuantity");
-        StrengthHighLimitQuantity.SerializeJson(writer, options);
       }
 
       if (!string.IsNullOrEmpty(MeasurementPoint))
@@ -165,19 +155,14 @@ namespace fhirCsR5.Models
           StrengthRatio.DeserializeJson(ref reader, options);
           break;
 
+        case "strengthRatioRange":
+          StrengthRatioRange = new fhirCsR5.Models.RatioRange();
+          StrengthRatioRange.DeserializeJson(ref reader, options);
+          break;
+
         case "strengthQuantity":
           StrengthQuantity = new fhirCsR5.Models.Quantity();
           StrengthQuantity.DeserializeJson(ref reader, options);
-          break;
-
-        case "strengthHighLimitRatio":
-          StrengthHighLimitRatio = new fhirCsR5.Models.Ratio();
-          StrengthHighLimitRatio.DeserializeJson(ref reader, options);
-          break;
-
-        case "strengthHighLimitQuantity":
-          StrengthHighLimitQuantity = new fhirCsR5.Models.Quantity();
-          StrengthHighLimitQuantity.DeserializeJson(ref reader, options);
           break;
 
         case "substance":
@@ -217,7 +202,7 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
-  /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item. When there is a range of strengths, this represents the lower limit.
+  /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<IngredientSubstanceStrength>))]
   public class IngredientSubstanceStrength : BackboneElement,  IFhirJsonSerializable {
@@ -232,19 +217,15 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The strength per unitary volume (or mass).
     /// </summary>
+    public RatioRange ConcentrationRatioRange { get; set; }
+    /// <summary>
+    /// The strength per unitary volume (or mass).
+    /// </summary>
     public CodeableConcept ConcentrationCodeableConcept { get; set; }
     /// <summary>
     /// The strength per unitary volume (or mass).
     /// </summary>
     public Quantity ConcentrationQuantity { get; set; }
-    /// <summary>
-    /// An upper limit for the strength per unitary volume (or mass), for when there is a range. The concentration attribute then becomes the lower limit.
-    /// </summary>
-    public Ratio ConcentrationHighLimitRatio { get; set; }
-    /// <summary>
-    /// An upper limit for the strength per unitary volume (or mass), for when there is a range. The concentration attribute then becomes the lower limit.
-    /// </summary>
-    public Quantity ConcentrationHighLimitQuantity { get; set; }
     /// <summary>
     /// A textual represention of either the whole of the concentration strength or a part of it - with the rest being in Strength.concentration as a ratio.
     /// </summary>
@@ -272,19 +253,15 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item.
     /// </summary>
+    public RatioRange PresentationRatioRange { get; set; }
+    /// <summary>
+    /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item.
+    /// </summary>
     public CodeableConcept PresentationCodeableConcept { get; set; }
     /// <summary>
     /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item.
     /// </summary>
     public Quantity PresentationQuantity { get; set; }
-    /// <summary>
-    /// An upper limit for the quantity of substance in the unit of presentation. When there is a range of strengths, this represents the upper limit.
-    /// </summary>
-    public Ratio PresentationHighLimitRatio { get; set; }
-    /// <summary>
-    /// An upper limit for the quantity of substance in the unit of presentation. When there is a range of strengths, this represents the upper limit.
-    /// </summary>
-    public Quantity PresentationHighLimitQuantity { get; set; }
     /// <summary>
     /// A textual represention of either the whole of the presentation strength or a part of it - with the rest being in Strength.presentation as a ratio.
     /// </summary>
@@ -314,6 +291,12 @@ namespace fhirCsR5.Models
         PresentationRatio.SerializeJson(writer, options);
       }
 
+      if (PresentationRatioRange != null)
+      {
+        writer.WritePropertyName("presentationRatioRange");
+        PresentationRatioRange.SerializeJson(writer, options);
+      }
+
       if (PresentationCodeableConcept != null)
       {
         writer.WritePropertyName("presentationCodeableConcept");
@@ -324,18 +307,6 @@ namespace fhirCsR5.Models
       {
         writer.WritePropertyName("presentationQuantity");
         PresentationQuantity.SerializeJson(writer, options);
-      }
-
-      if (PresentationHighLimitRatio != null)
-      {
-        writer.WritePropertyName("presentationHighLimitRatio");
-        PresentationHighLimitRatio.SerializeJson(writer, options);
-      }
-
-      if (PresentationHighLimitQuantity != null)
-      {
-        writer.WritePropertyName("presentationHighLimitQuantity");
-        PresentationHighLimitQuantity.SerializeJson(writer, options);
       }
 
       if (!string.IsNullOrEmpty(PresentationText))
@@ -355,6 +326,12 @@ namespace fhirCsR5.Models
         ConcentrationRatio.SerializeJson(writer, options);
       }
 
+      if (ConcentrationRatioRange != null)
+      {
+        writer.WritePropertyName("concentrationRatioRange");
+        ConcentrationRatioRange.SerializeJson(writer, options);
+      }
+
       if (ConcentrationCodeableConcept != null)
       {
         writer.WritePropertyName("concentrationCodeableConcept");
@@ -365,18 +342,6 @@ namespace fhirCsR5.Models
       {
         writer.WritePropertyName("concentrationQuantity");
         ConcentrationQuantity.SerializeJson(writer, options);
-      }
-
-      if (ConcentrationHighLimitRatio != null)
-      {
-        writer.WritePropertyName("concentrationHighLimitRatio");
-        ConcentrationHighLimitRatio.SerializeJson(writer, options);
-      }
-
-      if (ConcentrationHighLimitQuantity != null)
-      {
-        writer.WritePropertyName("concentrationHighLimitQuantity");
-        ConcentrationHighLimitQuantity.SerializeJson(writer, options);
       }
 
       if (!string.IsNullOrEmpty(ConcentrationText))
@@ -455,6 +420,11 @@ namespace fhirCsR5.Models
           ConcentrationRatio.DeserializeJson(ref reader, options);
           break;
 
+        case "concentrationRatioRange":
+          ConcentrationRatioRange = new fhirCsR5.Models.RatioRange();
+          ConcentrationRatioRange.DeserializeJson(ref reader, options);
+          break;
+
         case "concentrationCodeableConcept":
           ConcentrationCodeableConcept = new fhirCsR5.Models.CodeableConcept();
           ConcentrationCodeableConcept.DeserializeJson(ref reader, options);
@@ -463,16 +433,6 @@ namespace fhirCsR5.Models
         case "concentrationQuantity":
           ConcentrationQuantity = new fhirCsR5.Models.Quantity();
           ConcentrationQuantity.DeserializeJson(ref reader, options);
-          break;
-
-        case "concentrationHighLimitRatio":
-          ConcentrationHighLimitRatio = new fhirCsR5.Models.Ratio();
-          ConcentrationHighLimitRatio.DeserializeJson(ref reader, options);
-          break;
-
-        case "concentrationHighLimitQuantity":
-          ConcentrationHighLimitQuantity = new fhirCsR5.Models.Quantity();
-          ConcentrationHighLimitQuantity.DeserializeJson(ref reader, options);
           break;
 
         case "concentrationText":
@@ -525,6 +485,11 @@ namespace fhirCsR5.Models
           PresentationRatio.DeserializeJson(ref reader, options);
           break;
 
+        case "presentationRatioRange":
+          PresentationRatioRange = new fhirCsR5.Models.RatioRange();
+          PresentationRatioRange.DeserializeJson(ref reader, options);
+          break;
+
         case "presentationCodeableConcept":
           PresentationCodeableConcept = new fhirCsR5.Models.CodeableConcept();
           PresentationCodeableConcept.DeserializeJson(ref reader, options);
@@ -533,16 +498,6 @@ namespace fhirCsR5.Models
         case "presentationQuantity":
           PresentationQuantity = new fhirCsR5.Models.Quantity();
           PresentationQuantity.DeserializeJson(ref reader, options);
-          break;
-
-        case "presentationHighLimitRatio":
-          PresentationHighLimitRatio = new fhirCsR5.Models.Ratio();
-          PresentationHighLimitRatio.DeserializeJson(ref reader, options);
-          break;
-
-        case "presentationHighLimitQuantity":
-          PresentationHighLimitQuantity = new fhirCsR5.Models.Quantity();
-          PresentationHighLimitQuantity.DeserializeJson(ref reader, options);
           break;
 
         case "presentationText":
@@ -622,7 +577,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public CodeableReference Code { get; set; }
     /// <summary>
-    /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item. When there is a range of strengths, this represents the lower limit.
+    /// The quantity of substance in the unit of presentation, or in the volume (or mass) of the single pharmaceutical product or manufactured item.
     /// </summary>
     public List<IngredientSubstanceStrength> Strength { get; set; }
     /// <summary>
@@ -893,14 +848,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public bool? AllergenicIndicator { get; set; }
     /// <summary>
-    /// A general description of the ingredient, or any supporting text. May be used for an unstructured list of excipients.
-    /// </summary>
-    public string Description { get; set; }
-    /// <summary>
-    /// Extension container element for Description
-    /// </summary>
-    public Element _Description { get; set; }
-    /// <summary>
     /// A classification of the ingredient identifying its precise purpose(s) in the drug product. This extends the Ingredient.role to add more detail. Example: Antioxidant, Alkalizing Agent.
     /// </summary>
     public List<CodeableConcept> Function { get; set; }
@@ -976,17 +923,6 @@ namespace fhirCsR5.Models
         Group.SerializeJson(writer, options);
       }
 
-      if (!string.IsNullOrEmpty(Description))
-      {
-        writer.WriteString("description", (string)Description!);
-      }
-
-      if (_Description != null)
-      {
-        writer.WritePropertyName("_description");
-        _Description.SerializeJson(writer, options);
-      }
-
       if (AllergenicIndicator != null)
       {
         writer.WriteBoolean("allergenicIndicator", (bool)AllergenicIndicator!);
@@ -1038,15 +974,6 @@ namespace fhirCsR5.Models
       {
         case "allergenicIndicator":
           AllergenicIndicator = reader.GetBoolean();
-          break;
-
-        case "description":
-          Description = reader.GetString();
-          break;
-
-        case "_description":
-          _Description = new fhirCsR5.Models.Element();
-          _Description.DeserializeJson(ref reader, options);
           break;
 
         case "function":

@@ -364,10 +364,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public CodeableConcept IntendedUse { get; set; }
     /// <summary>
-    /// Authorization in areas within a country.
-    /// </summary>
-    public List<Reference> JurisdictionalAuthorization { get; set; }
-    /// <summary>
     /// The territory (e.g., country, jurisdiction etc.) in which the authorization has been granted.
     /// </summary>
     public List<CodeableConcept> Region { get; set; }
@@ -530,19 +526,6 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
-      if ((JurisdictionalAuthorization != null) && (JurisdictionalAuthorization.Count != 0))
-      {
-        writer.WritePropertyName("jurisdictionalAuthorization");
-        writer.WriteStartArray();
-
-        foreach (Reference valJurisdictionalAuthorization in JurisdictionalAuthorization)
-        {
-          valJurisdictionalAuthorization.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
       if (Holder != null)
       {
         writer.WritePropertyName("holder");
@@ -694,33 +677,6 @@ namespace fhirCsR5.Models
         case "intendedUse":
           IntendedUse = new fhirCsR5.Models.CodeableConcept();
           IntendedUse.DeserializeJson(ref reader, options);
-          break;
-
-        case "jurisdictionalAuthorization":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          JurisdictionalAuthorization = new List<Reference>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Reference objJurisdictionalAuthorization = new fhirCsR5.Models.Reference();
-            objJurisdictionalAuthorization.DeserializeJson(ref reader, options);
-            JurisdictionalAuthorization.Add(objJurisdictionalAuthorization);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (JurisdictionalAuthorization.Count == 0)
-          {
-            JurisdictionalAuthorization = null;
-          }
-
           break;
 
         case "region":

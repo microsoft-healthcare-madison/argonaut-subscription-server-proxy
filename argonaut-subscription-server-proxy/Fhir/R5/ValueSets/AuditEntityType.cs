@@ -26490,7 +26490,7 @@ namespace fhirCsR5.ValueSets
       System = "http://hl7.org/fhir/resource-types"
     };
     /// <summary>
-    /// Risk of harmful or undesirable, physiological response which is unique to an individual and associated with exposure to a substance.
+    /// Risk of harmful or undesirable physiological response which is specific to an individual and associated with exposure to a substance.
     /// </summary>
     public static readonly Coding AllergyIntolerance_resource_types = new Coding
     {
@@ -26754,6 +26754,15 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// A single issue - either an indication, contraindication, interaction or an undesirable effect for a medicinal product, medication, device or procedure.
     /// </summary>
+    public static readonly Coding ClinicalUseDefinition_resource_types = new Coding
+    {
+      Code = "ClinicalUseDefinition",
+      Display = "ClinicalUseDefinition",
+      System = "http://hl7.org/fhir/resource-types"
+    };
+    /// <summary>
+    /// A single issue - either an indication, contraindication, interaction or an undesirable effect for a medicinal product, medication, device or procedure.
+    /// </summary>
     public static readonly Coding ClinicalUseIssue_resource_types = new Coding
     {
       Code = "ClinicalUseIssue",
@@ -26821,6 +26830,15 @@ namespace fhirCsR5.ValueSets
     {
       Code = "ConceptMap",
       Display = "ConceptMap",
+      System = "http://hl7.org/fhir/resource-types"
+    };
+    /// <summary>
+    /// A statement of relationships from one set of concepts to one or more other concepts - either concepts in code systems, or data element/data element concepts, or classes in class models.
+    /// </summary>
+    public static readonly Coding ConceptMap2_resource_types = new Coding
+    {
+      Code = "ConceptMap2",
+      Display = "ConceptMap2",
       System = "http://hl7.org/fhir/resource-types"
     };
     /// <summary>
@@ -27130,7 +27148,7 @@ namespace fhirCsR5.ValueSets
       System = "http://hl7.org/fhir/resource-types"
     };
     /// <summary>
-    /// The EvidenceReport Resource is a specialized container for a collection of resources and codable concepts, adapted to support compositions of Evidence, EvidenceVariable, and Citation resources and related concepts.
+    /// The EvidenceReport Resource is a specialized container for a collection of resources and codeable concepts, adapted to support compositions of Evidence, EvidenceVariable, and Citation resources and related concepts.
     /// </summary>
     public static readonly Coding EvidenceReport_resource_types = new Coding
     {
@@ -28329,7 +28347,7 @@ namespace fhirCsR5.ValueSets
       System = "http://hl7.org/fhir/resource-types"
     };
     /// <summary>
-    /// Describes a stream of resource state changes identified by trigger criteria and annotated with labels useful to filter projections from this topic.
+    /// Describes a stream of resource state changes or events and annotated with labels useful to filter projections from this topic.
     /// </summary>
     public static readonly Coding SubscriptionTopic_resource_types = new Coding
     {
@@ -43419,6 +43437,11 @@ namespace fhirCsR5.ValueSets
     public const string LiteralClinicalImpression_resource_types = "ClinicalImpression";
 
     /// <summary>
+    /// Literal for code: ClinicalUseDefinition_resource_types
+    /// </summary>
+    public const string LiteralClinicalUseDefinition_resource_types = "ClinicalUseDefinition";
+
+    /// <summary>
     /// Literal for code: ClinicalUseIssue_resource_types
     /// </summary>
     public const string LiteralClinicalUseIssue_resource_types = "ClinicalUseIssue";
@@ -43457,6 +43480,11 @@ namespace fhirCsR5.ValueSets
     /// Literal for code: ConceptMap_resource_types
     /// </summary>
     public const string LiteralConceptMap_resource_types = "ConceptMap";
+
+    /// <summary>
+    /// Literal for code: ConceptMap2_resource_types
+    /// </summary>
+    public const string LiteralConceptMap2_resource_types = "ConceptMap2";
 
     /// <summary>
     /// Literal for code: Condition_resource_types

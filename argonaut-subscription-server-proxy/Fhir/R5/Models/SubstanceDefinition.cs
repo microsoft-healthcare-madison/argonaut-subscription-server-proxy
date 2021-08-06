@@ -244,50 +244,38 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
-  /// General specifications for this substance, including how it is related to other substances.
+  /// General specifications for this substance.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceDefinitionProperty>))]
   public class SubstanceDefinitionProperty : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
-    /// Quantitative value for this property.
+    /// A code expressing the type of characteristic.
     /// </summary>
-    public Quantity AmountQuantity { get; set; }
+    public CodeableConcept Type { get; set; }
     /// <summary>
-    /// Quantitative value for this property.
+    /// A value for the characteristic.
     /// </summary>
-    public string AmountString { get; set; }
+    public CodeableConcept ValueCodeableConcept { get; set; }
     /// <summary>
-    /// Extension container element for AmountString
+    /// A value for the characteristic.
     /// </summary>
-    public Element _AmountString { get; set; }
+    public Quantity ValueQuantity { get; set; }
     /// <summary>
-    /// A category for this property, e.g. Physical, Chemical, Enzymatic.
+    /// A value for the characteristic.
     /// </summary>
-    public CodeableConcept Category { get; set; }
+    public string ValueDate { get; set; }
     /// <summary>
-    /// Property type e.g. viscosity, pH, isoelectric point.
+    /// Extension container element for ValueDate
     /// </summary>
-    public CodeableConcept Code { get; set; }
+    public Element _ValueDate { get; set; }
     /// <summary>
-    /// A substance upon which a defining property depends (e.g. for solubility: in water, in alcohol).
+    /// A value for the characteristic.
     /// </summary>
-    public CodeableReference DefiningSubstance { get; set; }
+    public bool? ValueBoolean { get; set; }
     /// <summary>
-    /// Parameters that were used in the measurement of a property (e.g. for viscosity: measured at 20C with a pH of 7.1).
+    /// A value for the characteristic.
     /// </summary>
-    public string Parameters { get; set; }
-    /// <summary>
-    /// Extension container element for Parameters
-    /// </summary>
-    public Element _Parameters { get; set; }
-    /// <summary>
-    /// Range of typical values.
-    /// </summary>
-    public Range ReferenceRange { get; set; }
-    /// <summary>
-    /// Supporting literature.
-    /// </summary>
-    public List<Reference> Source { get; set; }
+    public Attachment ValueAttachment { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -299,69 +287,44 @@ namespace fhirCsR5.Models
       }
       ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
 
-      if (Category != null)
+      if (Type != null)
       {
-        writer.WritePropertyName("category");
-        Category.SerializeJson(writer, options);
+        writer.WritePropertyName("type");
+        Type.SerializeJson(writer, options);
       }
 
-      if (Code != null)
+      if (ValueCodeableConcept != null)
       {
-        writer.WritePropertyName("code");
-        Code.SerializeJson(writer, options);
+        writer.WritePropertyName("valueCodeableConcept");
+        ValueCodeableConcept.SerializeJson(writer, options);
       }
 
-      if (!string.IsNullOrEmpty(Parameters))
+      if (ValueQuantity != null)
       {
-        writer.WriteString("parameters", (string)Parameters!);
+        writer.WritePropertyName("valueQuantity");
+        ValueQuantity.SerializeJson(writer, options);
       }
 
-      if (_Parameters != null)
+      if (!string.IsNullOrEmpty(ValueDate))
       {
-        writer.WritePropertyName("_parameters");
-        _Parameters.SerializeJson(writer, options);
+        writer.WriteString("valueDate", (string)ValueDate!);
       }
 
-      if (DefiningSubstance != null)
+      if (_ValueDate != null)
       {
-        writer.WritePropertyName("definingSubstance");
-        DefiningSubstance.SerializeJson(writer, options);
+        writer.WritePropertyName("_valueDate");
+        _ValueDate.SerializeJson(writer, options);
       }
 
-      if (AmountQuantity != null)
+      if (ValueBoolean != null)
       {
-        writer.WritePropertyName("amountQuantity");
-        AmountQuantity.SerializeJson(writer, options);
+        writer.WriteBoolean("valueBoolean", (bool)ValueBoolean!);
       }
 
-      if (!string.IsNullOrEmpty(AmountString))
+      if (ValueAttachment != null)
       {
-        writer.WriteString("amountString", (string)AmountString!);
-      }
-
-      if (_AmountString != null)
-      {
-        writer.WritePropertyName("_amountString");
-        _AmountString.SerializeJson(writer, options);
-      }
-
-      if (ReferenceRange != null)
-      {
-        writer.WritePropertyName("referenceRange");
-        ReferenceRange.SerializeJson(writer, options);
-      }
-
-      if ((Source != null) && (Source.Count != 0))
-      {
-        writer.WritePropertyName("source");
-        writer.WriteStartArray();
-
-        foreach (Reference valSource in Source)
-        {
-          valSource.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
+        writer.WritePropertyName("valueAttachment");
+        ValueAttachment.SerializeJson(writer, options);
       }
 
       if (includeStartObject)
@@ -376,74 +339,37 @@ namespace fhirCsR5.Models
     {
       switch (propertyName)
       {
-        case "amountQuantity":
-          AmountQuantity = new fhirCsR5.Models.Quantity();
-          AmountQuantity.DeserializeJson(ref reader, options);
+        case "type":
+          Type = new fhirCsR5.Models.CodeableConcept();
+          Type.DeserializeJson(ref reader, options);
           break;
 
-        case "amountString":
-          AmountString = reader.GetString();
+        case "valueCodeableConcept":
+          ValueCodeableConcept = new fhirCsR5.Models.CodeableConcept();
+          ValueCodeableConcept.DeserializeJson(ref reader, options);
           break;
 
-        case "_amountString":
-          _AmountString = new fhirCsR5.Models.Element();
-          _AmountString.DeserializeJson(ref reader, options);
+        case "valueQuantity":
+          ValueQuantity = new fhirCsR5.Models.Quantity();
+          ValueQuantity.DeserializeJson(ref reader, options);
           break;
 
-        case "category":
-          Category = new fhirCsR5.Models.CodeableConcept();
-          Category.DeserializeJson(ref reader, options);
+        case "valueDate":
+          ValueDate = reader.GetString();
           break;
 
-        case "code":
-          Code = new fhirCsR5.Models.CodeableConcept();
-          Code.DeserializeJson(ref reader, options);
+        case "_valueDate":
+          _ValueDate = new fhirCsR5.Models.Element();
+          _ValueDate.DeserializeJson(ref reader, options);
           break;
 
-        case "definingSubstance":
-          DefiningSubstance = new fhirCsR5.Models.CodeableReference();
-          DefiningSubstance.DeserializeJson(ref reader, options);
+        case "valueBoolean":
+          ValueBoolean = reader.GetBoolean();
           break;
 
-        case "parameters":
-          Parameters = reader.GetString();
-          break;
-
-        case "_parameters":
-          _Parameters = new fhirCsR5.Models.Element();
-          _Parameters.DeserializeJson(ref reader, options);
-          break;
-
-        case "referenceRange":
-          ReferenceRange = new fhirCsR5.Models.Range();
-          ReferenceRange.DeserializeJson(ref reader, options);
-          break;
-
-        case "source":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Source = new List<Reference>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Reference objSource = new fhirCsR5.Models.Reference();
-            objSource.DeserializeJson(ref reader, options);
-            Source.Add(objSource);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Source.Count == 0)
-          {
-            Source = null;
-          }
-
+        case "valueAttachment":
+          ValueAttachment = new fhirCsR5.Models.Attachment();
+          ValueAttachment.DeserializeJson(ref reader, options);
           break;
 
         default:
@@ -480,8 +406,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// The molecular weight or weight range (for proteins, polymers or nucleic acids).
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceDefinitionStructureIsotopeMolecularWeight>))]
-  public class SubstanceDefinitionStructureIsotopeMolecularWeight : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceDefinitionMolecularWeight>))]
+  public class SubstanceDefinitionMolecularWeight : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// Used to capture quantitative values for a variety of elements. If only limits are given, the arithmetic mean would be the average. If only a single definite value for a given element is given, it would be captured in this field.
     /// </summary>
@@ -548,140 +474,6 @@ namespace fhirCsR5.Models
         case "type":
           Type = new fhirCsR5.Models.CodeableConcept();
           Type.DeserializeJson(ref reader, options);
-          break;
-
-        default:
-          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
-          break;
-      }
-    }
-
-    /// <summary>
-    /// Deserialize a JSON object
-    /// </summary>
-    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-      string propertyName;
-
-      while (reader.Read())
-      {
-        if (reader.TokenType == JsonTokenType.EndObject)
-        {
-          return;
-        }
-
-        if (reader.TokenType == JsonTokenType.PropertyName)
-        {
-          propertyName = reader.GetString();
-          reader.Read();
-          this.DeserializeJsonProperty(ref reader, options, propertyName);
-        }
-      }
-
-      throw new JsonException();
-    }
-  }
-  /// <summary>
-  /// Applicable for single substances that contain a radionuclide or a non-natural isotopic ratio.
-  /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceDefinitionStructureIsotope>))]
-  public class SubstanceDefinitionStructureIsotope : BackboneElement,  IFhirJsonSerializable {
-    /// <summary>
-    /// Half life - for a non-natural nuclide.
-    /// </summary>
-    public Quantity HalfLife { get; set; }
-    /// <summary>
-    /// Substance identifier for each non-natural or radioisotope.
-    /// </summary>
-    public Identifier Identifier { get; set; }
-    /// <summary>
-    /// The molecular weight or weight range (for proteins, polymers or nucleic acids).
-    /// </summary>
-    public SubstanceDefinitionStructureIsotopeMolecularWeight MolecularWeight { get; set; }
-    /// <summary>
-    /// Substance name for each non-natural or radioisotope.
-    /// </summary>
-    public CodeableConcept Name { get; set; }
-    /// <summary>
-    /// The type of isotopic substitution present in a single substance.
-    /// </summary>
-    public CodeableConcept Substitution { get; set; }
-    /// <summary>
-    /// Serialize to a JSON object
-    /// </summary>
-    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
-    {
-      if (includeStartObject)
-      {
-        writer.WriteStartObject();
-      }
-      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
-
-      if (Identifier != null)
-      {
-        writer.WritePropertyName("identifier");
-        Identifier.SerializeJson(writer, options);
-      }
-
-      if (Name != null)
-      {
-        writer.WritePropertyName("name");
-        Name.SerializeJson(writer, options);
-      }
-
-      if (Substitution != null)
-      {
-        writer.WritePropertyName("substitution");
-        Substitution.SerializeJson(writer, options);
-      }
-
-      if (HalfLife != null)
-      {
-        writer.WritePropertyName("halfLife");
-        HalfLife.SerializeJson(writer, options);
-      }
-
-      if (MolecularWeight != null)
-      {
-        writer.WritePropertyName("molecularWeight");
-        MolecularWeight.SerializeJson(writer, options);
-      }
-
-      if (includeStartObject)
-      {
-        writer.WriteEndObject();
-      }
-    }
-    /// <summary>
-    /// Deserialize a JSON property
-    /// </summary>
-    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
-    {
-      switch (propertyName)
-      {
-        case "halfLife":
-          HalfLife = new fhirCsR5.Models.Quantity();
-          HalfLife.DeserializeJson(ref reader, options);
-          break;
-
-        case "identifier":
-          Identifier = new fhirCsR5.Models.Identifier();
-          Identifier.DeserializeJson(ref reader, options);
-          break;
-
-        case "molecularWeight":
-          MolecularWeight = new fhirCsR5.Models.SubstanceDefinitionStructureIsotopeMolecularWeight();
-          MolecularWeight.DeserializeJson(ref reader, options);
-          break;
-
-        case "name":
-          Name = new fhirCsR5.Models.CodeableConcept();
-          Name.DeserializeJson(ref reader, options);
-          break;
-
-        case "substitution":
-          Substitution = new fhirCsR5.Models.CodeableConcept();
-          Substitution.DeserializeJson(ref reader, options);
           break;
 
         default:
@@ -853,10 +645,6 @@ namespace fhirCsR5.Models
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubstanceDefinitionStructure>))]
   public class SubstanceDefinitionStructure : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
-    /// Applicable for single substances that contain a radionuclide or a non-natural isotopic ratio.
-    /// </summary>
-    public List<SubstanceDefinitionStructureIsotope> Isotope { get; set; }
-    /// <summary>
     /// Molecular formula of this substance, typically using the Hill system.
     /// </summary>
     public string MolecularFormula { get; set; }
@@ -875,7 +663,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The molecular weight or weight range (for proteins, polymers or nucleic acids).
     /// </summary>
-    public SubstanceDefinitionStructureIsotopeMolecularWeight MolecularWeight { get; set; }
+    public SubstanceDefinitionMolecularWeight MolecularWeight { get; set; }
     /// <summary>
     /// Optical activity type.
     /// </summary>
@@ -941,19 +729,6 @@ namespace fhirCsR5.Models
         _MolecularFormulaByMoiety.SerializeJson(writer, options);
       }
 
-      if ((Isotope != null) && (Isotope.Count != 0))
-      {
-        writer.WritePropertyName("isotope");
-        writer.WriteStartArray();
-
-        foreach (SubstanceDefinitionStructureIsotope valIsotope in Isotope)
-        {
-          valIsotope.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
       if (MolecularWeight != null)
       {
         writer.WritePropertyName("molecularWeight");
@@ -1011,33 +786,6 @@ namespace fhirCsR5.Models
     {
       switch (propertyName)
       {
-        case "isotope":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Isotope = new List<SubstanceDefinitionStructureIsotope>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.SubstanceDefinitionStructureIsotope objIsotope = new fhirCsR5.Models.SubstanceDefinitionStructureIsotope();
-            objIsotope.DeserializeJson(ref reader, options);
-            Isotope.Add(objIsotope);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Isotope.Count == 0)
-          {
-            Isotope = null;
-          }
-
-          break;
-
         case "molecularFormula":
           MolecularFormula = reader.GetString();
           break;
@@ -1057,7 +805,7 @@ namespace fhirCsR5.Models
           break;
 
         case "molecularWeight":
-          MolecularWeight = new fhirCsR5.Models.SubstanceDefinitionStructureIsotopeMolecularWeight();
+          MolecularWeight = new fhirCsR5.Models.SubstanceDefinitionMolecularWeight();
           MolecularWeight.DeserializeJson(ref reader, options);
           break;
 
@@ -1955,10 +1703,6 @@ namespace fhirCsR5.Models
     /// <summary>
     /// A numeric factor for the relationship, for instance to express that the salt of a substance has some percentage of the active substance in relation to some other.
     /// </summary>
-    public Range AmountRange { get; set; }
-    /// <summary>
-    /// A numeric factor for the relationship, for instance to express that the salt of a substance has some percentage of the active substance in relation to some other.
-    /// </summary>
     public Ratio AmountRatio { get; set; }
     /// <summary>
     /// A numeric factor for the relationship, for instance to express that the salt of a substance has some percentage of the active substance in relation to some other.
@@ -2036,12 +1780,6 @@ namespace fhirCsR5.Models
         AmountQuantity.SerializeJson(writer, options);
       }
 
-      if (AmountRange != null)
-      {
-        writer.WritePropertyName("amountRange");
-        AmountRange.SerializeJson(writer, options);
-      }
-
       if (AmountRatio != null)
       {
         writer.WritePropertyName("amountRatio");
@@ -2099,11 +1837,6 @@ namespace fhirCsR5.Models
         case "amountQuantity":
           AmountQuantity = new fhirCsR5.Models.Quantity();
           AmountQuantity.DeserializeJson(ref reader, options);
-          break;
-
-        case "amountRange":
-          AmountRange = new fhirCsR5.Models.Range();
-          AmountRange.DeserializeJson(ref reader, options);
           break;
 
         case "amountRatio":
@@ -2412,6 +2145,10 @@ namespace fhirCsR5.Models
     /// </summary>
     public Identifier Identifier { get; set; }
     /// <summary>
+    /// Supporting literature.
+    /// </summary>
+    public List<Reference> InformationSource { get; set; }
+    /// <summary>
     /// A company that makes this substance.
     /// </summary>
     public List<Reference> Manufacturer { get; set; }
@@ -2422,7 +2159,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The molecular weight or weight range (for proteins, polymers or nucleic acids).
     /// </summary>
-    public List<SubstanceDefinitionStructureIsotopeMolecularWeight> MolecularWeight { get; set; }
+    public List<SubstanceDefinitionMolecularWeight> MolecularWeight { get; set; }
     /// <summary>
     /// Names applicable to this substance.
     /// </summary>
@@ -2440,7 +2177,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public Reference Polymer { get; set; }
     /// <summary>
-    /// General specifications for this substance, including how it is related to other substances.
+    /// General specifications for this substance.
     /// </summary>
     public List<SubstanceDefinitionProperty> Property { get; set; }
     /// <summary>
@@ -2455,10 +2192,6 @@ namespace fhirCsR5.Models
     /// A link between this substance and another, with details of the relationship.
     /// </summary>
     public List<SubstanceDefinitionRelationship> Relationship { get; set; }
-    /// <summary>
-    /// Supporting literature.
-    /// </summary>
-    public List<Reference> Source { get; set; }
     /// <summary>
     /// Material or taxonomic/anatomical source for the substance.
     /// </summary>
@@ -2572,14 +2305,14 @@ namespace fhirCsR5.Models
         _Description.SerializeJson(writer, options);
       }
 
-      if ((Source != null) && (Source.Count != 0))
+      if ((InformationSource != null) && (InformationSource.Count != 0))
       {
-        writer.WritePropertyName("source");
+        writer.WritePropertyName("informationSource");
         writer.WriteStartArray();
 
-        foreach (Reference valSource in Source)
+        foreach (Reference valInformationSource in InformationSource)
         {
-          valSource.SerializeJson(writer, options, true);
+          valInformationSource.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -2656,6 +2389,19 @@ namespace fhirCsR5.Models
         ReferenceInformation.SerializeJson(writer, options);
       }
 
+      if ((MolecularWeight != null) && (MolecularWeight.Count != 0))
+      {
+        writer.WritePropertyName("molecularWeight");
+        writer.WriteStartArray();
+
+        foreach (SubstanceDefinitionMolecularWeight valMolecularWeight in MolecularWeight)
+        {
+          valMolecularWeight.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
       if (Structure != null)
       {
         writer.WritePropertyName("structure");
@@ -2683,19 +2429,6 @@ namespace fhirCsR5.Models
         foreach (SubstanceDefinitionName valName in Name)
         {
           valName.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
-      if ((MolecularWeight != null) && (MolecularWeight.Count != 0))
-      {
-        writer.WritePropertyName("molecularWeight");
-        writer.WriteStartArray();
-
-        foreach (SubstanceDefinitionStructureIsotopeMolecularWeight valMolecularWeight in MolecularWeight)
-        {
-          valMolecularWeight.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -2855,6 +2588,33 @@ namespace fhirCsR5.Models
           Identifier.DeserializeJson(ref reader, options);
           break;
 
+        case "informationSource":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          InformationSource = new List<Reference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Reference objInformationSource = new fhirCsR5.Models.Reference();
+            objInformationSource.DeserializeJson(ref reader, options);
+            InformationSource.Add(objInformationSource);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (InformationSource.Count == 0)
+          {
+            InformationSource = null;
+          }
+
+          break;
+
         case "manufacturer":
           if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
           {
@@ -2915,11 +2675,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          MolecularWeight = new List<SubstanceDefinitionStructureIsotopeMolecularWeight>();
+          MolecularWeight = new List<SubstanceDefinitionMolecularWeight>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.SubstanceDefinitionStructureIsotopeMolecularWeight objMolecularWeight = new fhirCsR5.Models.SubstanceDefinitionStructureIsotopeMolecularWeight();
+            fhirCsR5.Models.SubstanceDefinitionMolecularWeight objMolecularWeight = new fhirCsR5.Models.SubstanceDefinitionMolecularWeight();
             objMolecularWeight.DeserializeJson(ref reader, options);
             MolecularWeight.Add(objMolecularWeight);
 
@@ -3060,33 +2820,6 @@ namespace fhirCsR5.Models
           if (Relationship.Count == 0)
           {
             Relationship = null;
-          }
-
-          break;
-
-        case "source":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Source = new List<Reference>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Reference objSource = new fhirCsR5.Models.Reference();
-            objSource.DeserializeJson(ref reader, options);
-            Source.Add(objSource);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Source.Count == 0)
-          {
-            Source = null;
           }
 
           break;

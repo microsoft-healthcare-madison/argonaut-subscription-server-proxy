@@ -30,12 +30,12 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
-    /// Alternative form of title in two or more Medline entries.
+    /// An alternative form of the title in two or more entries, e.g. in multiple medline entries
     /// </summary>
-    public static readonly Coding DifferentTextInAdditionalMedlineEntry = new Coding
+    public static readonly Coding DifferentTextForTheSameObjectWithADifferentIdentifier = new Coding
     {
-      Code = "duplicate-pmid",
-      Display = "Different text in additional Medline entry",
+      Code = "duplicate-uid",
+      Display = "Different text for the same object with a different identifier",
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
@@ -48,6 +48,15 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
+    /// Human-friendly title
+    /// </summary>
+    public static readonly Coding HumanUse = new Coding
+    {
+      Code = "human-use",
+      Display = "Human use",
+      System = "http://terminology.hl7.org/CodeSystem/title-type"
+    };
+    /// <summary>
     /// Additional form of title in a different language.
     /// </summary>
     public static readonly Coding DifferentLanguage = new Coding
@@ -57,21 +66,48 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
-    /// Human-friendly main or official title
+    /// Machine-friendly title
     /// </summary>
-    public static readonly Coding PrimaryHumanUse = new Coding
+    public static readonly Coding MachineUse = new Coding
     {
-      Code = "primary-human-use",
-      Display = "Primary human use",
+      Code = "machine-use",
+      Display = "Machine use",
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
-    /// Machine-friendly main or official title
+    /// The official or authoritative title.
     /// </summary>
-    public static readonly Coding PrimaryMachineUse = new Coding
+    public static readonly Coding OfficialTitle = new Coding
     {
-      Code = "primary-machine-use",
-      Display = "Primary machine use",
+      Code = "official",
+      Display = "Official title",
+      System = "http://terminology.hl7.org/CodeSystem/title-type"
+    };
+    /// <summary>
+    /// Title using language common to lay public discourse.
+    /// </summary>
+    public static readonly Coding PlainLanguageTitle = new Coding
+    {
+      Code = "plain-language",
+      Display = "Plain language title",
+      System = "http://terminology.hl7.org/CodeSystem/title-type"
+    };
+    /// <summary>
+    /// Main title for common use. The primary title used for representation if multiple titles exist.
+    /// </summary>
+    public static readonly Coding PrimaryTitle = new Coding
+    {
+      Code = "primary",
+      Display = "Primary title",
+      System = "http://terminology.hl7.org/CodeSystem/title-type"
+    };
+    /// <summary>
+    /// Title using scientific terminology.
+    /// </summary>
+    public static readonly Coding ScientificTitle = new Coding
+    {
+      Code = "scientific",
+      Display = "Scientific title",
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
@@ -84,7 +120,7 @@ namespace fhirCsR5.ValueSets
       System = "http://terminology.hl7.org/CodeSystem/title-type"
     };
     /// <summary>
-    /// Subtitle or Secondary title.
+    /// Subtitle or secondary title.
     /// </summary>
     public static readonly Coding Subtitle = new Coding
     {
@@ -104,9 +140,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralDifferentLanguageDerivedFromAutotranslation = "autotranslated";
 
     /// <summary>
-    /// Literal for code: DifferentTextInAdditionalMedlineEntry
+    /// Literal for code: DifferentTextForTheSameObjectWithADifferentIdentifier
     /// </summary>
-    public const string LiteralDifferentTextInAdditionalMedlineEntry = "duplicate-pmid";
+    public const string LiteralDifferentTextForTheSameObjectWithADifferentIdentifier = "duplicate-uid";
 
     /// <summary>
     /// Literal for code: DifferentTextInAnEarlierVersion
@@ -114,19 +150,39 @@ namespace fhirCsR5.ValueSets
     public const string LiteralDifferentTextInAnEarlierVersion = "earlier-title";
 
     /// <summary>
+    /// Literal for code: HumanUse
+    /// </summary>
+    public const string LiteralHumanUse = "human-use";
+
+    /// <summary>
     /// Literal for code: DifferentLanguage
     /// </summary>
     public const string LiteralDifferentLanguage = "language";
 
     /// <summary>
-    /// Literal for code: PrimaryHumanUse
+    /// Literal for code: MachineUse
     /// </summary>
-    public const string LiteralPrimaryHumanUse = "primary-human-use";
+    public const string LiteralMachineUse = "machine-use";
 
     /// <summary>
-    /// Literal for code: PrimaryMachineUse
+    /// Literal for code: OfficialTitle
     /// </summary>
-    public const string LiteralPrimaryMachineUse = "primary-machine-use";
+    public const string LiteralOfficialTitle = "official";
+
+    /// <summary>
+    /// Literal for code: PlainLanguageTitle
+    /// </summary>
+    public const string LiteralPlainLanguageTitle = "plain-language";
+
+    /// <summary>
+    /// Literal for code: PrimaryTitle
+    /// </summary>
+    public const string LiteralPrimaryTitle = "primary";
+
+    /// <summary>
+    /// Literal for code: ScientificTitle
+    /// </summary>
+    public const string LiteralScientificTitle = "scientific";
 
     /// <summary>
     /// Literal for code: ShortTitle

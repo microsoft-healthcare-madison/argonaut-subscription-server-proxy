@@ -11,6 +11,116 @@ using fhirCsR5.Serialization;
 namespace fhirCsR5.Models
 {
   /// <summary>
+  /// Used to specify how two or more characteristics are combined.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceVariableCharacteristicCombination>))]
+  public class EvidenceVariableCharacteristicCombination : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Used to specify if two or more characteristics are combined with OR or AND.
+    /// </summary>
+    public string Code { get; set; }
+    /// <summary>
+    /// Extension container element for Code
+    /// </summary>
+    public Element _Code { get; set; }
+    /// <summary>
+    /// Provides the value of "n" when "at-least" or "at-most" codes are used.
+    /// </summary>
+    public uint? Threshold { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(Code))
+      {
+        writer.WriteString("code", (string)Code!);
+      }
+
+      if (_Code != null)
+      {
+        writer.WritePropertyName("_code");
+        _Code.SerializeJson(writer, options);
+      }
+
+      if (Threshold != null)
+      {
+        writer.WriteNumber("threshold", (uint)Threshold!);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "code":
+          Code = reader.GetString();
+          break;
+
+        case "_code":
+          _Code = new fhirCsR5.Models.Element();
+          _Code.DeserializeJson(ref reader, options);
+          break;
+
+        case "threshold":
+          Threshold = reader.GetUInt32();
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
+  /// Code Values for the EvidenceVariable.characteristicCombination.code field
+  /// </summary>
+  public static class EvidenceVariableCharacteristicCombinationCodeCodes {
+    public const string ALL_OF = "all-of";
+    public const string ANY_OF = "any-of";
+    public const string AT_LEAST = "at-least";
+    public const string AT_MOST = "at-most";
+    public const string NET_EFFECT = "net-effect";
+  }
+  /// <summary>
   /// Indicates duration, period, or point of observation from the participant's study entry.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceVariableCharacteristicTimeFromStart>))]
@@ -172,6 +282,182 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
+  /// Observation time from study specified event.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceVariableCharacteristicTimeFromEvent>))]
+  public class EvidenceVariableCharacteristicTimeFromEvent : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Human readable description.
+    /// </summary>
+    public string Description { get; set; }
+    /// <summary>
+    /// Extension container element for Description
+    /// </summary>
+    public Element _Description { get; set; }
+    /// <summary>
+    /// The type of event where the observation started.
+    /// </summary>
+    public CodeableConcept Event { get; set; }
+    /// <summary>
+    /// A human-readable string to clarify or explain concepts about the resource.
+    /// </summary>
+    public List<Annotation> Note { get; set; }
+    /// <summary>
+    /// Used to express the observation at a defined amount of time after the study start.
+    /// </summary>
+    public Quantity Quantity { get; set; }
+    /// <summary>
+    /// Used to express the observation within a period after the study start.
+    /// </summary>
+    public Range Range { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(Description))
+      {
+        writer.WriteString("description", (string)Description!);
+      }
+
+      if (_Description != null)
+      {
+        writer.WritePropertyName("_description");
+        _Description.SerializeJson(writer, options);
+      }
+
+      if (Event != null)
+      {
+        writer.WritePropertyName("event");
+        Event.SerializeJson(writer, options);
+      }
+
+      if (Quantity != null)
+      {
+        writer.WritePropertyName("quantity");
+        Quantity.SerializeJson(writer, options);
+      }
+
+      if (Range != null)
+      {
+        writer.WritePropertyName("range");
+        Range.SerializeJson(writer, options);
+      }
+
+      if ((Note != null) && (Note.Count != 0))
+      {
+        writer.WritePropertyName("note");
+        writer.WriteStartArray();
+
+        foreach (Annotation valNote in Note)
+        {
+          valNote.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "description":
+          Description = reader.GetString();
+          break;
+
+        case "_description":
+          _Description = new fhirCsR5.Models.Element();
+          _Description.DeserializeJson(ref reader, options);
+          break;
+
+        case "event":
+          Event = new fhirCsR5.Models.CodeableConcept();
+          Event.DeserializeJson(ref reader, options);
+          break;
+
+        case "note":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Note = new List<Annotation>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Annotation objNote = new fhirCsR5.Models.Annotation();
+            objNote.DeserializeJson(ref reader, options);
+            Note.Add(objNote);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Note.Count == 0)
+          {
+            Note = null;
+          }
+
+          break;
+
+        case "quantity":
+          Quantity = new fhirCsR5.Models.Quantity();
+          Quantity.DeserializeJson(ref reader, options);
+          break;
+
+        case "range":
+          Range = new fhirCsR5.Models.Range();
+          Range.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// Characteristics can be defined flexibly to accommodate different use cases for membership criteria, ranging from simple codes, all the way to using an expression language to express the criteria.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceVariableCharacteristic>))]
@@ -213,7 +499,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public bool? Exclude { get; set; }
     /// <summary>
-    /// Indicates how elements are aggregated within the study effective period.
+    /// Value or set of values that define the grouping.
     /// </summary>
     public string GroupMeasure { get; set; }
     /// <summary>
@@ -225,9 +511,17 @@ namespace fhirCsR5.Models
     /// </summary>
     public CodeableConcept Method { get; set; }
     /// <summary>
+    /// Observation time from study specified event.
+    /// </summary>
+    public List<EvidenceVariableCharacteristicTimeFromEvent> TimeFromEvent { get; set; }
+    /// <summary>
     /// Indicates duration, period, or point of observation from the participant's study entry.
     /// </summary>
     public EvidenceVariableCharacteristicTimeFromStart TimeFromStart { get; set; }
+    /// <summary>
+    /// Used to expressing the type of characteristic.
+    /// </summary>
+    public CodeableConcept Type { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -248,6 +542,12 @@ namespace fhirCsR5.Models
       {
         writer.WritePropertyName("_description");
         _Description.SerializeJson(writer, options);
+      }
+
+      if (Type != null)
+      {
+        writer.WritePropertyName("type");
+        Type.SerializeJson(writer, options);
       }
 
       if (DefinitionReference != null)
@@ -300,6 +600,19 @@ namespace fhirCsR5.Models
       {
         writer.WritePropertyName("timeFromStart");
         TimeFromStart.SerializeJson(writer, options);
+      }
+
+      if ((TimeFromEvent != null) && (TimeFromEvent.Count != 0))
+      {
+        writer.WritePropertyName("timeFromEvent");
+        writer.WriteStartArray();
+
+        foreach (EvidenceVariableCharacteristicTimeFromEvent valTimeFromEvent in TimeFromEvent)
+        {
+          valTimeFromEvent.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
       }
 
       if (!string.IsNullOrEmpty(GroupMeasure))
@@ -381,9 +694,41 @@ namespace fhirCsR5.Models
           Method.DeserializeJson(ref reader, options);
           break;
 
+        case "timeFromEvent":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          TimeFromEvent = new List<EvidenceVariableCharacteristicTimeFromEvent>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.EvidenceVariableCharacteristicTimeFromEvent objTimeFromEvent = new fhirCsR5.Models.EvidenceVariableCharacteristicTimeFromEvent();
+            objTimeFromEvent.DeserializeJson(ref reader, options);
+            TimeFromEvent.Add(objTimeFromEvent);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (TimeFromEvent.Count == 0)
+          {
+            TimeFromEvent = null;
+          }
+
+          break;
+
         case "timeFromStart":
           TimeFromStart = new fhirCsR5.Models.EvidenceVariableCharacteristicTimeFromStart();
           TimeFromStart.DeserializeJson(ref reader, options);
+          break;
+
+        case "type":
+          Type = new fhirCsR5.Models.CodeableConcept();
+          Type.DeserializeJson(ref reader, options);
           break;
 
         default:
@@ -429,12 +774,12 @@ namespace fhirCsR5.Models
     public const string MEDIAN_OF_MEDIAN = "median-of-median";
   }
   /// <summary>
-  /// A grouping (or set of values) described along with other groupings to specify the set of groupings allowed for the variable.
+  /// A grouping for ordinal or polychotomous variables.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceVariableCategory>))]
   public class EvidenceVariableCategory : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
-    /// A human-readable title or representation of the grouping.
+    /// Description of the grouping.
     /// </summary>
     public string Name { get; set; }
     /// <summary>
@@ -442,15 +787,15 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _Name { get; set; }
     /// <summary>
-    /// Value or set of values that define the grouping.
+    /// Definition of the grouping.
     /// </summary>
     public CodeableConcept ValueCodeableConcept { get; set; }
     /// <summary>
-    /// Value or set of values that define the grouping.
+    /// Definition of the grouping.
     /// </summary>
     public Quantity ValueQuantity { get; set; }
     /// <summary>
-    /// Value or set of values that define the grouping.
+    /// Definition of the grouping.
     /// </summary>
     public Range ValueRange { get; set; }
     /// <summary>
@@ -578,7 +923,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<ContactDetail> Author { get; set; }
     /// <summary>
-    /// A grouping (or set of values) described along with other groupings to specify the set of groupings allowed for the variable.
+    /// A grouping for ordinal or polychotomous variables.
     /// </summary>
     public List<EvidenceVariableCategory> Category { get; set; }
     /// <summary>
@@ -586,13 +931,9 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<EvidenceVariableCharacteristic> Characteristic { get; set; }
     /// <summary>
-    /// Used to specify if two or more characteristics are combined with OR or AND.
+    /// Used to specify how two or more characteristics are combined.
     /// </summary>
-    public string CharacteristicCombination { get; set; }
-    /// <summary>
-    /// Extension container element for CharacteristicCombination
-    /// </summary>
-    public Element _CharacteristicCombination { get; set; }
+    public EvidenceVariableCharacteristicCombination CharacteristicCombination { get; set; }
     /// <summary>
     /// Extensions to ContactDetail include: contactReference, contactAddress, and contributionTime (Details at: http://build.fhir.org/clinicalreasoning-module.html).
     /// </summary>
@@ -622,7 +963,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<ContactDetail> Endorser { get; set; }
     /// <summary>
-    /// Used for an outcome to classify.
+    /// continuous | dichotomous | ordinal | polychotomous.
     /// </summary>
     public string Handling { get; set; }
     /// <summary>
@@ -964,15 +1305,10 @@ namespace fhirCsR5.Models
         writer.WriteBoolean("actual", (bool)Actual!);
       }
 
-      if (!string.IsNullOrEmpty(CharacteristicCombination))
+      if (CharacteristicCombination != null)
       {
-        writer.WriteString("characteristicCombination", (string)CharacteristicCombination!);
-      }
-
-      if (_CharacteristicCombination != null)
-      {
-        writer.WritePropertyName("_characteristicCombination");
-        _CharacteristicCombination.SerializeJson(writer, options);
+        writer.WritePropertyName("characteristicCombination");
+        CharacteristicCombination.SerializeJson(writer, options);
       }
 
       if ((Characteristic != null) && (Characteristic.Count != 0))
@@ -1110,12 +1446,8 @@ namespace fhirCsR5.Models
           break;
 
         case "characteristicCombination":
-          CharacteristicCombination = reader.GetString();
-          break;
-
-        case "_characteristicCombination":
-          _CharacteristicCombination = new fhirCsR5.Models.Element();
-          _CharacteristicCombination.DeserializeJson(ref reader, options);
+          CharacteristicCombination = new fhirCsR5.Models.EvidenceVariableCharacteristicCombination();
+          CharacteristicCombination.DeserializeJson(ref reader, options);
           break;
 
         case "contact":
@@ -1463,13 +1795,6 @@ namespace fhirCsR5.Models
 
       throw new JsonException();
     }
-  }
-  /// <summary>
-  /// Code Values for the EvidenceVariable.characteristicCombination field
-  /// </summary>
-  public static class EvidenceVariableCharacteristicCombinationCodes {
-    public const string INTERSECTION = "intersection";
-    public const string UNION = "union";
   }
   /// <summary>
   /// Code Values for the EvidenceVariable.handling field

@@ -186,7 +186,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The actual item(s) of medication, as manufactured, or a device (typically, but not necessarily, a co-packaged one), or other medically related item (such as food, biologicals, raw materials, medical fluids, gases etc.), as contained in the package. This also allows another packaged product to be included, which is solely for the case where a package of other entire packages is wanted - such as a wholesale or distribution pack.
     /// </summary>
-    public List<CodeableReference> Item { get; set; }
+    public CodeableReference Item { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -198,17 +198,10 @@ namespace fhirCsR5.Models
       }
       ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
 
-      if ((Item != null) && (Item.Count != 0))
+      if (Item != null)
       {
         writer.WritePropertyName("item");
-        writer.WriteStartArray();
-
-        foreach (CodeableReference valItem in Item)
-        {
-          valItem.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
+        Item.SerializeJson(writer, options);
       }
 
       if (AmountQuantity != null)
@@ -244,30 +237,8 @@ namespace fhirCsR5.Models
           break;
 
         case "item":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Item = new List<CodeableReference>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.CodeableReference objItem = new fhirCsR5.Models.CodeableReference();
-            objItem.DeserializeJson(ref reader, options);
-            Item.Add(objItem);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Item.Count == 0)
-          {
-            Item = null;
-          }
-
+          Item = new fhirCsR5.Models.CodeableReference();
+          Item.DeserializeJson(ref reader, options);
           break;
 
         default:
@@ -786,10 +757,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<Reference> Manufacturer { get; set; }
     /// <summary>
-    /// An authorization for this package type.
-    /// </summary>
-    public Reference MarketingAuthorization { get; set; }
-    /// <summary>
     /// Marketing information.
     /// </summary>
     public List<MarketingStatus> MarketingStatus { get; set; }
@@ -961,12 +928,6 @@ namespace fhirCsR5.Models
       if (CopackagedIndicator != null)
       {
         writer.WriteBoolean("copackagedIndicator", (bool)CopackagedIndicator!);
-      }
-
-      if (MarketingAuthorization != null)
-      {
-        writer.WritePropertyName("marketingAuthorization");
-        MarketingAuthorization.SerializeJson(writer, options);
       }
 
       if ((Manufacturer != null) && (Manufacturer.Count != 0))
@@ -1164,11 +1125,6 @@ namespace fhirCsR5.Models
             Manufacturer = null;
           }
 
-          break;
-
-        case "marketingAuthorization":
-          MarketingAuthorization = new fhirCsR5.Models.Reference();
-          MarketingAuthorization.DeserializeJson(ref reader, options);
           break;
 
         case "marketingStatus":

@@ -280,7 +280,7 @@ namespace fhirCsR5.Models
     public const string SEVERE = "severe";
   }
   /// <summary>
-  /// Risk of harmful or undesirable, physiological response which is unique to an individual and associated with exposure to a substance.
+  /// Risk of harmful or undesirable physiological response which is specific to an individual and associated with exposure to a substance.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<AllergyIntolerance>))]
   public class AllergyIntolerance : DomainResource,  IFhirJsonSerializable {

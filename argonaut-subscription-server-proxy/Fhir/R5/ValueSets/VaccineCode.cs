@@ -14,280 +14,280 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTP = new Coding
+    public static readonly Coding DiphtheriaTetanusToxoidsAndPertussisVaccine = new Coding
     {
       Code = "01",
-      Display = "DTP",
+      Display = "diphtheria, tetanus toxoids and pertussis vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding OPV = new Coding
+    public static readonly Coding TrivalentPoliovirusVaccineLiveOral = new Coding
     {
       Code = "02",
-      Display = "OPV",
+      Display = "trivalent poliovirus vaccine, live, oral",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MMR = new Coding
+    public static readonly Coding MeaslesMumpsAndRubellaVirusVaccine = new Coding
     {
       Code = "03",
-      Display = "MMR",
+      Display = "measles, mumps and rubella virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MR = new Coding
+    public static readonly Coding MeaslesAndRubellaVirusVaccine = new Coding
     {
       Code = "04",
-      Display = "M/R",
+      Display = "measles and rubella virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Measles = new Coding
+    public static readonly Coding MeaslesVirusVaccine = new Coding
     {
       Code = "05",
-      Display = "measles",
+      Display = "measles virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Rubella = new Coding
+    public static readonly Coding RubellaVirusVaccine = new Coding
     {
       Code = "06",
-      Display = "rubella",
+      Display = "rubella virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Mumps = new Coding
+    public static readonly Coding MumpsVirusVaccine = new Coding
     {
       Code = "07",
-      Display = "mumps",
+      Display = "mumps virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepBAdolescentOrPediatric = new Coding
+    public static readonly Coding HepatitisBVaccinePediatricOrPediatricAdolescentDosage = new Coding
     {
       Code = "08",
-      Display = "Hep B, adolescent or pediatric",
+      Display = "hepatitis B vaccine, pediatric or pediatric/adolescent dosage",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TdAdult = new Coding
+    public static readonly Coding TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse2LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid = new Coding
     {
       Code = "09",
-      Display = "Td (adult)",
+      Display = "tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use (2 Lf of tetanus toxoid and 2 Lf of diphtheria toxoid)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding IPV = new Coding
+    public static readonly Coding PoliovirusVaccineInactivated = new Coding
     {
       Code = "10",
-      Display = "IPV",
+      Display = "poliovirus vaccine, inactivated",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding PneumococcalConjugate = new Coding
+    public static readonly Coding PneumococcalConjugateVaccine7Valent = new Coding
     {
       Code = "100",
-      Display = "pneumococcal conjugate",
+      Display = "pneumococcal conjugate vaccine, 7 valent",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TyphoidViCPs = new Coding
+    public static readonly Coding TyphoidViCapsularPolysaccharideVaccine = new Coding
     {
       Code = "101",
-      Display = "typhoid, ViCPs",
+      Display = "typhoid Vi capsular polysaccharide vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTPHibHepB = new Coding
+    public static readonly Coding DTPHaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine = new Coding
     {
       Code = "102",
-      Display = "DTP-Hib-Hep B",
+      Display = "DTP- Haemophilus influenzae type b conjugate and hepatitis b vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MeningococcalCConjugate = new Coding
+    public static readonly Coding MeningococcalCConjugateVaccine = new Coding
     {
       Code = "103",
-      Display = "meningococcal C conjugate",
+      Display = "meningococcal C conjugate vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepAHepB = new Coding
+    public static readonly Coding HepatitisAAndHepatitisBVaccine = new Coding
     {
       Code = "104",
-      Display = "Hep A-Hep B",
+      Display = "hepatitis A and hepatitis B vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VacciniaSmallpoxDiluted = new Coding
+    public static readonly Coding VacciniaSmallpoxVaccineDiluted = new Coding
     {
       Code = "105",
-      Display = "vaccinia (smallpox) diluted",
+      Display = "vaccinia (smallpox) vaccine, diluted",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaP5PertussisAntigens6 = new Coding
+    public static readonly Coding DiphtheriaTetanusToxoidsAndAcellularPertussisVaccine5PertussisAntigens = new Coding
     {
       Code = "106",
-      Display = "DTaP, 5 pertussis antigens6",
+      Display = "diphtheria, tetanus toxoids and acellular pertussis vaccine, 5 pertussis antigens",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaPNOS = new Coding
+    public static readonly Coding DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineUnspecifiedFormulation = new Coding
     {
       Code = "107",
-      Display = "DTaP, NOS",
+      Display = "diphtheria, tetanus toxoids and acellular pertussis vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MeningococcalNOS = new Coding
+    public static readonly Coding MeningococcalACWYVaccineUnspecifiedFormulation = new Coding
     {
       Code = "108",
-      Display = "meningococcal, NOS",
+      Display = "meningococcal ACWY vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding PneumococcalNOS = new Coding
+    public static readonly Coding PneumococcalVaccineUnspecifiedFormulation = new Coding
     {
       Code = "109",
-      Display = "pneumococcal, NOS",
+      Display = "pneumococcal vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Pertussis = new Coding
+    public static readonly Coding PertussisVaccine = new Coding
     {
       Code = "11",
-      Display = "pertussis",
+      Display = "pertussis vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaPHepBIPV = new Coding
+    public static readonly Coding DTaPHepatitisBAndPoliovirusVaccine = new Coding
     {
       Code = "110",
-      Display = "DTaP-Hep B-IPV",
+      Display = "DTaP-hepatitis B and poliovirus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding InfluenzaLiveIntranasal = new Coding
+    public static readonly Coding InfluenzaVirusVaccineLiveAttenuatedForIntranasalUse = new Coding
     {
       Code = "111",
-      Display = "influenza, live, intranasal",
+      Display = "influenza virus vaccine, live, attenuated, for intranasal use",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TetanusToxoidNOS = new Coding
+    public static readonly Coding TetanusToxoidUnspecifiedFormulation = new Coding
     {
       Code = "112",
-      Display = "tetanus toxoid, NOS",
+      Display = "tetanus toxoid, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TdAdult_2 = new Coding
+    public static readonly Coding TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse5LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid = new Coding
     {
       Code = "113",
-      Display = "Td (adult)",
+      Display = "tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use (5 Lf of tetanus toxoid and 2 Lf of diphtheria toxoid)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MeningococcalACYW135DiphtheriaConjugate = new Coding
+    public static readonly Coding MeningococcalPolysaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4P = new Coding
     {
       Code = "114",
-      Display = "meningococcal A,C,Y,W-135 diphtheria conjugate",
+      Display = "meningococcal polysaccharide (groups A, C, Y and W-135) diphtheria toxoid conjugate vaccine (MCV4P)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Tdap = new Coding
+    public static readonly Coding TetanusToxoidReducedDiphtheriaToxoidAndAcellularPertussisVaccineAdsorbed = new Coding
     {
       Code = "115",
-      Display = "Tdap",
+      Display = "tetanus toxoid, reduced diphtheria toxoid, and acellular pertussis vaccine, adsorbed",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RotavirusPentavalent = new Coding
+    public static readonly Coding RotavirusLivePentavalentVaccine = new Coding
     {
       Code = "116",
-      Display = "rotavirus, pentavalent",
+      Display = "rotavirus, live, pentavalent vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VZIGIND = new Coding
+    public static readonly Coding VaricellaZosterImmuneGlobulinInvestigationalNewDrug = new Coding
     {
       Code = "117",
-      Display = "VZIG (IND)",
+      Display = "varicella zoster immune globulin (Investigational New Drug)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HPVBivalent = new Coding
+    public static readonly Coding HumanPapillomaVirusVaccineBivalent = new Coding
     {
       Code = "118",
-      Display = "HPV, bivalent",
+      Display = "human papilloma virus vaccine, bivalent",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RotavirusMonovalent = new Coding
+    public static readonly Coding RotavirusLiveMonovalentVaccine = new Coding
     {
       Code = "119",
-      Display = "rotavirus, monovalent",
+      Display = "rotavirus, live, monovalent vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
@@ -302,154 +302,955 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaPHibIPV = new Coding
+    public static readonly Coding DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV = new Coding
     {
       Code = "120",
-      Display = "DTaP-Hib-IPV",
+      Display = "diphtheria, tetanus toxoids and acellular pertussis vaccine, Haemophilus influenzae type b conjugate, and poliovirus vaccine, inactivated (DTaP-Hib-IPV)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Zoster = new Coding
+    public static readonly Coding ZosterVaccineLive = new Coding
     {
       Code = "121",
-      Display = "zoster",
+      Display = "zoster vaccine, live",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RotavirusNOS1 = new Coding
+    public static readonly Coding RotavirusVaccineUnspecifiedFormulation = new Coding
     {
       Code = "122",
-      Display = "rotavirus, NOS1",
+      Display = "rotavirus vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TIG = new Coding
+    public static readonly Coding InfluenzaVirusVaccineH5N1AVietnam12032004NationalStockpile = new Coding
+    {
+      Code = "123",
+      Display = "influenza virus vaccine, H5N1, A/Vietnam/1203/2004 (national stockpile)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NovelInfluenzaH1N109LiveVirusForNasalAdministration = new Coding
+    {
+      Code = "125",
+      Display = "Novel Influenza-H1N1-09, live virus for nasal administration",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NovelInfluenzaH1N109PreservativeFreeInjectable = new Coding
+    {
+      Code = "126",
+      Display = "Novel influenza-H1N1-09, preservative-free, injectable",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NovelInfluenzaH1N109Injectable = new Coding
+    {
+      Code = "127",
+      Display = "Novel influenza-H1N1-09, injectable",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NovelInfluenzaH1N109AllFormulations = new Coding
+    {
+      Code = "128",
+      Display = "Novel influenza-H1N1-09, all formulations",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding JapaneseEncephalitisVaccineUnspecifiedFormulation = new Coding
+    {
+      Code = "129",
+      Display = "Japanese Encephalitis vaccine, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding TetanusImmuneGlobulin = new Coding
     {
       Code = "13",
-      Display = "TIG",
+      Display = "tetanus immune globulin",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding IGNOS = new Coding
+    public static readonly Coding DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineAndPoliovirusVaccineInactivated = new Coding
+    {
+      Code = "130",
+      Display = "Diphtheria, tetanus toxoids and acellular pertussis vaccine, and poliovirus vaccine, inactivated",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HistoricalRecordOfATyphusVaccination = new Coding
+    {
+      Code = "131",
+      Display = "Historical record of a typhus vaccination",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HistoricalDiphtheriaAndTetanusToxoidsAndAcellularPertussisPoliovirusHaemophilusBConjugateAndHepatitisBRecombinantVaccine = new Coding
+    {
+      Code = "132",
+      Display = "Historical diphtheria and tetanus toxoids and acellular pertussis, poliovirus, Haemophilus b conjugate and hepatitis B (recombinant) vaccine.",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding PneumococcalConjugateVaccine13Valent = new Coding
+    {
+      Code = "133",
+      Display = "pneumococcal conjugate vaccine, 13 valent",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding JapaneseEncephalitisVaccineForIntramuscularAdministration = new Coding
+    {
+      Code = "134",
+      Display = "Japanese Encephalitis vaccine for intramuscular administration",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaHighDoseSeasonalPreservativeFree = new Coding
+    {
+      Code = "135",
+      Display = "influenza, high dose seasonal, preservative-free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalOligosaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4O = new Coding
+    {
+      Code = "136",
+      Display = "meningococcal oligosaccharide (groups A, C, Y and W-135) diphtheria toxoid conjugate vaccine (MCV4O)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HPVUnspecifiedFormulation = new Coding
+    {
+      Code = "137",
+      Display = "HPV, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding TetanusAndDiphtheriaToxoidsNotAdsorbedForAdultUse = new Coding
+    {
+      Code = "138",
+      Display = "tetanus and diphtheria toxoids, not adsorbed, for adult use",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding TdAdultUnspecifiedFormulation = new Coding
+    {
+      Code = "139",
+      Display = "Td(adult) unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding ImmuneGlobulinUnspecifiedFormulation = new Coding
     {
       Code = "14",
-      Display = "IG, NOS",
+      Display = "immune globulin, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding InfluenzaSplitInclPurifiedSurfaceAntigen = new Coding
+    public static readonly Coding InfluenzaSeasonalInjectablePreservativeFree = new Coding
+    {
+      Code = "140",
+      Display = "Influenza, seasonal, injectable, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaSeasonalInjectable = new Coding
+    {
+      Code = "141",
+      Display = "Influenza, seasonal, injectable",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding TetanusToxoidNotAdsorbed = new Coding
+    {
+      Code = "142",
+      Display = "tetanus toxoid, not adsorbed",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding AdenovirusType4AndType7LiveOral = new Coding
+    {
+      Code = "143",
+      Display = "Adenovirus, type 4 and type 7, live, oral",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SeasonalInfluenzaIntradermalPreservativeFree = new Coding
+    {
+      Code = "144",
+      Display = "seasonal influenza, intradermal, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding RespiratorySyncytialVirusMonoclonalAntibodyMotavizumabIntramuscular = new Coding
+    {
+      Code = "145",
+      Display = "respiratory syncytial virus monoclonal antibody (motavizumab), intramuscular",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding DiphtheriaAndTetanusToxoidsAndAcellularPertussisAdsorbedInactivatedPoliovirusHaemophilusBConjugateMeningococcalProteinConjugateAndHepatitisBRecombinantVaccine = new Coding
+    {
+      Code = "146",
+      Display = "Diphtheria and Tetanus Toxoids and Acellular Pertussis Adsorbed, Inactivated Poliovirus, Haemophilus b Conjugate (Meningococcal Protein Conjugate), and Hepatitis B (Recombinant) Vaccine.",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalMCV4UnspecifiedConjugateFormulationGroupsACYAndW135 = new Coding
+    {
+      Code = "147",
+      Display = "Meningococcal, MCV4, unspecified conjugate formulation(groups A, C, Y and W-135)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalGroupsCAndYAndHaemophilusBTetanusToxoidConjugateVaccine = new Coding
+    {
+      Code = "148",
+      Display = "Meningococcal Groups C and Y and Haemophilus b Tetanus Toxoid Conjugate Vaccine",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaLiveIntranasalQuadrivalent = new Coding
+    {
+      Code = "149",
+      Display = "influenza, live, intranasal, quadrivalent",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaVirusVaccineSplitVirusInclPurifiedSurfaceAntigenRetiredCODE = new Coding
     {
       Code = "15",
-      Display = "influenza, split (incl. purified surface antigen)",
+      Display = "influenza virus vaccine, split virus (incl. purified surface antigen)-retired CODE",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding InfluenzaWhole = new Coding
+    public static readonly Coding InfluenzaInjectableQuadrivalentPreservativeFree = new Coding
+    {
+      Code = "150",
+      Display = "Influenza, injectable, quadrivalent, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaNasalUnspecifiedFormulation = new Coding
+    {
+      Code = "151",
+      Display = "influenza nasal, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding PneumococcalConjugateUnspecifiedFormulation = new Coding
+    {
+      Code = "152",
+      Display = "Pneumococcal Conjugate, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaInjectableMadinDarbyCanineKidneyPreservativeFree = new Coding
+    {
+      Code = "153",
+      Display = "Influenza, injectable, Madin Darby Canine Kidney, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HepatitisAImmuneGlobulin = new Coding
+    {
+      Code = "154",
+      Display = "Hepatitis A immune globulin",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SeasonalTrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree = new Coding
+    {
+      Code = "155",
+      Display = "Seasonal, trivalent, recombinant, injectable influenza vaccine, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding RhoDImmuneGlobulinIVOrIM = new Coding
+    {
+      Code = "156",
+      Display = "Rho(D) Immune globulin- IV or IM",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding RhoDImmuneGlobulinIM = new Coding
+    {
+      Code = "157",
+      Display = "Rho(D) Immune globulin - IM",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaInjectableQuadrivalentContainsPreservative = new Coding
+    {
+      Code = "158",
+      Display = "influenza, injectable, quadrivalent, contains preservative",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding RhoDUnspecifiedFormulation = new Coding
+    {
+      Code = "159",
+      Display = "Rho(D) Unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaVirusVaccineWholeVirus = new Coding
     {
       Code = "16",
-      Display = "influenza, whole",
+      Display = "influenza virus vaccine, whole virus",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibNOS = new Coding
+    public static readonly Coding InfluenzaAMonovalentH5N1AdjuvantedNationalStockpile2013 = new Coding
+    {
+      Code = "160",
+      Display = "Influenza A monovalent (H5N1), adjuvanted, National stockpile 2013",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaInjectableQuadrivalentPreservativeFreePediatric = new Coding
+    {
+      Code = "161",
+      Display = "Influenza, injectable,quadrivalent, preservative free, pediatric",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalBVaccineFullyRecombinant = new Coding
+    {
+      Code = "162",
+      Display = "meningococcal B vaccine, fully recombinant",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalBVaccineRecombinantOMVAdjuvanted = new Coding
+    {
+      Code = "163",
+      Display = "meningococcal B vaccine, recombinant, OMV, adjuvanted",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalBUnspecifiedFormulation = new Coding
+    {
+      Code = "164",
+      Display = "meningococcal B, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HumanPapillomavirus9ValentVaccine = new Coding
+    {
+      Code = "165",
+      Display = "Human Papillomavirus 9-valent vaccine",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaIntradermalQuadrivalentPreservativeFreeInjectable = new Coding
+    {
+      Code = "166",
+      Display = "influenza, intradermal, quadrivalent, preservative free, injectable",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalVaccineOfUnknownFormulationAndUnknownSerogroups = new Coding
+    {
+      Code = "167",
+      Display = "meningococcal vaccine of unknown formulation and unknown serogroups",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SeasonalTrivalentInfluenzaVaccineAdjuvantedPreservativeFree = new Coding
+    {
+      Code = "168",
+      Display = "Seasonal trivalent influenza vaccine, adjuvanted, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HepALiveAttenuatedIM = new Coding
+    {
+      Code = "169",
+      Display = "Hep A, live attenuated-IM",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HaemophilusInfluenzaeTypeBVaccineConjugateUnspecifiedFormulation = new Coding
     {
       Code = "17",
-      Display = "Hib, NOS",
+      Display = "Haemophilus influenzae type b vaccine, conjugate unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RabiesIntramuscularInjection = new Coding
+    public static readonly Coding NonUSDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV = new Coding
+    {
+      Code = "170",
+      Display = "non-US diphtheria, tetanus toxoids and acellular pertussis vaccine, Haemophilus influenzae type b conjugate, and poliovirus vaccine, inactivated (DTaP-Hib-IPV)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaInjectableMadinDarbyCanineKidneyPreservativeFreeQuadrivalent = new Coding
+    {
+      Code = "171",
+      Display = "Influenza, injectable, Madin Darby Canine Kidney, preservative free, quadrivalent",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding CholeraWCRBS = new Coding
+    {
+      Code = "172",
+      Display = "cholera, WC-rBS",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding CholeraBivWC = new Coding
+    {
+      Code = "173",
+      Display = "cholera, BivWC",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding CholeraLiveAttenuated = new Coding
+    {
+      Code = "174",
+      Display = "cholera, live attenuated",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HumanRabiesVaccineFromHumanDiploidCellCulture = new Coding
+    {
+      Code = "175",
+      Display = "Human Rabies vaccine from human diploid cell culture",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HumanRabiesVaccineFromChickenFibroblastCulture = new Coding
+    {
+      Code = "176",
+      Display = "Human rabies vaccine from Chicken fibroblast culture",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding PneumococcalConjugateVaccine10Valent = new Coding
+    {
+      Code = "177",
+      Display = "pneumococcal conjugate vaccine, 10 valent",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NonUSBivalentOralPolioVaccineTypes1And3 = new Coding
+    {
+      Code = "178",
+      Display = "Non-US bivalent oral polio vaccine (types 1 and 3)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding NonUSMonovalentOralPolioVaccineUnspecifiedFormulation = new Coding
+    {
+      Code = "179",
+      Display = "Non-US monovalent oral polio vaccine, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding RabiesVaccineForIntramuscularInjectionRETIREDCODE = new Coding
     {
       Code = "18",
-      Display = "rabies, intramuscular injection",
+      Display = "rabies vaccine, for intramuscular injection RETIRED CODE",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding BCG = new Coding
+    public static readonly Coding TetanusImmuneGlobulin_2 = new Coding
+    {
+      Code = "180",
+      Display = "tetanus immune globulin",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding AnthraxImmuneGlobulin = new Coding
+    {
+      Code = "181",
+      Display = "anthrax immune globulin",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding OralPolioVaccineUnspecifiedFormulation = new Coding
+    {
+      Code = "182",
+      Display = "Oral Polio Vaccine, Unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding YellowFeverVaccineAlternativeFormulation = new Coding
+    {
+      Code = "183",
+      Display = "Yellow fever vaccine alternative formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding YellowFeverVaccineUnspecifiedFormulation = new Coding
+    {
+      Code = "184",
+      Display = "Yellow fever vaccine, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SeasonalQuadrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree = new Coding
+    {
+      Code = "185",
+      Display = "Seasonal, quadrivalent, recombinant, injectable influenza vaccine, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaInjectableMadinDarbyCanineKidneyQuadrivalentWithPreservative = new Coding
+    {
+      Code = "186",
+      Display = "Influenza, injectable, Madin Darby Canine Kidney,  quadrivalent with preservative",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding ZosterVaccineRecombinant = new Coding
+    {
+      Code = "187",
+      Display = "zoster vaccine recombinant",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding ZosterVaccineUnspecifiedFormulation = new Coding
+    {
+      Code = "188",
+      Display = "zoster vaccine, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HepatitisBVaccineRecombinantCpGAdjuvanted = new Coding
+    {
+      Code = "189",
+      Display = "Hepatitis B vaccine (recombinant), CpG adjuvanted",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding BacillusCalmetteGuerinVaccine = new Coding
     {
       Code = "19",
-      Display = "BCG",
+      Display = "Bacillus Calmette-Guerin vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaP = new Coding
+    public static readonly Coding TyphoidConjugateVaccineNonUS = new Coding
+    {
+      Code = "190",
+      Display = "Typhoid conjugate vaccine (non-US)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalAPolysaccharideVaccineNonUS = new Coding
+    {
+      Code = "191",
+      Display = "meningococcal A polysaccharide vaccine (non-US)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalACPolysaccharideVaccineNonUS = new Coding
+    {
+      Code = "192",
+      Display = "meningococcal AC polysaccharide vaccine (non-US)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding HepatitisAAndHepatitisBVaccinePediatricAdolescentNonUS = new Coding
+    {
+      Code = "193",
+      Display = "hepatitis A and hepatitis B vaccine, pediatric/adolescent (non-US)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaSouthernHemisphereUnspecifiedFormulation = new Coding
+    {
+      Code = "194",
+      Display = "influenza, Southern Hemisphere, unspecified formulation",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding DiphtheriaTetanusPoliomyelitisAdsorbed = new Coding
+    {
+      Code = "195",
+      Display = "Diphtheria, Tetanus, Poliomyelitis adsorbed",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUseLfUnspecified = new Coding
+    {
+      Code = "196",
+      Display = "tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use, Lf unspecified",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaHighDoseSeasonalQuadrivalent7mLDosePreservativeFree = new Coding
+    {
+      Code = "197",
+      Display = "influenza, high-dose seasonal, quadrivalent, .7mL dose, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding DiphtheriaPertussisTetanusHepatitisBHaemophilusInfluenzaTypeBPentavalent = new Coding
+    {
+      Code = "198",
+      Display = "Diphtheria, pertussis, tetanus, hepatitis B, Haemophilus Influenza Type b, (Pentavalent)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding DiphtheriaTetanusToxoidsAndAcellularPertussisVaccine = new Coding
     {
       Code = "20",
-      Display = "DTaP",
+      Display = "diphtheria, tetanus toxoids and acellular pertussis vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Varicella = new Coding
+    public static readonly Coding InfluenzaSeasonalSouthernHemisphereQuadrivalentPediatric025mLDosePreservativeFree = new Coding
+    {
+      Code = "200",
+      Display = "influenza, seasonal, Southern Hemisphere, quadrivalent, pediatric 0.25mL dose, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseNoPreservative = new Coding
+    {
+      Code = "201",
+      Display = "influenza, seasonal, Southern Hemisphere, quadrivalent, 0.5mL dose, no preservative",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseWithPreservative = new Coding
+    {
+      Code = "202",
+      Display = "influenza, seasonal, Southern Hemisphere, quadrivalent, 0.5mL dose, with preservative",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding MeningococcalPolysaccharideGroupsACYW135TetanusToxoidConjugateVaccine5mLDosePreservativeFree = new Coding
+    {
+      Code = "203",
+      Display = "meningococcal polysaccharide (groups A, C, Y, W-135) tetanus toxoid conjugate vaccine .5mL dose, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding EbolaZaireVaccineLiveRecombinant1mLDose = new Coding
+    {
+      Code = "204",
+      Display = "Ebola Zaire vaccine, live, recombinant, 1mL dose",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding InfluenzaSeasonalVaccineQuadrivalentAdjuvanted5mLDosePreservativeFree = new Coding
+    {
+      Code = "205",
+      Display = "influenza, seasonal vaccine, quadrivalent, adjuvanted, .5mL dose, preservative free",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SmallpoxMonkeypoxVaccineLiveAttenuatedPreservativeFreeNationalStockpile = new Coding
+    {
+      Code = "206",
+      Display = "smallpox monkeypox vaccine, live attenuated, preservative free (National Stockpile)",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree100Mcg05mLDose = new Coding
+    {
+      Code = "207",
+      Display = "SARS-COV-2 (COVID-19) vaccine, mRNA, spike protein, LNP, preservative free, 100 mcg/0.5mL dose",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree30Mcg03mLDose = new Coding
+    {
+      Code = "208",
+      Display = "SARS-COV-2 (COVID-19) vaccine, mRNA, spike protein, LNP, preservative free, 30 mcg/0.3mL dose",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding VaricellaVirusVaccine = new Coding
     {
       Code = "21",
-      Display = "varicella",
+      Display = "varicella virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTPHib = new Coding
+    public static readonly Coding SARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinChAdOx1PreservativeFree05ML = new Coding
+    {
+      Code = "210",
+      Display = "SARS-COV-2 (COVID-19) vaccine, vector non-replicating, recombinant spike protein-ChAdOx1, preservative free, 0.5 mL",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SARSCOV2COVID19VaccineSubunitRecombinantSpikeProteinNanoparticlePlusMatrixM1AdjuvantPreservativeFree05mLPerDose = new Coding
+    {
+      Code = "211",
+      Display = "SARS-COV-2 (COVID-19) vaccine, Subunit, recombinant spike protein-nanoparticle+Matrix-M1 Adjuvant, preservative free, 0.5mL per dose",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinAd26PreservativeFree05Ml = new Coding
+    {
+      Code = "212",
+      Display = "SARS-COV-2 (COVID-19) vaccine, vector non-replicating, recombinant spike protein-Ad26, preservative free, 0.5 ml",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding SARSCOV2COVID19VaccineUNSPECIFIED = new Coding
+    {
+      Code = "213",
+      Display = "SARS-COV-2 (COVID-19) vaccine, UNSPECIFIED",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding EbolaUnspecified = new Coding
+    {
+      Code = "214",
+      Display = "Ebola, unspecified",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding DTPHaemophilusInfluenzaeTypeBConjugateVaccine = new Coding
     {
       Code = "22",
-      Display = "DTP-Hib",
+      Display = "DTP-Haemophilus influenzae type b conjugate vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Plague = new Coding
+    public static readonly Coding PlagueVaccine = new Coding
     {
       Code = "23",
-      Display = "plague",
+      Display = "plague vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Anthrax = new Coding
+    public static readonly Coding AnthraxVaccine = new Coding
     {
       Code = "24",
-      Display = "anthrax",
+      Display = "anthrax vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TyphoidOral = new Coding
+    public static readonly Coding TyphoidVaccineLiveOral = new Coding
     {
       Code = "25",
-      Display = "typhoid, oral",
+      Display = "typhoid vaccine, live, oral",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Cholera = new Coding
+    public static readonly Coding CholeraVaccineUnspecifiedFormulation = new Coding
     {
       Code = "26",
-      Display = "cholera",
+      Display = "cholera vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
@@ -464,451 +1265,451 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTPediatric = new Coding
+    public static readonly Coding DiphtheriaAndTetanusToxoidsAdsorbedForPediatricUse = new Coding
     {
       Code = "28",
-      Display = "DT (pediatric)",
+      Display = "diphtheria and tetanus toxoids, adsorbed for pediatric use",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding CMVIG = new Coding
+    public static readonly Coding CytomegalovirusImmuneGlobulinIntravenous = new Coding
     {
       Code = "29",
-      Display = "CMVIG",
+      Display = "cytomegalovirus immune globulin, intravenous",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HBIG = new Coding
+    public static readonly Coding HepatitisBImmuneGlobulin = new Coding
     {
       Code = "30",
-      Display = "HBIG",
+      Display = "hepatitis B immune globulin",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepAPediatricNOS = new Coding
+    public static readonly Coding HepatitisAVaccinePediatricDosageUnspecifiedFormulation = new Coding
     {
       Code = "31",
-      Display = "Hep A, pediatric, NOS",
+      Display = "hepatitis A vaccine, pediatric dosage, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Meningococcal = new Coding
+    public static readonly Coding MeningococcalPolysaccharideVaccineMPSV4 = new Coding
     {
       Code = "32",
-      Display = "meningococcal",
+      Display = "meningococcal polysaccharide vaccine (MPSV4)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Pneumococcal = new Coding
+    public static readonly Coding PneumococcalPolysaccharideVaccine23Valent = new Coding
     {
       Code = "33",
-      Display = "pneumococcal",
+      Display = "pneumococcal polysaccharide vaccine, 23 valent",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RIG = new Coding
+    public static readonly Coding RabiesImmuneGlobulin = new Coding
     {
       Code = "34",
-      Display = "RIG",
+      Display = "rabies immune globulin",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TetanusToxoid = new Coding
+    public static readonly Coding TetanusToxoidAdsorbed = new Coding
     {
       Code = "35",
-      Display = "tetanus toxoid",
+      Display = "tetanus toxoid, adsorbed",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VZIG = new Coding
+    public static readonly Coding VaricellaZosterImmuneGlobulin = new Coding
     {
       Code = "36",
-      Display = "VZIG",
+      Display = "varicella zoster immune globulin",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding YellowFever = new Coding
+    public static readonly Coding YellowFeverVaccine = new Coding
     {
       Code = "37",
-      Display = "yellow fever",
+      Display = "yellow fever vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RubellaMumps = new Coding
+    public static readonly Coding RubellaAndMumpsVirusVaccine = new Coding
     {
       Code = "38",
-      Display = "rubella/mumps",
+      Display = "rubella and mumps virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding JapaneseEncephalitis = new Coding
+    public static readonly Coding JapaneseEncephalitisVaccineSC = new Coding
     {
       Code = "39",
-      Display = "Japanese encephalitis",
+      Display = "Japanese Encephalitis Vaccine SC",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RabiesIntradermalInjection = new Coding
+    public static readonly Coding RabiesVaccineForIntradermalInjection = new Coding
     {
       Code = "40",
-      Display = "rabies, intradermal injection",
+      Display = "rabies vaccine, for intradermal injection",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TyphoidParenteral = new Coding
+    public static readonly Coding TyphoidVaccineParenteralOtherThanAcetoneKilledDried = new Coding
     {
       Code = "41",
-      Display = "typhoid, parenteral",
+      Display = "typhoid vaccine, parenteral, other than acetone-killed, dried",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepBAdolescentHighRiskInfant2 = new Coding
+    public static readonly Coding HepatitisBVaccineAdolescentHighRiskInfantDosage = new Coding
     {
       Code = "42",
-      Display = "Hep B, adolescent/high risk infant2",
+      Display = "hepatitis B vaccine, adolescent/high risk infant dosage",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepBAdult4 = new Coding
+    public static readonly Coding HepatitisBVaccineAdultDosage = new Coding
     {
       Code = "43",
-      Display = "Hep B, adult4",
+      Display = "hepatitis B vaccine, adult dosage",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepBDialysis = new Coding
+    public static readonly Coding HepatitisBVaccineDialysisPatientDosage = new Coding
     {
       Code = "44",
-      Display = "Hep B, dialysis",
+      Display = "hepatitis B vaccine, dialysis patient dosage",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepBNOS = new Coding
+    public static readonly Coding HepatitisBVaccineUnspecifiedFormulation = new Coding
     {
       Code = "45",
-      Display = "Hep B, NOS",
+      Display = "hepatitis B vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibPRPD = new Coding
+    public static readonly Coding HaemophilusInfluenzaeTypeBVaccinePRPDConjugate = new Coding
     {
       Code = "46",
-      Display = "Hib (PRP-D)",
+      Display = "Haemophilus influenzae type b vaccine, PRP-D conjugate",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibHbOC = new Coding
+    public static readonly Coding HaemophilusInfluenzaeTypeBVaccineHbOCConjugate = new Coding
     {
       Code = "47",
-      Display = "Hib (HbOC)",
+      Display = "Haemophilus influenzae type b vaccine, HbOC conjugate",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibPRPT = new Coding
+    public static readonly Coding HaemophilusInfluenzaeTypeBVaccinePRPTConjugate = new Coding
     {
       Code = "48",
-      Display = "Hib (PRP-T)",
+      Display = "Haemophilus influenzae type b vaccine, PRP-T conjugate",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibPRPOMP = new Coding
+    public static readonly Coding HaemophilusInfluenzaeTypeBVaccinePRPOMPConjugate = new Coding
     {
       Code = "49",
-      Display = "Hib (PRP-OMP)",
+      Display = "Haemophilus influenzae type b vaccine, PRP-OMP conjugate",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DTaPHib = new Coding
+    public static readonly Coding DTaPHaemophilusInfluenzaeTypeBConjugateVaccine = new Coding
     {
       Code = "50",
-      Display = "DTaP-Hib",
+      Display = "DTaP-Haemophilus influenzae type b conjugate vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HibHepB = new Coding
+    public static readonly Coding HaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine = new Coding
     {
       Code = "51",
-      Display = "Hib-Hep B",
+      Display = "Haemophilus influenzae type b conjugate and Hepatitis B vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepAAdult = new Coding
+    public static readonly Coding HepatitisAVaccineAdultDosage = new Coding
     {
       Code = "52",
-      Display = "Hep A, adult",
+      Display = "hepatitis A vaccine, adult dosage",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TyphoidParenteralAKDUSMilitary = new Coding
+    public static readonly Coding TyphoidVaccineParenteralAcetoneKilledDriedUSMilitary = new Coding
     {
       Code = "53",
-      Display = "typhoid, parenteral, AKD (U.S. military)",
+      Display = "typhoid vaccine, parenteral, acetone-killed, dried (U.S. military)",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding AdenovirusType4 = new Coding
+    public static readonly Coding AdenovirusVaccineType4LiveOral = new Coding
     {
       Code = "54",
-      Display = "adenovirus, type 4",
+      Display = "adenovirus vaccine, type 4, live, oral",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding AdenovirusType7 = new Coding
+    public static readonly Coding AdenovirusVaccineType7LiveOral = new Coding
     {
       Code = "55",
-      Display = "adenovirus, type 7",
+      Display = "adenovirus vaccine, type 7, live, oral",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding DengueFever = new Coding
+    public static readonly Coding DengueFeverVaccine = new Coding
     {
       Code = "56",
-      Display = "dengue fever",
+      Display = "dengue fever vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Hantavirus = new Coding
+    public static readonly Coding HantavirusVaccine = new Coding
     {
       Code = "57",
-      Display = "hantavirus",
+      Display = "hantavirus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepC = new Coding
+    public static readonly Coding HepatitisCVaccine = new Coding
     {
       Code = "58",
-      Display = "Hep C",
+      Display = "hepatitis C vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepE = new Coding
+    public static readonly Coding HepatitisEVaccine = new Coding
     {
       Code = "59",
-      Display = "Hep E",
+      Display = "hepatitis E vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HerpesSimplex2 = new Coding
+    public static readonly Coding HerpesSimplexVirusType2Vaccine = new Coding
     {
       Code = "60",
-      Display = "herpes simplex 2",
+      Display = "herpes simplex virus, type 2 vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HIV = new Coding
+    public static readonly Coding HumanImmunodeficiencyVirusVaccine = new Coding
     {
       Code = "61",
-      Display = "HIV",
+      Display = "human immunodeficiency virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HPVQuadrivalent = new Coding
+    public static readonly Coding HumanPapillomaVirusVaccineQuadrivalent = new Coding
     {
       Code = "62",
-      Display = "HPV, quadrivalent",
+      Display = "human papilloma virus vaccine, quadrivalent",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding JuninVirus = new Coding
+    public static readonly Coding JuninVirusVaccine = new Coding
     {
       Code = "63",
-      Display = "Junin virus",
+      Display = "Junin virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Leishmaniasis = new Coding
+    public static readonly Coding LeishmaniasisVaccine = new Coding
     {
       Code = "64",
-      Display = "leishmaniasis",
+      Display = "leishmaniasis vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Leprosy = new Coding
+    public static readonly Coding LeprosyVaccine = new Coding
     {
       Code = "65",
-      Display = "leprosy",
+      Display = "leprosy vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding LymeDisease = new Coding
+    public static readonly Coding LymeDiseaseVaccine = new Coding
     {
       Code = "66",
-      Display = "Lyme disease",
+      Display = "Lyme disease vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Malaria = new Coding
+    public static readonly Coding MalariaVaccine = new Coding
     {
       Code = "67",
-      Display = "malaria",
+      Display = "malaria vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Melanoma = new Coding
+    public static readonly Coding MelanomaVaccine = new Coding
     {
       Code = "68",
-      Display = "melanoma",
+      Display = "melanoma vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Parainfluenza3 = new Coding
+    public static readonly Coding Parainfluenza3VirusVaccine = new Coding
     {
       Code = "69",
-      Display = "parainfluenza-3",
+      Display = "parainfluenza-3 virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding QFever = new Coding
+    public static readonly Coding QFeverVaccine = new Coding
     {
       Code = "70",
-      Display = "Q fever",
+      Display = "Q fever vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RSVIGIV = new Coding
+    public static readonly Coding RespiratorySyncytialVirusImmuneGlobulinIntravenous = new Coding
     {
       Code = "71",
-      Display = "RSV-IGIV",
+      Display = "respiratory syncytial virus immune globulin, intravenous",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RheumaticFever = new Coding
+    public static readonly Coding RheumaticFeverVaccine = new Coding
     {
       Code = "72",
-      Display = "rheumatic fever",
+      Display = "rheumatic fever vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RiftValleyFever = new Coding
+    public static readonly Coding RiftValleyFeverVaccine = new Coding
     {
       Code = "73",
-      Display = "Rift Valley fever",
+      Display = "Rift Valley fever vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RotavirusTetravalent = new Coding
+    public static readonly Coding RotavirusLiveTetravalentVaccine = new Coding
     {
       Code = "74",
-      Display = "rotavirus, tetravalent",
+      Display = "rotavirus, live, tetravalent vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VacciniaSmallpox = new Coding
+    public static readonly Coding VacciniaSmallpoxVaccine = new Coding
     {
       Code = "75",
-      Display = "vaccinia (smallpox)",
+      Display = "vaccinia (smallpox) vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding StaphylococcusBacterioLysate = new Coding
+    public static readonly Coding StaphylococcusBacteriophageLysate = new Coding
     {
       Code = "76",
-      Display = "Staphylococcus bacterio lysate",
+      Display = "Staphylococcus bacteriophage lysate",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TickBorneEncephalitis = new Coding
+    public static readonly Coding TickBorneEncephalitisVaccine = new Coding
     {
       Code = "77",
-      Display = "tick-borne encephalitis",
+      Display = "tick-borne encephalitis vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
@@ -932,199 +1733,208 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VEELive = new Coding
+    public static readonly Coding VenezuelanEquineEncephalitisLiveAttenuated = new Coding
     {
       Code = "80",
-      Display = "VEE, live",
+      Display = "Venezuelan equine encephalitis, live, attenuated",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VEEInactivated = new Coding
+    public static readonly Coding AS03Adjuvant = new Coding
+    {
+      Code = "801",
+      Display = "AS03 Adjuvant",
+      System = "http://hl7.org/fhir/sid/cvx"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding VenezuelanEquineEncephalitisInactivated = new Coding
     {
       Code = "81",
-      Display = "VEE, inactivated",
+      Display = "Venezuelan equine encephalitis, inactivated",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding AdenovirusNOS1 = new Coding
+    public static readonly Coding AdenovirusVaccineUnspecifiedFormulation = new Coding
     {
       Code = "82",
-      Display = "adenovirus, NOS1",
+      Display = "adenovirus vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepAPedAdol2Dose = new Coding
+    public static readonly Coding HepatitisAVaccinePediatricAdolescentDosage2DoseSchedule = new Coding
     {
       Code = "83",
-      Display = "Hep A, ped/adol, 2 dose",
+      Display = "hepatitis A vaccine, pediatric/adolescent dosage, 2 dose schedule",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepAPedAdol3Dose = new Coding
+    public static readonly Coding HepatitisAVaccinePediatricAdolescentDosage3DoseSchedule = new Coding
     {
       Code = "84",
-      Display = "Hep A, ped/adol, 3 dose",
+      Display = "hepatitis A vaccine, pediatric/adolescent dosage, 3 dose schedule",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding HepANOS = new Coding
+    public static readonly Coding HepatitisAVaccineUnspecifiedFormulation = new Coding
     {
       Code = "85",
-      Display = "Hep A, NOS",
+      Display = "hepatitis A vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding IG = new Coding
+    public static readonly Coding ImmuneGlobulinIntramuscular = new Coding
     {
       Code = "86",
-      Display = "IG",
+      Display = "immune globulin, intramuscular",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding IGIV = new Coding
+    public static readonly Coding ImmuneGlobulinIntravenous = new Coding
     {
       Code = "87",
-      Display = "IGIV",
+      Display = "immune globulin, intravenous",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding InfluenzaNOS = new Coding
+    public static readonly Coding InfluenzaVirusVaccineUnspecifiedFormulation = new Coding
     {
       Code = "88",
-      Display = "influenza, NOS",
+      Display = "influenza virus vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding PolioNOS = new Coding
+    public static readonly Coding PoliovirusVaccineUnspecifiedFormulation = new Coding
     {
       Code = "89",
-      Display = "polio, NOS",
+      Display = "poliovirus vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RabiesNOS = new Coding
+    public static readonly Coding RabiesVaccineUnspecifiedFormulation = new Coding
     {
       Code = "90",
-      Display = "rabies, NOS",
+      Display = "rabies vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TyphoidNOS = new Coding
+    public static readonly Coding TyphoidVaccineUnspecifiedFormulation = new Coding
     {
       Code = "91",
-      Display = "typhoid, NOS",
+      Display = "typhoid vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding VEENOS = new Coding
+    public static readonly Coding VenezuelanEquineEncephalitisVaccineUnspecifiedFormulation = new Coding
     {
       Code = "92",
-      Display = "VEE, NOS",
+      Display = "Venezuelan equine encephalitis vaccine, unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RSVMAb = new Coding
+    public static readonly Coding RespiratorySyncytialVirusMonoclonalAntibodyPalivizumabIntramuscular = new Coding
     {
       Code = "93",
-      Display = "RSV-MAb",
+      Display = "respiratory syncytial virus monoclonal antibody (palivizumab), intramuscular",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MMRV = new Coding
+    public static readonly Coding MeaslesMumpsRubellaAndVaricellaVirusVaccine = new Coding
     {
       Code = "94",
-      Display = "MMRV",
+      Display = "measles, mumps, rubella, and varicella virus vaccine",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TSTOTTineTest = new Coding
+    public static readonly Coding TuberculinSkinTestOldTuberculinMultipunctureDevice = new Coding
     {
       Code = "95",
-      Display = "TST-OT tine test",
+      Display = "tuberculin skin test; old tuberculin, multipuncture device",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TSTPPDIntradermal = new Coding
+    public static readonly Coding TuberculinSkinTestPurifiedProteinDerivativeSolutionIntradermal = new Coding
     {
       Code = "96",
-      Display = "TST-PPD intradermal",
+      Display = "tuberculin skin test; purified protein derivative solution, intradermal",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TSTPPDTineTest = new Coding
+    public static readonly Coding TuberculinSkinTestPurifiedProteinDerivativeMultipunctureDevice = new Coding
     {
       Code = "97",
-      Display = "TST-PPD tine test",
+      Display = "tuberculin skin test; purified protein derivative, multipuncture device",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding TSTNOS = new Coding
+    public static readonly Coding TuberculinSkinTestUnspecifiedFormulation = new Coding
     {
       Code = "98",
-      Display = "TST, NOS",
+      Display = "tuberculin skin test; unspecified formulation",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding RESERVEDDoNotUse3 = new Coding
+    public static readonly Coding RESERVEDDoNotUse = new Coding
     {
       Code = "99",
-      Display = "RESERVED - do not use3",
+      Display = "RESERVED - do not use",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding NoVaccineAdministered5 = new Coding
+    public static readonly Coding NoVaccineAdministered = new Coding
     {
       Code = "998",
-      Display = "no vaccine administered5",
+      Display = "no vaccine administered",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Unknown = new Coding
+    public static readonly Coding UnknownVaccineOrImmuneGlobulin = new Coding
     {
       Code = "999",
-      Display = "unknown",
+      Display = "unknown vaccine or immune globulin",
       System = "http://hl7.org/fhir/sid/cvx"
     };
     /// <summary>
@@ -1148,7 +1958,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding BCG_2 = new Coding
+    public static readonly Coding BCG = new Coding
     {
       Code = "BCG",
       Display = "BCG",
@@ -1283,7 +2093,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding JapaneseEncephalitis_2 = new Coding
+    public static readonly Coding JapaneseEncephalitis = new Coding
     {
       Code = "GNJEN",
       Display = "Japanese Encephalitis",
@@ -1292,7 +2102,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Measles_2 = new Coding
+    public static readonly Coding Measles = new Coding
     {
       Code = "GNMEA",
       Display = "Measles",
@@ -1310,7 +2120,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Mumps_2 = new Coding
+    public static readonly Coding Mumps = new Coding
     {
       Code = "GNMUM",
       Display = "Mumps",
@@ -1319,7 +2129,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Pneumococcal_2 = new Coding
+    public static readonly Coding Pneumococcal = new Coding
     {
       Code = "GNPNE",
       Display = "Pneumococcal",
@@ -1346,7 +2156,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Rubella_2 = new Coding
+    public static readonly Coding Rubella = new Coding
     {
       Code = "GNRUB",
       Display = "Rubella",
@@ -1364,7 +2174,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Varicella_2 = new Coding
+    public static readonly Coding Varicella = new Coding
     {
       Code = "GNVAR",
       Display = "Varicella",
@@ -1544,7 +2354,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding MMR_2 = new Coding
+    public static readonly Coding MMR = new Coding
     {
       Code = "MMR",
       Display = "MMR",
@@ -1598,7 +2408,7 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
-    public static readonly Coding Pertussis_2 = new Coding
+    public static readonly Coding Pertussis = new Coding
     {
       Code = "P",
       Display = "Pertussis",
@@ -1786,159 +2596,159 @@ namespace fhirCsR5.ValueSets
     };
 
     /// <summary>
-    /// Literal for code: DTP
+    /// Literal for code: DiphtheriaTetanusToxoidsAndPertussisVaccine
     /// </summary>
-    public const string LiteralDTP = "01";
+    public const string LiteralDiphtheriaTetanusToxoidsAndPertussisVaccine = "01";
 
     /// <summary>
-    /// Literal for code: OPV
+    /// Literal for code: TrivalentPoliovirusVaccineLiveOral
     /// </summary>
-    public const string LiteralOPV = "02";
+    public const string LiteralTrivalentPoliovirusVaccineLiveOral = "02";
 
     /// <summary>
-    /// Literal for code: MMR
+    /// Literal for code: MeaslesMumpsAndRubellaVirusVaccine
     /// </summary>
-    public const string LiteralMMR = "03";
+    public const string LiteralMeaslesMumpsAndRubellaVirusVaccine = "03";
 
     /// <summary>
-    /// Literal for code: MR
+    /// Literal for code: MeaslesAndRubellaVirusVaccine
     /// </summary>
-    public const string LiteralMR = "04";
+    public const string LiteralMeaslesAndRubellaVirusVaccine = "04";
 
     /// <summary>
-    /// Literal for code: Measles
+    /// Literal for code: MeaslesVirusVaccine
     /// </summary>
-    public const string LiteralMeasles = "05";
+    public const string LiteralMeaslesVirusVaccine = "05";
 
     /// <summary>
-    /// Literal for code: Rubella
+    /// Literal for code: RubellaVirusVaccine
     /// </summary>
-    public const string LiteralRubella = "06";
+    public const string LiteralRubellaVirusVaccine = "06";
 
     /// <summary>
-    /// Literal for code: Mumps
+    /// Literal for code: MumpsVirusVaccine
     /// </summary>
-    public const string LiteralMumps = "07";
+    public const string LiteralMumpsVirusVaccine = "07";
 
     /// <summary>
-    /// Literal for code: HepBAdolescentOrPediatric
+    /// Literal for code: HepatitisBVaccinePediatricOrPediatricAdolescentDosage
     /// </summary>
-    public const string LiteralHepBAdolescentOrPediatric = "08";
+    public const string LiteralHepatitisBVaccinePediatricOrPediatricAdolescentDosage = "08";
 
     /// <summary>
-    /// Literal for code: TdAdult
+    /// Literal for code: TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse2LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid
     /// </summary>
-    public const string LiteralTdAdult = "09";
+    public const string LiteralTetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse2LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid = "09";
 
     /// <summary>
-    /// Literal for code: IPV
+    /// Literal for code: PoliovirusVaccineInactivated
     /// </summary>
-    public const string LiteralIPV = "10";
+    public const string LiteralPoliovirusVaccineInactivated = "10";
 
     /// <summary>
-    /// Literal for code: PneumococcalConjugate
+    /// Literal for code: PneumococcalConjugateVaccine7Valent
     /// </summary>
-    public const string LiteralPneumococcalConjugate = "100";
+    public const string LiteralPneumococcalConjugateVaccine7Valent = "100";
 
     /// <summary>
-    /// Literal for code: TyphoidViCPs
+    /// Literal for code: TyphoidViCapsularPolysaccharideVaccine
     /// </summary>
-    public const string LiteralTyphoidViCPs = "101";
+    public const string LiteralTyphoidViCapsularPolysaccharideVaccine = "101";
 
     /// <summary>
-    /// Literal for code: DTPHibHepB
+    /// Literal for code: DTPHaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine
     /// </summary>
-    public const string LiteralDTPHibHepB = "102";
+    public const string LiteralDTPHaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine = "102";
 
     /// <summary>
-    /// Literal for code: MeningococcalCConjugate
+    /// Literal for code: MeningococcalCConjugateVaccine
     /// </summary>
-    public const string LiteralMeningococcalCConjugate = "103";
+    public const string LiteralMeningococcalCConjugateVaccine = "103";
 
     /// <summary>
-    /// Literal for code: HepAHepB
+    /// Literal for code: HepatitisAAndHepatitisBVaccine
     /// </summary>
-    public const string LiteralHepAHepB = "104";
+    public const string LiteralHepatitisAAndHepatitisBVaccine = "104";
 
     /// <summary>
-    /// Literal for code: VacciniaSmallpoxDiluted
+    /// Literal for code: VacciniaSmallpoxVaccineDiluted
     /// </summary>
-    public const string LiteralVacciniaSmallpoxDiluted = "105";
+    public const string LiteralVacciniaSmallpoxVaccineDiluted = "105";
 
     /// <summary>
-    /// Literal for code: DTaP5PertussisAntigens6
+    /// Literal for code: DiphtheriaTetanusToxoidsAndAcellularPertussisVaccine5PertussisAntigens
     /// </summary>
-    public const string LiteralDTaP5PertussisAntigens6 = "106";
+    public const string LiteralDiphtheriaTetanusToxoidsAndAcellularPertussisVaccine5PertussisAntigens = "106";
 
     /// <summary>
-    /// Literal for code: DTaPNOS
+    /// Literal for code: DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralDTaPNOS = "107";
+    public const string LiteralDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineUnspecifiedFormulation = "107";
 
     /// <summary>
-    /// Literal for code: MeningococcalNOS
+    /// Literal for code: MeningococcalACWYVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralMeningococcalNOS = "108";
+    public const string LiteralMeningococcalACWYVaccineUnspecifiedFormulation = "108";
 
     /// <summary>
-    /// Literal for code: PneumococcalNOS
+    /// Literal for code: PneumococcalVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralPneumococcalNOS = "109";
+    public const string LiteralPneumococcalVaccineUnspecifiedFormulation = "109";
 
     /// <summary>
-    /// Literal for code: Pertussis
+    /// Literal for code: PertussisVaccine
     /// </summary>
-    public const string LiteralPertussis = "11";
+    public const string LiteralPertussisVaccine = "11";
 
     /// <summary>
-    /// Literal for code: DTaPHepBIPV
+    /// Literal for code: DTaPHepatitisBAndPoliovirusVaccine
     /// </summary>
-    public const string LiteralDTaPHepBIPV = "110";
+    public const string LiteralDTaPHepatitisBAndPoliovirusVaccine = "110";
 
     /// <summary>
-    /// Literal for code: InfluenzaLiveIntranasal
+    /// Literal for code: InfluenzaVirusVaccineLiveAttenuatedForIntranasalUse
     /// </summary>
-    public const string LiteralInfluenzaLiveIntranasal = "111";
+    public const string LiteralInfluenzaVirusVaccineLiveAttenuatedForIntranasalUse = "111";
 
     /// <summary>
-    /// Literal for code: TetanusToxoidNOS
+    /// Literal for code: TetanusToxoidUnspecifiedFormulation
     /// </summary>
-    public const string LiteralTetanusToxoidNOS = "112";
+    public const string LiteralTetanusToxoidUnspecifiedFormulation = "112";
 
     /// <summary>
-    /// Literal for code: TdAdult_2
+    /// Literal for code: TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse5LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid
     /// </summary>
-    public const string LiteralTdAdult_2 = "113";
+    public const string LiteralTetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUse5LfOfTetanusToxoidAnd2LfOfDiphtheriaToxoid = "113";
 
     /// <summary>
-    /// Literal for code: MeningococcalACYW135DiphtheriaConjugate
+    /// Literal for code: MeningococcalPolysaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4P
     /// </summary>
-    public const string LiteralMeningococcalACYW135DiphtheriaConjugate = "114";
+    public const string LiteralMeningococcalPolysaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4P = "114";
 
     /// <summary>
-    /// Literal for code: Tdap
+    /// Literal for code: TetanusToxoidReducedDiphtheriaToxoidAndAcellularPertussisVaccineAdsorbed
     /// </summary>
-    public const string LiteralTdap = "115";
+    public const string LiteralTetanusToxoidReducedDiphtheriaToxoidAndAcellularPertussisVaccineAdsorbed = "115";
 
     /// <summary>
-    /// Literal for code: RotavirusPentavalent
+    /// Literal for code: RotavirusLivePentavalentVaccine
     /// </summary>
-    public const string LiteralRotavirusPentavalent = "116";
+    public const string LiteralRotavirusLivePentavalentVaccine = "116";
 
     /// <summary>
-    /// Literal for code: VZIGIND
+    /// Literal for code: VaricellaZosterImmuneGlobulinInvestigationalNewDrug
     /// </summary>
-    public const string LiteralVZIGIND = "117";
+    public const string LiteralVaricellaZosterImmuneGlobulinInvestigationalNewDrug = "117";
 
     /// <summary>
-    /// Literal for code: HPVBivalent
+    /// Literal for code: HumanPapillomaVirusVaccineBivalent
     /// </summary>
-    public const string LiteralHPVBivalent = "118";
+    public const string LiteralHumanPapillomaVirusVaccineBivalent = "118";
 
     /// <summary>
-    /// Literal for code: RotavirusMonovalent
+    /// Literal for code: RotavirusLiveMonovalentVaccine
     /// </summary>
-    public const string LiteralRotavirusMonovalent = "119";
+    public const string LiteralRotavirusLiveMonovalentVaccine = "119";
 
     /// <summary>
     /// Literal for code: DiphtheriaAntitoxin
@@ -1946,89 +2756,534 @@ namespace fhirCsR5.ValueSets
     public const string LiteralDiphtheriaAntitoxin = "12";
 
     /// <summary>
-    /// Literal for code: DTaPHibIPV
+    /// Literal for code: DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV
     /// </summary>
-    public const string LiteralDTaPHibIPV = "120";
+    public const string LiteralDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV = "120";
 
     /// <summary>
-    /// Literal for code: Zoster
+    /// Literal for code: ZosterVaccineLive
     /// </summary>
-    public const string LiteralZoster = "121";
+    public const string LiteralZosterVaccineLive = "121";
 
     /// <summary>
-    /// Literal for code: RotavirusNOS1
+    /// Literal for code: RotavirusVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralRotavirusNOS1 = "122";
+    public const string LiteralRotavirusVaccineUnspecifiedFormulation = "122";
 
     /// <summary>
-    /// Literal for code: TIG
+    /// Literal for code: InfluenzaVirusVaccineH5N1AVietnam12032004NationalStockpile
     /// </summary>
-    public const string LiteralTIG = "13";
+    public const string LiteralInfluenzaVirusVaccineH5N1AVietnam12032004NationalStockpile = "123";
 
     /// <summary>
-    /// Literal for code: IGNOS
+    /// Literal for code: NovelInfluenzaH1N109LiveVirusForNasalAdministration
     /// </summary>
-    public const string LiteralIGNOS = "14";
+    public const string LiteralNovelInfluenzaH1N109LiveVirusForNasalAdministration = "125";
 
     /// <summary>
-    /// Literal for code: InfluenzaSplitInclPurifiedSurfaceAntigen
+    /// Literal for code: NovelInfluenzaH1N109PreservativeFreeInjectable
     /// </summary>
-    public const string LiteralInfluenzaSplitInclPurifiedSurfaceAntigen = "15";
+    public const string LiteralNovelInfluenzaH1N109PreservativeFreeInjectable = "126";
 
     /// <summary>
-    /// Literal for code: InfluenzaWhole
+    /// Literal for code: NovelInfluenzaH1N109Injectable
     /// </summary>
-    public const string LiteralInfluenzaWhole = "16";
+    public const string LiteralNovelInfluenzaH1N109Injectable = "127";
 
     /// <summary>
-    /// Literal for code: HibNOS
+    /// Literal for code: NovelInfluenzaH1N109AllFormulations
     /// </summary>
-    public const string LiteralHibNOS = "17";
+    public const string LiteralNovelInfluenzaH1N109AllFormulations = "128";
 
     /// <summary>
-    /// Literal for code: RabiesIntramuscularInjection
+    /// Literal for code: JapaneseEncephalitisVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralRabiesIntramuscularInjection = "18";
+    public const string LiteralJapaneseEncephalitisVaccineUnspecifiedFormulation = "129";
 
     /// <summary>
-    /// Literal for code: BCG
+    /// Literal for code: TetanusImmuneGlobulin
     /// </summary>
-    public const string LiteralBCG = "19";
+    public const string LiteralTetanusImmuneGlobulin = "13";
 
     /// <summary>
-    /// Literal for code: DTaP
+    /// Literal for code: DiphtheriaTetanusToxoidsAndAcellularPertussisVaccineAndPoliovirusVaccineInactivated
     /// </summary>
-    public const string LiteralDTaP = "20";
+    public const string LiteralDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineAndPoliovirusVaccineInactivated = "130";
 
     /// <summary>
-    /// Literal for code: Varicella
+    /// Literal for code: HistoricalRecordOfATyphusVaccination
     /// </summary>
-    public const string LiteralVaricella = "21";
+    public const string LiteralHistoricalRecordOfATyphusVaccination = "131";
 
     /// <summary>
-    /// Literal for code: DTPHib
+    /// Literal for code: HistoricalDiphtheriaAndTetanusToxoidsAndAcellularPertussisPoliovirusHaemophilusBConjugateAndHepatitisBRecombinantVaccine
     /// </summary>
-    public const string LiteralDTPHib = "22";
+    public const string LiteralHistoricalDiphtheriaAndTetanusToxoidsAndAcellularPertussisPoliovirusHaemophilusBConjugateAndHepatitisBRecombinantVaccine = "132";
 
     /// <summary>
-    /// Literal for code: Plague
+    /// Literal for code: PneumococcalConjugateVaccine13Valent
     /// </summary>
-    public const string LiteralPlague = "23";
+    public const string LiteralPneumococcalConjugateVaccine13Valent = "133";
 
     /// <summary>
-    /// Literal for code: Anthrax
+    /// Literal for code: JapaneseEncephalitisVaccineForIntramuscularAdministration
     /// </summary>
-    public const string LiteralAnthrax = "24";
+    public const string LiteralJapaneseEncephalitisVaccineForIntramuscularAdministration = "134";
 
     /// <summary>
-    /// Literal for code: TyphoidOral
+    /// Literal for code: InfluenzaHighDoseSeasonalPreservativeFree
     /// </summary>
-    public const string LiteralTyphoidOral = "25";
+    public const string LiteralInfluenzaHighDoseSeasonalPreservativeFree = "135";
 
     /// <summary>
-    /// Literal for code: Cholera
+    /// Literal for code: MeningococcalOligosaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4O
     /// </summary>
-    public const string LiteralCholera = "26";
+    public const string LiteralMeningococcalOligosaccharideGroupsACYAndW135DiphtheriaToxoidConjugateVaccineMCV4O = "136";
+
+    /// <summary>
+    /// Literal for code: HPVUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralHPVUnspecifiedFormulation = "137";
+
+    /// <summary>
+    /// Literal for code: TetanusAndDiphtheriaToxoidsNotAdsorbedForAdultUse
+    /// </summary>
+    public const string LiteralTetanusAndDiphtheriaToxoidsNotAdsorbedForAdultUse = "138";
+
+    /// <summary>
+    /// Literal for code: TdAdultUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralTdAdultUnspecifiedFormulation = "139";
+
+    /// <summary>
+    /// Literal for code: ImmuneGlobulinUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralImmuneGlobulinUnspecifiedFormulation = "14";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalInjectablePreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalInjectablePreservativeFree = "140";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalInjectable
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalInjectable = "141";
+
+    /// <summary>
+    /// Literal for code: TetanusToxoidNotAdsorbed
+    /// </summary>
+    public const string LiteralTetanusToxoidNotAdsorbed = "142";
+
+    /// <summary>
+    /// Literal for code: AdenovirusType4AndType7LiveOral
+    /// </summary>
+    public const string LiteralAdenovirusType4AndType7LiveOral = "143";
+
+    /// <summary>
+    /// Literal for code: SeasonalInfluenzaIntradermalPreservativeFree
+    /// </summary>
+    public const string LiteralSeasonalInfluenzaIntradermalPreservativeFree = "144";
+
+    /// <summary>
+    /// Literal for code: RespiratorySyncytialVirusMonoclonalAntibodyMotavizumabIntramuscular
+    /// </summary>
+    public const string LiteralRespiratorySyncytialVirusMonoclonalAntibodyMotavizumabIntramuscular = "145";
+
+    /// <summary>
+    /// Literal for code: DiphtheriaAndTetanusToxoidsAndAcellularPertussisAdsorbedInactivatedPoliovirusHaemophilusBConjugateMeningococcalProteinConjugateAndHepatitisBRecombinantVaccine
+    /// </summary>
+    public const string LiteralDiphtheriaAndTetanusToxoidsAndAcellularPertussisAdsorbedInactivatedPoliovirusHaemophilusBConjugateMeningococcalProteinConjugateAndHepatitisBRecombinantVaccine = "146";
+
+    /// <summary>
+    /// Literal for code: MeningococcalMCV4UnspecifiedConjugateFormulationGroupsACYAndW135
+    /// </summary>
+    public const string LiteralMeningococcalMCV4UnspecifiedConjugateFormulationGroupsACYAndW135 = "147";
+
+    /// <summary>
+    /// Literal for code: MeningococcalGroupsCAndYAndHaemophilusBTetanusToxoidConjugateVaccine
+    /// </summary>
+    public const string LiteralMeningococcalGroupsCAndYAndHaemophilusBTetanusToxoidConjugateVaccine = "148";
+
+    /// <summary>
+    /// Literal for code: InfluenzaLiveIntranasalQuadrivalent
+    /// </summary>
+    public const string LiteralInfluenzaLiveIntranasalQuadrivalent = "149";
+
+    /// <summary>
+    /// Literal for code: InfluenzaVirusVaccineSplitVirusInclPurifiedSurfaceAntigenRetiredCODE
+    /// </summary>
+    public const string LiteralInfluenzaVirusVaccineSplitVirusInclPurifiedSurfaceAntigenRetiredCODE = "15";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableQuadrivalentPreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaInjectableQuadrivalentPreservativeFree = "150";
+
+    /// <summary>
+    /// Literal for code: InfluenzaNasalUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralInfluenzaNasalUnspecifiedFormulation = "151";
+
+    /// <summary>
+    /// Literal for code: PneumococcalConjugateUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralPneumococcalConjugateUnspecifiedFormulation = "152";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableMadinDarbyCanineKidneyPreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaInjectableMadinDarbyCanineKidneyPreservativeFree = "153";
+
+    /// <summary>
+    /// Literal for code: HepatitisAImmuneGlobulin
+    /// </summary>
+    public const string LiteralHepatitisAImmuneGlobulin = "154";
+
+    /// <summary>
+    /// Literal for code: SeasonalTrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree
+    /// </summary>
+    public const string LiteralSeasonalTrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree = "155";
+
+    /// <summary>
+    /// Literal for code: RhoDImmuneGlobulinIVOrIM
+    /// </summary>
+    public const string LiteralRhoDImmuneGlobulinIVOrIM = "156";
+
+    /// <summary>
+    /// Literal for code: RhoDImmuneGlobulinIM
+    /// </summary>
+    public const string LiteralRhoDImmuneGlobulinIM = "157";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableQuadrivalentContainsPreservative
+    /// </summary>
+    public const string LiteralInfluenzaInjectableQuadrivalentContainsPreservative = "158";
+
+    /// <summary>
+    /// Literal for code: RhoDUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralRhoDUnspecifiedFormulation = "159";
+
+    /// <summary>
+    /// Literal for code: InfluenzaVirusVaccineWholeVirus
+    /// </summary>
+    public const string LiteralInfluenzaVirusVaccineWholeVirus = "16";
+
+    /// <summary>
+    /// Literal for code: InfluenzaAMonovalentH5N1AdjuvantedNationalStockpile2013
+    /// </summary>
+    public const string LiteralInfluenzaAMonovalentH5N1AdjuvantedNationalStockpile2013 = "160";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableQuadrivalentPreservativeFreePediatric
+    /// </summary>
+    public const string LiteralInfluenzaInjectableQuadrivalentPreservativeFreePediatric = "161";
+
+    /// <summary>
+    /// Literal for code: MeningococcalBVaccineFullyRecombinant
+    /// </summary>
+    public const string LiteralMeningococcalBVaccineFullyRecombinant = "162";
+
+    /// <summary>
+    /// Literal for code: MeningococcalBVaccineRecombinantOMVAdjuvanted
+    /// </summary>
+    public const string LiteralMeningococcalBVaccineRecombinantOMVAdjuvanted = "163";
+
+    /// <summary>
+    /// Literal for code: MeningococcalBUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralMeningococcalBUnspecifiedFormulation = "164";
+
+    /// <summary>
+    /// Literal for code: HumanPapillomavirus9ValentVaccine
+    /// </summary>
+    public const string LiteralHumanPapillomavirus9ValentVaccine = "165";
+
+    /// <summary>
+    /// Literal for code: InfluenzaIntradermalQuadrivalentPreservativeFreeInjectable
+    /// </summary>
+    public const string LiteralInfluenzaIntradermalQuadrivalentPreservativeFreeInjectable = "166";
+
+    /// <summary>
+    /// Literal for code: MeningococcalVaccineOfUnknownFormulationAndUnknownSerogroups
+    /// </summary>
+    public const string LiteralMeningococcalVaccineOfUnknownFormulationAndUnknownSerogroups = "167";
+
+    /// <summary>
+    /// Literal for code: SeasonalTrivalentInfluenzaVaccineAdjuvantedPreservativeFree
+    /// </summary>
+    public const string LiteralSeasonalTrivalentInfluenzaVaccineAdjuvantedPreservativeFree = "168";
+
+    /// <summary>
+    /// Literal for code: HepALiveAttenuatedIM
+    /// </summary>
+    public const string LiteralHepALiveAttenuatedIM = "169";
+
+    /// <summary>
+    /// Literal for code: HaemophilusInfluenzaeTypeBVaccineConjugateUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralHaemophilusInfluenzaeTypeBVaccineConjugateUnspecifiedFormulation = "17";
+
+    /// <summary>
+    /// Literal for code: NonUSDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV
+    /// </summary>
+    public const string LiteralNonUSDiphtheriaTetanusToxoidsAndAcellularPertussisVaccineHaemophilusInfluenzaeTypeBConjugateAndPoliovirusVaccineInactivatedDTaPHibIPV = "170";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableMadinDarbyCanineKidneyPreservativeFreeQuadrivalent
+    /// </summary>
+    public const string LiteralInfluenzaInjectableMadinDarbyCanineKidneyPreservativeFreeQuadrivalent = "171";
+
+    /// <summary>
+    /// Literal for code: CholeraWCRBS
+    /// </summary>
+    public const string LiteralCholeraWCRBS = "172";
+
+    /// <summary>
+    /// Literal for code: CholeraBivWC
+    /// </summary>
+    public const string LiteralCholeraBivWC = "173";
+
+    /// <summary>
+    /// Literal for code: CholeraLiveAttenuated
+    /// </summary>
+    public const string LiteralCholeraLiveAttenuated = "174";
+
+    /// <summary>
+    /// Literal for code: HumanRabiesVaccineFromHumanDiploidCellCulture
+    /// </summary>
+    public const string LiteralHumanRabiesVaccineFromHumanDiploidCellCulture = "175";
+
+    /// <summary>
+    /// Literal for code: HumanRabiesVaccineFromChickenFibroblastCulture
+    /// </summary>
+    public const string LiteralHumanRabiesVaccineFromChickenFibroblastCulture = "176";
+
+    /// <summary>
+    /// Literal for code: PneumococcalConjugateVaccine10Valent
+    /// </summary>
+    public const string LiteralPneumococcalConjugateVaccine10Valent = "177";
+
+    /// <summary>
+    /// Literal for code: NonUSBivalentOralPolioVaccineTypes1And3
+    /// </summary>
+    public const string LiteralNonUSBivalentOralPolioVaccineTypes1And3 = "178";
+
+    /// <summary>
+    /// Literal for code: NonUSMonovalentOralPolioVaccineUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralNonUSMonovalentOralPolioVaccineUnspecifiedFormulation = "179";
+
+    /// <summary>
+    /// Literal for code: RabiesVaccineForIntramuscularInjectionRETIREDCODE
+    /// </summary>
+    public const string LiteralRabiesVaccineForIntramuscularInjectionRETIREDCODE = "18";
+
+    /// <summary>
+    /// Literal for code: TetanusImmuneGlobulin_2
+    /// </summary>
+    public const string LiteralTetanusImmuneGlobulin_2 = "180";
+
+    /// <summary>
+    /// Literal for code: AnthraxImmuneGlobulin
+    /// </summary>
+    public const string LiteralAnthraxImmuneGlobulin = "181";
+
+    /// <summary>
+    /// Literal for code: OralPolioVaccineUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralOralPolioVaccineUnspecifiedFormulation = "182";
+
+    /// <summary>
+    /// Literal for code: YellowFeverVaccineAlternativeFormulation
+    /// </summary>
+    public const string LiteralYellowFeverVaccineAlternativeFormulation = "183";
+
+    /// <summary>
+    /// Literal for code: YellowFeverVaccineUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralYellowFeverVaccineUnspecifiedFormulation = "184";
+
+    /// <summary>
+    /// Literal for code: SeasonalQuadrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree
+    /// </summary>
+    public const string LiteralSeasonalQuadrivalentRecombinantInjectableInfluenzaVaccinePreservativeFree = "185";
+
+    /// <summary>
+    /// Literal for code: InfluenzaInjectableMadinDarbyCanineKidneyQuadrivalentWithPreservative
+    /// </summary>
+    public const string LiteralInfluenzaInjectableMadinDarbyCanineKidneyQuadrivalentWithPreservative = "186";
+
+    /// <summary>
+    /// Literal for code: ZosterVaccineRecombinant
+    /// </summary>
+    public const string LiteralZosterVaccineRecombinant = "187";
+
+    /// <summary>
+    /// Literal for code: ZosterVaccineUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralZosterVaccineUnspecifiedFormulation = "188";
+
+    /// <summary>
+    /// Literal for code: HepatitisBVaccineRecombinantCpGAdjuvanted
+    /// </summary>
+    public const string LiteralHepatitisBVaccineRecombinantCpGAdjuvanted = "189";
+
+    /// <summary>
+    /// Literal for code: BacillusCalmetteGuerinVaccine
+    /// </summary>
+    public const string LiteralBacillusCalmetteGuerinVaccine = "19";
+
+    /// <summary>
+    /// Literal for code: TyphoidConjugateVaccineNonUS
+    /// </summary>
+    public const string LiteralTyphoidConjugateVaccineNonUS = "190";
+
+    /// <summary>
+    /// Literal for code: MeningococcalAPolysaccharideVaccineNonUS
+    /// </summary>
+    public const string LiteralMeningococcalAPolysaccharideVaccineNonUS = "191";
+
+    /// <summary>
+    /// Literal for code: MeningococcalACPolysaccharideVaccineNonUS
+    /// </summary>
+    public const string LiteralMeningococcalACPolysaccharideVaccineNonUS = "192";
+
+    /// <summary>
+    /// Literal for code: HepatitisAAndHepatitisBVaccinePediatricAdolescentNonUS
+    /// </summary>
+    public const string LiteralHepatitisAAndHepatitisBVaccinePediatricAdolescentNonUS = "193";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSouthernHemisphereUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralInfluenzaSouthernHemisphereUnspecifiedFormulation = "194";
+
+    /// <summary>
+    /// Literal for code: DiphtheriaTetanusPoliomyelitisAdsorbed
+    /// </summary>
+    public const string LiteralDiphtheriaTetanusPoliomyelitisAdsorbed = "195";
+
+    /// <summary>
+    /// Literal for code: TetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUseLfUnspecified
+    /// </summary>
+    public const string LiteralTetanusAndDiphtheriaToxoidsAdsorbedPreservativeFreeForAdultUseLfUnspecified = "196";
+
+    /// <summary>
+    /// Literal for code: InfluenzaHighDoseSeasonalQuadrivalent7mLDosePreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaHighDoseSeasonalQuadrivalent7mLDosePreservativeFree = "197";
+
+    /// <summary>
+    /// Literal for code: DiphtheriaPertussisTetanusHepatitisBHaemophilusInfluenzaTypeBPentavalent
+    /// </summary>
+    public const string LiteralDiphtheriaPertussisTetanusHepatitisBHaemophilusInfluenzaTypeBPentavalent = "198";
+
+    /// <summary>
+    /// Literal for code: DiphtheriaTetanusToxoidsAndAcellularPertussisVaccine
+    /// </summary>
+    public const string LiteralDiphtheriaTetanusToxoidsAndAcellularPertussisVaccine = "20";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalSouthernHemisphereQuadrivalentPediatric025mLDosePreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalSouthernHemisphereQuadrivalentPediatric025mLDosePreservativeFree = "200";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseNoPreservative
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseNoPreservative = "201";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseWithPreservative
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalSouthernHemisphereQuadrivalent05mLDoseWithPreservative = "202";
+
+    /// <summary>
+    /// Literal for code: MeningococcalPolysaccharideGroupsACYW135TetanusToxoidConjugateVaccine5mLDosePreservativeFree
+    /// </summary>
+    public const string LiteralMeningococcalPolysaccharideGroupsACYW135TetanusToxoidConjugateVaccine5mLDosePreservativeFree = "203";
+
+    /// <summary>
+    /// Literal for code: EbolaZaireVaccineLiveRecombinant1mLDose
+    /// </summary>
+    public const string LiteralEbolaZaireVaccineLiveRecombinant1mLDose = "204";
+
+    /// <summary>
+    /// Literal for code: InfluenzaSeasonalVaccineQuadrivalentAdjuvanted5mLDosePreservativeFree
+    /// </summary>
+    public const string LiteralInfluenzaSeasonalVaccineQuadrivalentAdjuvanted5mLDosePreservativeFree = "205";
+
+    /// <summary>
+    /// Literal for code: SmallpoxMonkeypoxVaccineLiveAttenuatedPreservativeFreeNationalStockpile
+    /// </summary>
+    public const string LiteralSmallpoxMonkeypoxVaccineLiveAttenuatedPreservativeFreeNationalStockpile = "206";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree100Mcg05mLDose
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree100Mcg05mLDose = "207";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree30Mcg03mLDose
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineMRNASpikeProteinLNPPreservativeFree30Mcg03mLDose = "208";
+
+    /// <summary>
+    /// Literal for code: VaricellaVirusVaccine
+    /// </summary>
+    public const string LiteralVaricellaVirusVaccine = "21";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinChAdOx1PreservativeFree05ML
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinChAdOx1PreservativeFree05ML = "210";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineSubunitRecombinantSpikeProteinNanoparticlePlusMatrixM1AdjuvantPreservativeFree05mLPerDose
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineSubunitRecombinantSpikeProteinNanoparticlePlusMatrixM1AdjuvantPreservativeFree05mLPerDose = "211";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinAd26PreservativeFree05Ml
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineVectorNonReplicatingRecombinantSpikeProteinAd26PreservativeFree05Ml = "212";
+
+    /// <summary>
+    /// Literal for code: SARSCOV2COVID19VaccineUNSPECIFIED
+    /// </summary>
+    public const string LiteralSARSCOV2COVID19VaccineUNSPECIFIED = "213";
+
+    /// <summary>
+    /// Literal for code: EbolaUnspecified
+    /// </summary>
+    public const string LiteralEbolaUnspecified = "214";
+
+    /// <summary>
+    /// Literal for code: DTPHaemophilusInfluenzaeTypeBConjugateVaccine
+    /// </summary>
+    public const string LiteralDTPHaemophilusInfluenzaeTypeBConjugateVaccine = "22";
+
+    /// <summary>
+    /// Literal for code: PlagueVaccine
+    /// </summary>
+    public const string LiteralPlagueVaccine = "23";
+
+    /// <summary>
+    /// Literal for code: AnthraxVaccine
+    /// </summary>
+    public const string LiteralAnthraxVaccine = "24";
+
+    /// <summary>
+    /// Literal for code: TyphoidVaccineLiveOral
+    /// </summary>
+    public const string LiteralTyphoidVaccineLiveOral = "25";
+
+    /// <summary>
+    /// Literal for code: CholeraVaccineUnspecifiedFormulation
+    /// </summary>
+    public const string LiteralCholeraVaccineUnspecifiedFormulation = "26";
 
     /// <summary>
     /// Literal for code: BotulinumAntitoxin
@@ -2036,254 +3291,254 @@ namespace fhirCsR5.ValueSets
     public const string LiteralBotulinumAntitoxin = "27";
 
     /// <summary>
-    /// Literal for code: DTPediatric
+    /// Literal for code: DiphtheriaAndTetanusToxoidsAdsorbedForPediatricUse
     /// </summary>
-    public const string LiteralDTPediatric = "28";
+    public const string LiteralDiphtheriaAndTetanusToxoidsAdsorbedForPediatricUse = "28";
 
     /// <summary>
-    /// Literal for code: CMVIG
+    /// Literal for code: CytomegalovirusImmuneGlobulinIntravenous
     /// </summary>
-    public const string LiteralCMVIG = "29";
+    public const string LiteralCytomegalovirusImmuneGlobulinIntravenous = "29";
 
     /// <summary>
-    /// Literal for code: HBIG
+    /// Literal for code: HepatitisBImmuneGlobulin
     /// </summary>
-    public const string LiteralHBIG = "30";
+    public const string LiteralHepatitisBImmuneGlobulin = "30";
 
     /// <summary>
-    /// Literal for code: HepAPediatricNOS
+    /// Literal for code: HepatitisAVaccinePediatricDosageUnspecifiedFormulation
     /// </summary>
-    public const string LiteralHepAPediatricNOS = "31";
+    public const string LiteralHepatitisAVaccinePediatricDosageUnspecifiedFormulation = "31";
 
     /// <summary>
-    /// Literal for code: Meningococcal
+    /// Literal for code: MeningococcalPolysaccharideVaccineMPSV4
     /// </summary>
-    public const string LiteralMeningococcal = "32";
+    public const string LiteralMeningococcalPolysaccharideVaccineMPSV4 = "32";
 
     /// <summary>
-    /// Literal for code: Pneumococcal
+    /// Literal for code: PneumococcalPolysaccharideVaccine23Valent
     /// </summary>
-    public const string LiteralPneumococcal = "33";
+    public const string LiteralPneumococcalPolysaccharideVaccine23Valent = "33";
 
     /// <summary>
-    /// Literal for code: RIG
+    /// Literal for code: RabiesImmuneGlobulin
     /// </summary>
-    public const string LiteralRIG = "34";
+    public const string LiteralRabiesImmuneGlobulin = "34";
 
     /// <summary>
-    /// Literal for code: TetanusToxoid
+    /// Literal for code: TetanusToxoidAdsorbed
     /// </summary>
-    public const string LiteralTetanusToxoid = "35";
+    public const string LiteralTetanusToxoidAdsorbed = "35";
 
     /// <summary>
-    /// Literal for code: VZIG
+    /// Literal for code: VaricellaZosterImmuneGlobulin
     /// </summary>
-    public const string LiteralVZIG = "36";
+    public const string LiteralVaricellaZosterImmuneGlobulin = "36";
 
     /// <summary>
-    /// Literal for code: YellowFever
+    /// Literal for code: YellowFeverVaccine
     /// </summary>
-    public const string LiteralYellowFever = "37";
+    public const string LiteralYellowFeverVaccine = "37";
 
     /// <summary>
-    /// Literal for code: RubellaMumps
+    /// Literal for code: RubellaAndMumpsVirusVaccine
     /// </summary>
-    public const string LiteralRubellaMumps = "38";
+    public const string LiteralRubellaAndMumpsVirusVaccine = "38";
 
     /// <summary>
-    /// Literal for code: JapaneseEncephalitis
+    /// Literal for code: JapaneseEncephalitisVaccineSC
     /// </summary>
-    public const string LiteralJapaneseEncephalitis = "39";
+    public const string LiteralJapaneseEncephalitisVaccineSC = "39";
 
     /// <summary>
-    /// Literal for code: RabiesIntradermalInjection
+    /// Literal for code: RabiesVaccineForIntradermalInjection
     /// </summary>
-    public const string LiteralRabiesIntradermalInjection = "40";
+    public const string LiteralRabiesVaccineForIntradermalInjection = "40";
 
     /// <summary>
-    /// Literal for code: TyphoidParenteral
+    /// Literal for code: TyphoidVaccineParenteralOtherThanAcetoneKilledDried
     /// </summary>
-    public const string LiteralTyphoidParenteral = "41";
+    public const string LiteralTyphoidVaccineParenteralOtherThanAcetoneKilledDried = "41";
 
     /// <summary>
-    /// Literal for code: HepBAdolescentHighRiskInfant2
+    /// Literal for code: HepatitisBVaccineAdolescentHighRiskInfantDosage
     /// </summary>
-    public const string LiteralHepBAdolescentHighRiskInfant2 = "42";
+    public const string LiteralHepatitisBVaccineAdolescentHighRiskInfantDosage = "42";
 
     /// <summary>
-    /// Literal for code: HepBAdult4
+    /// Literal for code: HepatitisBVaccineAdultDosage
     /// </summary>
-    public const string LiteralHepBAdult4 = "43";
+    public const string LiteralHepatitisBVaccineAdultDosage = "43";
 
     /// <summary>
-    /// Literal for code: HepBDialysis
+    /// Literal for code: HepatitisBVaccineDialysisPatientDosage
     /// </summary>
-    public const string LiteralHepBDialysis = "44";
+    public const string LiteralHepatitisBVaccineDialysisPatientDosage = "44";
 
     /// <summary>
-    /// Literal for code: HepBNOS
+    /// Literal for code: HepatitisBVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralHepBNOS = "45";
+    public const string LiteralHepatitisBVaccineUnspecifiedFormulation = "45";
 
     /// <summary>
-    /// Literal for code: HibPRPD
+    /// Literal for code: HaemophilusInfluenzaeTypeBVaccinePRPDConjugate
     /// </summary>
-    public const string LiteralHibPRPD = "46";
+    public const string LiteralHaemophilusInfluenzaeTypeBVaccinePRPDConjugate = "46";
 
     /// <summary>
-    /// Literal for code: HibHbOC
+    /// Literal for code: HaemophilusInfluenzaeTypeBVaccineHbOCConjugate
     /// </summary>
-    public const string LiteralHibHbOC = "47";
+    public const string LiteralHaemophilusInfluenzaeTypeBVaccineHbOCConjugate = "47";
 
     /// <summary>
-    /// Literal for code: HibPRPT
+    /// Literal for code: HaemophilusInfluenzaeTypeBVaccinePRPTConjugate
     /// </summary>
-    public const string LiteralHibPRPT = "48";
+    public const string LiteralHaemophilusInfluenzaeTypeBVaccinePRPTConjugate = "48";
 
     /// <summary>
-    /// Literal for code: HibPRPOMP
+    /// Literal for code: HaemophilusInfluenzaeTypeBVaccinePRPOMPConjugate
     /// </summary>
-    public const string LiteralHibPRPOMP = "49";
+    public const string LiteralHaemophilusInfluenzaeTypeBVaccinePRPOMPConjugate = "49";
 
     /// <summary>
-    /// Literal for code: DTaPHib
+    /// Literal for code: DTaPHaemophilusInfluenzaeTypeBConjugateVaccine
     /// </summary>
-    public const string LiteralDTaPHib = "50";
+    public const string LiteralDTaPHaemophilusInfluenzaeTypeBConjugateVaccine = "50";
 
     /// <summary>
-    /// Literal for code: HibHepB
+    /// Literal for code: HaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine
     /// </summary>
-    public const string LiteralHibHepB = "51";
+    public const string LiteralHaemophilusInfluenzaeTypeBConjugateAndHepatitisBVaccine = "51";
 
     /// <summary>
-    /// Literal for code: HepAAdult
+    /// Literal for code: HepatitisAVaccineAdultDosage
     /// </summary>
-    public const string LiteralHepAAdult = "52";
+    public const string LiteralHepatitisAVaccineAdultDosage = "52";
 
     /// <summary>
-    /// Literal for code: TyphoidParenteralAKDUSMilitary
+    /// Literal for code: TyphoidVaccineParenteralAcetoneKilledDriedUSMilitary
     /// </summary>
-    public const string LiteralTyphoidParenteralAKDUSMilitary = "53";
+    public const string LiteralTyphoidVaccineParenteralAcetoneKilledDriedUSMilitary = "53";
 
     /// <summary>
-    /// Literal for code: AdenovirusType4
+    /// Literal for code: AdenovirusVaccineType4LiveOral
     /// </summary>
-    public const string LiteralAdenovirusType4 = "54";
+    public const string LiteralAdenovirusVaccineType4LiveOral = "54";
 
     /// <summary>
-    /// Literal for code: AdenovirusType7
+    /// Literal for code: AdenovirusVaccineType7LiveOral
     /// </summary>
-    public const string LiteralAdenovirusType7 = "55";
+    public const string LiteralAdenovirusVaccineType7LiveOral = "55";
 
     /// <summary>
-    /// Literal for code: DengueFever
+    /// Literal for code: DengueFeverVaccine
     /// </summary>
-    public const string LiteralDengueFever = "56";
+    public const string LiteralDengueFeverVaccine = "56";
 
     /// <summary>
-    /// Literal for code: Hantavirus
+    /// Literal for code: HantavirusVaccine
     /// </summary>
-    public const string LiteralHantavirus = "57";
+    public const string LiteralHantavirusVaccine = "57";
 
     /// <summary>
-    /// Literal for code: HepC
+    /// Literal for code: HepatitisCVaccine
     /// </summary>
-    public const string LiteralHepC = "58";
+    public const string LiteralHepatitisCVaccine = "58";
 
     /// <summary>
-    /// Literal for code: HepE
+    /// Literal for code: HepatitisEVaccine
     /// </summary>
-    public const string LiteralHepE = "59";
+    public const string LiteralHepatitisEVaccine = "59";
 
     /// <summary>
-    /// Literal for code: HerpesSimplex2
+    /// Literal for code: HerpesSimplexVirusType2Vaccine
     /// </summary>
-    public const string LiteralHerpesSimplex2 = "60";
+    public const string LiteralHerpesSimplexVirusType2Vaccine = "60";
 
     /// <summary>
-    /// Literal for code: HIV
+    /// Literal for code: HumanImmunodeficiencyVirusVaccine
     /// </summary>
-    public const string LiteralHIV = "61";
+    public const string LiteralHumanImmunodeficiencyVirusVaccine = "61";
 
     /// <summary>
-    /// Literal for code: HPVQuadrivalent
+    /// Literal for code: HumanPapillomaVirusVaccineQuadrivalent
     /// </summary>
-    public const string LiteralHPVQuadrivalent = "62";
+    public const string LiteralHumanPapillomaVirusVaccineQuadrivalent = "62";
 
     /// <summary>
-    /// Literal for code: JuninVirus
+    /// Literal for code: JuninVirusVaccine
     /// </summary>
-    public const string LiteralJuninVirus = "63";
+    public const string LiteralJuninVirusVaccine = "63";
 
     /// <summary>
-    /// Literal for code: Leishmaniasis
+    /// Literal for code: LeishmaniasisVaccine
     /// </summary>
-    public const string LiteralLeishmaniasis = "64";
+    public const string LiteralLeishmaniasisVaccine = "64";
 
     /// <summary>
-    /// Literal for code: Leprosy
+    /// Literal for code: LeprosyVaccine
     /// </summary>
-    public const string LiteralLeprosy = "65";
+    public const string LiteralLeprosyVaccine = "65";
 
     /// <summary>
-    /// Literal for code: LymeDisease
+    /// Literal for code: LymeDiseaseVaccine
     /// </summary>
-    public const string LiteralLymeDisease = "66";
+    public const string LiteralLymeDiseaseVaccine = "66";
 
     /// <summary>
-    /// Literal for code: Malaria
+    /// Literal for code: MalariaVaccine
     /// </summary>
-    public const string LiteralMalaria = "67";
+    public const string LiteralMalariaVaccine = "67";
 
     /// <summary>
-    /// Literal for code: Melanoma
+    /// Literal for code: MelanomaVaccine
     /// </summary>
-    public const string LiteralMelanoma = "68";
+    public const string LiteralMelanomaVaccine = "68";
 
     /// <summary>
-    /// Literal for code: Parainfluenza3
+    /// Literal for code: Parainfluenza3VirusVaccine
     /// </summary>
-    public const string LiteralParainfluenza3 = "69";
+    public const string LiteralParainfluenza3VirusVaccine = "69";
 
     /// <summary>
-    /// Literal for code: QFever
+    /// Literal for code: QFeverVaccine
     /// </summary>
-    public const string LiteralQFever = "70";
+    public const string LiteralQFeverVaccine = "70";
 
     /// <summary>
-    /// Literal for code: RSVIGIV
+    /// Literal for code: RespiratorySyncytialVirusImmuneGlobulinIntravenous
     /// </summary>
-    public const string LiteralRSVIGIV = "71";
+    public const string LiteralRespiratorySyncytialVirusImmuneGlobulinIntravenous = "71";
 
     /// <summary>
-    /// Literal for code: RheumaticFever
+    /// Literal for code: RheumaticFeverVaccine
     /// </summary>
-    public const string LiteralRheumaticFever = "72";
+    public const string LiteralRheumaticFeverVaccine = "72";
 
     /// <summary>
-    /// Literal for code: RiftValleyFever
+    /// Literal for code: RiftValleyFeverVaccine
     /// </summary>
-    public const string LiteralRiftValleyFever = "73";
+    public const string LiteralRiftValleyFeverVaccine = "73";
 
     /// <summary>
-    /// Literal for code: RotavirusTetravalent
+    /// Literal for code: RotavirusLiveTetravalentVaccine
     /// </summary>
-    public const string LiteralRotavirusTetravalent = "74";
+    public const string LiteralRotavirusLiveTetravalentVaccine = "74";
 
     /// <summary>
-    /// Literal for code: VacciniaSmallpox
+    /// Literal for code: VacciniaSmallpoxVaccine
     /// </summary>
-    public const string LiteralVacciniaSmallpox = "75";
+    public const string LiteralVacciniaSmallpoxVaccine = "75";
 
     /// <summary>
-    /// Literal for code: StaphylococcusBacterioLysate
+    /// Literal for code: StaphylococcusBacteriophageLysate
     /// </summary>
-    public const string LiteralStaphylococcusBacterioLysate = "76";
+    public const string LiteralStaphylococcusBacteriophageLysate = "76";
 
     /// <summary>
-    /// Literal for code: TickBorneEncephalitis
+    /// Literal for code: TickBorneEncephalitisVaccine
     /// </summary>
-    public const string LiteralTickBorneEncephalitis = "77";
+    public const string LiteralTickBorneEncephalitisVaccine = "77";
 
     /// <summary>
     /// Literal for code: TularemiaVaccine
@@ -2296,114 +3551,119 @@ namespace fhirCsR5.ValueSets
     public const string LiteralVacciniaImmuneGlobulin = "79";
 
     /// <summary>
-    /// Literal for code: VEELive
+    /// Literal for code: VenezuelanEquineEncephalitisLiveAttenuated
     /// </summary>
-    public const string LiteralVEELive = "80";
+    public const string LiteralVenezuelanEquineEncephalitisLiveAttenuated = "80";
 
     /// <summary>
-    /// Literal for code: VEEInactivated
+    /// Literal for code: AS03Adjuvant
     /// </summary>
-    public const string LiteralVEEInactivated = "81";
+    public const string LiteralAS03Adjuvant = "801";
 
     /// <summary>
-    /// Literal for code: AdenovirusNOS1
+    /// Literal for code: VenezuelanEquineEncephalitisInactivated
     /// </summary>
-    public const string LiteralAdenovirusNOS1 = "82";
+    public const string LiteralVenezuelanEquineEncephalitisInactivated = "81";
 
     /// <summary>
-    /// Literal for code: HepAPedAdol2Dose
+    /// Literal for code: AdenovirusVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralHepAPedAdol2Dose = "83";
+    public const string LiteralAdenovirusVaccineUnspecifiedFormulation = "82";
 
     /// <summary>
-    /// Literal for code: HepAPedAdol3Dose
+    /// Literal for code: HepatitisAVaccinePediatricAdolescentDosage2DoseSchedule
     /// </summary>
-    public const string LiteralHepAPedAdol3Dose = "84";
+    public const string LiteralHepatitisAVaccinePediatricAdolescentDosage2DoseSchedule = "83";
 
     /// <summary>
-    /// Literal for code: HepANOS
+    /// Literal for code: HepatitisAVaccinePediatricAdolescentDosage3DoseSchedule
     /// </summary>
-    public const string LiteralHepANOS = "85";
+    public const string LiteralHepatitisAVaccinePediatricAdolescentDosage3DoseSchedule = "84";
 
     /// <summary>
-    /// Literal for code: IG
+    /// Literal for code: HepatitisAVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralIG = "86";
+    public const string LiteralHepatitisAVaccineUnspecifiedFormulation = "85";
 
     /// <summary>
-    /// Literal for code: IGIV
+    /// Literal for code: ImmuneGlobulinIntramuscular
     /// </summary>
-    public const string LiteralIGIV = "87";
+    public const string LiteralImmuneGlobulinIntramuscular = "86";
 
     /// <summary>
-    /// Literal for code: InfluenzaNOS
+    /// Literal for code: ImmuneGlobulinIntravenous
     /// </summary>
-    public const string LiteralInfluenzaNOS = "88";
+    public const string LiteralImmuneGlobulinIntravenous = "87";
 
     /// <summary>
-    /// Literal for code: PolioNOS
+    /// Literal for code: InfluenzaVirusVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralPolioNOS = "89";
+    public const string LiteralInfluenzaVirusVaccineUnspecifiedFormulation = "88";
 
     /// <summary>
-    /// Literal for code: RabiesNOS
+    /// Literal for code: PoliovirusVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralRabiesNOS = "90";
+    public const string LiteralPoliovirusVaccineUnspecifiedFormulation = "89";
 
     /// <summary>
-    /// Literal for code: TyphoidNOS
+    /// Literal for code: RabiesVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralTyphoidNOS = "91";
+    public const string LiteralRabiesVaccineUnspecifiedFormulation = "90";
 
     /// <summary>
-    /// Literal for code: VEENOS
+    /// Literal for code: TyphoidVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralVEENOS = "92";
+    public const string LiteralTyphoidVaccineUnspecifiedFormulation = "91";
 
     /// <summary>
-    /// Literal for code: RSVMAb
+    /// Literal for code: VenezuelanEquineEncephalitisVaccineUnspecifiedFormulation
     /// </summary>
-    public const string LiteralRSVMAb = "93";
+    public const string LiteralVenezuelanEquineEncephalitisVaccineUnspecifiedFormulation = "92";
 
     /// <summary>
-    /// Literal for code: MMRV
+    /// Literal for code: RespiratorySyncytialVirusMonoclonalAntibodyPalivizumabIntramuscular
     /// </summary>
-    public const string LiteralMMRV = "94";
+    public const string LiteralRespiratorySyncytialVirusMonoclonalAntibodyPalivizumabIntramuscular = "93";
 
     /// <summary>
-    /// Literal for code: TSTOTTineTest
+    /// Literal for code: MeaslesMumpsRubellaAndVaricellaVirusVaccine
     /// </summary>
-    public const string LiteralTSTOTTineTest = "95";
+    public const string LiteralMeaslesMumpsRubellaAndVaricellaVirusVaccine = "94";
 
     /// <summary>
-    /// Literal for code: TSTPPDIntradermal
+    /// Literal for code: TuberculinSkinTestOldTuberculinMultipunctureDevice
     /// </summary>
-    public const string LiteralTSTPPDIntradermal = "96";
+    public const string LiteralTuberculinSkinTestOldTuberculinMultipunctureDevice = "95";
 
     /// <summary>
-    /// Literal for code: TSTPPDTineTest
+    /// Literal for code: TuberculinSkinTestPurifiedProteinDerivativeSolutionIntradermal
     /// </summary>
-    public const string LiteralTSTPPDTineTest = "97";
+    public const string LiteralTuberculinSkinTestPurifiedProteinDerivativeSolutionIntradermal = "96";
 
     /// <summary>
-    /// Literal for code: TSTNOS
+    /// Literal for code: TuberculinSkinTestPurifiedProteinDerivativeMultipunctureDevice
     /// </summary>
-    public const string LiteralTSTNOS = "98";
+    public const string LiteralTuberculinSkinTestPurifiedProteinDerivativeMultipunctureDevice = "97";
 
     /// <summary>
-    /// Literal for code: RESERVEDDoNotUse3
+    /// Literal for code: TuberculinSkinTestUnspecifiedFormulation
     /// </summary>
-    public const string LiteralRESERVEDDoNotUse3 = "99";
+    public const string LiteralTuberculinSkinTestUnspecifiedFormulation = "98";
 
     /// <summary>
-    /// Literal for code: NoVaccineAdministered5
+    /// Literal for code: RESERVEDDoNotUse
     /// </summary>
-    public const string LiteralNoVaccineAdministered5 = "998";
+    public const string LiteralRESERVEDDoNotUse = "99";
 
     /// <summary>
-    /// Literal for code: Unknown
+    /// Literal for code: NoVaccineAdministered
     /// </summary>
-    public const string LiteralUnknown = "999";
+    public const string LiteralNoVaccineAdministered = "998";
+
+    /// <summary>
+    /// Literal for code: UnknownVaccineOrImmuneGlobulin
+    /// </summary>
+    public const string LiteralUnknownVaccineOrImmuneGlobulin = "999";
 
     /// <summary>
     /// Literal for code: Agrippal
@@ -2416,9 +3676,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralAvaxim = "AVAXM";
 
     /// <summary>
-    /// Literal for code: BCG_2
+    /// Literal for code: BCG
     /// </summary>
-    public const string LiteralBCG_2 = "BCG";
+    public const string LiteralBCG = "BCG";
 
     /// <summary>
     /// Literal for code: CDT
@@ -2491,14 +3751,14 @@ namespace fhirCsR5.ValueSets
     public const string LiteralHepatitisA = "GNHPA";
 
     /// <summary>
-    /// Literal for code: JapaneseEncephalitis_2
+    /// Literal for code: JapaneseEncephalitis
     /// </summary>
-    public const string LiteralJapaneseEncephalitis_2 = "GNJEN";
+    public const string LiteralJapaneseEncephalitis = "GNJEN";
 
     /// <summary>
-    /// Literal for code: Measles_2
+    /// Literal for code: Measles
     /// </summary>
-    public const string LiteralMeasles_2 = "GNMEA";
+    public const string LiteralMeasles = "GNMEA";
 
     /// <summary>
     /// Literal for code: MeningococcalC
@@ -2506,14 +3766,14 @@ namespace fhirCsR5.ValueSets
     public const string LiteralMeningococcalC = "GNMEN";
 
     /// <summary>
-    /// Literal for code: Mumps_2
+    /// Literal for code: Mumps
     /// </summary>
-    public const string LiteralMumps_2 = "GNMUM";
+    public const string LiteralMumps = "GNMUM";
 
     /// <summary>
-    /// Literal for code: Pneumococcal_2
+    /// Literal for code: Pneumococcal
     /// </summary>
-    public const string LiteralPneumococcal_2 = "GNPNE";
+    public const string LiteralPneumococcal = "GNPNE";
 
     /// <summary>
     /// Literal for code: Polio
@@ -2526,9 +3786,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralRotavirus = "GNROX";
 
     /// <summary>
-    /// Literal for code: Rubella_2
+    /// Literal for code: Rubella
     /// </summary>
-    public const string LiteralRubella_2 = "GNRUB";
+    public const string LiteralRubella = "GNRUB";
 
     /// <summary>
     /// Literal for code: Tetanus
@@ -2536,9 +3796,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralTetanus = "GNTET";
 
     /// <summary>
-    /// Literal for code: Varicella_2
+    /// Literal for code: Varicella
     /// </summary>
-    public const string LiteralVaricella_2 = "GNVAR";
+    public const string LiteralVaricella = "GNVAR";
 
     /// <summary>
     /// Literal for code: TwinrixJunior
@@ -2636,9 +3896,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralMencevaxACWY = "MENVAX";
 
     /// <summary>
-    /// Literal for code: MMR_2
+    /// Literal for code: MMR
     /// </summary>
-    public const string LiteralMMR_2 = "MMR";
+    public const string LiteralMMR = "MMR";
 
     /// <summary>
     /// Literal for code: MMRII
@@ -2666,9 +3926,9 @@ namespace fhirCsR5.ValueSets
     public const string LiteralPolio_2 = "OPV";
 
     /// <summary>
-    /// Literal for code: Pertussis_2
+    /// Literal for code: Pertussis
     /// </summary>
-    public const string LiteralPertussis_2 = "P";
+    public const string LiteralPertussis = "P";
 
     /// <summary>
     /// Literal for code: Panvax

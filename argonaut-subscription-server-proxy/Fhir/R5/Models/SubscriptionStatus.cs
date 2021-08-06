@@ -271,5 +271,6 @@ namespace fhirCsR5.Models
     public const string HEARTBEAT = "heartbeat";
     public const string EVENT_NOTIFICATION = "event-notification";
     public const string QUERY_STATUS = "query-status";
+    public const string QUERY_EVENT = "query-event";
   }
 }

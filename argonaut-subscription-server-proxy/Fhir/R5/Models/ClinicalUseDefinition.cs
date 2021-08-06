@@ -13,8 +13,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// Information about the use of the medicinal product in relation to other therapies described as part of the contraindication.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueContraindicationOtherTherapy>))]
-  public class ClinicalUseIssueContraindicationOtherTherapy : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionContraindicationOtherTherapy>))]
+  public class ClinicalUseDefinitionContraindicationOtherTherapy : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// The type of relationship between the medicinal product indication or contraindication and another therapy.
     /// </summary>
@@ -102,8 +102,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// Specifics for when this is a contraindication.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueContraindication>))]
-  public class ClinicalUseIssueContraindication : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionContraindication>))]
+  public class ClinicalUseDefinitionContraindication : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// A comorbidity (concurrent condition) or coinfection.
     /// </summary>
@@ -123,7 +123,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Information about the use of the medicinal product in relation to other therapies described as part of the contraindication.
     /// </summary>
-    public List<ClinicalUseIssueContraindicationOtherTherapy> OtherTherapy { get; set; }
+    public List<ClinicalUseDefinitionContraindicationOtherTherapy> OtherTherapy { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -178,7 +178,7 @@ namespace fhirCsR5.Models
         writer.WritePropertyName("otherTherapy");
         writer.WriteStartArray();
 
-        foreach (ClinicalUseIssueContraindicationOtherTherapy valOtherTherapy in OtherTherapy)
+        foreach (ClinicalUseDefinitionContraindicationOtherTherapy valOtherTherapy in OtherTherapy)
         {
           valOtherTherapy.SerializeJson(writer, options, true);
         }
@@ -268,11 +268,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          OtherTherapy = new List<ClinicalUseIssueContraindicationOtherTherapy>();
+          OtherTherapy = new List<ClinicalUseDefinitionContraindicationOtherTherapy>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.ClinicalUseIssueContraindicationOtherTherapy objOtherTherapy = new fhirCsR5.Models.ClinicalUseIssueContraindicationOtherTherapy();
+            fhirCsR5.Models.ClinicalUseDefinitionContraindicationOtherTherapy objOtherTherapy = new fhirCsR5.Models.ClinicalUseDefinitionContraindicationOtherTherapy();
             objOtherTherapy.DeserializeJson(ref reader, options);
             OtherTherapy.Add(objOtherTherapy);
 
@@ -323,8 +323,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// Specifics for when this is an indication.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueIndication>))]
-  public class ClinicalUseIssueIndication : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionIndication>))]
+  public class ClinicalUseDefinitionIndication : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// A comorbidity (concurrent condition) or coinfection as part of the indication.
     /// </summary>
@@ -348,7 +348,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Information about the use of the medicinal product in relation to other therapies described as part of the indication.
     /// </summary>
-    public List<ClinicalUseIssueContraindicationOtherTherapy> OtherTherapy { get; set; }
+    public List<ClinicalUseDefinitionContraindicationOtherTherapy> OtherTherapy { get; set; }
     /// <summary>
     /// The specific undesirable effects of the medicinal product.
     /// </summary>
@@ -419,7 +419,7 @@ namespace fhirCsR5.Models
         writer.WritePropertyName("otherTherapy");
         writer.WriteStartArray();
 
-        foreach (ClinicalUseIssueContraindicationOtherTherapy valOtherTherapy in OtherTherapy)
+        foreach (ClinicalUseDefinitionContraindicationOtherTherapy valOtherTherapy in OtherTherapy)
         {
           valOtherTherapy.SerializeJson(writer, options, true);
         }
@@ -492,11 +492,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          OtherTherapy = new List<ClinicalUseIssueContraindicationOtherTherapy>();
+          OtherTherapy = new List<ClinicalUseDefinitionContraindicationOtherTherapy>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.ClinicalUseIssueContraindicationOtherTherapy objOtherTherapy = new fhirCsR5.Models.ClinicalUseIssueContraindicationOtherTherapy();
+            fhirCsR5.Models.ClinicalUseDefinitionContraindicationOtherTherapy objOtherTherapy = new fhirCsR5.Models.ClinicalUseDefinitionContraindicationOtherTherapy();
             objOtherTherapy.DeserializeJson(ref reader, options);
             OtherTherapy.Add(objOtherTherapy);
 
@@ -574,8 +574,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// The specific medication, food, substance or laboratory test that interacts.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueInteractionInteractant>))]
-  public class ClinicalUseIssueInteractionInteractant : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionInteractionInteractant>))]
+  public class ClinicalUseDefinitionInteractionInteractant : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// The specific medication, food or laboratory test that interacts.
     /// </summary>
@@ -663,8 +663,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// Specifics for when this is an interaction.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueInteraction>))]
-  public class ClinicalUseIssueInteraction : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionInteraction>))]
+  public class ClinicalUseDefinitionInteraction : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// The effect of the interaction, for example "reduced gastric absorption of primary medication".
     /// </summary>
@@ -676,7 +676,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// The specific medication, food, substance or laboratory test that interacts.
     /// </summary>
-    public List<ClinicalUseIssueInteractionInteractant> Interactant { get; set; }
+    public List<ClinicalUseDefinitionInteractionInteractant> Interactant { get; set; }
     /// <summary>
     /// Actions for managing the interaction.
     /// </summary>
@@ -701,7 +701,7 @@ namespace fhirCsR5.Models
         writer.WritePropertyName("interactant");
         writer.WriteStartArray();
 
-        foreach (ClinicalUseIssueInteractionInteractant valInteractant in Interactant)
+        foreach (ClinicalUseDefinitionInteractionInteractant valInteractant in Interactant)
         {
           valInteractant.SerializeJson(writer, options, true);
         }
@@ -768,11 +768,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          Interactant = new List<ClinicalUseIssueInteractionInteractant>();
+          Interactant = new List<ClinicalUseDefinitionInteractionInteractant>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.ClinicalUseIssueInteractionInteractant objInteractant = new fhirCsR5.Models.ClinicalUseIssueInteractionInteractant();
+            fhirCsR5.Models.ClinicalUseDefinitionInteractionInteractant objInteractant = new fhirCsR5.Models.ClinicalUseDefinitionInteractionInteractant();
             objInteractant.DeserializeJson(ref reader, options);
             Interactant.Add(objInteractant);
 
@@ -855,8 +855,8 @@ namespace fhirCsR5.Models
   /// <summary>
   /// Describe the undesirable effects of the medicinal product.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssueUndesirableEffect>))]
-  public class ClinicalUseIssueUndesirableEffect : BackboneElement,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinitionUndesirableEffect>))]
+  public class ClinicalUseDefinitionUndesirableEffect : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
     /// High level classification of the effect.
     /// </summary>
@@ -959,12 +959,12 @@ namespace fhirCsR5.Models
   /// <summary>
   /// A single issue - either an indication, contraindication, interaction or an undesirable effect for a medicinal product, medication, device or procedure.
   /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseIssue>))]
-  public class ClinicalUseIssue : DomainResource,  IFhirJsonSerializable {
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<ClinicalUseDefinition>))]
+  public class ClinicalUseDefinition : DomainResource,  IFhirJsonSerializable {
     /// <summary>
     /// Resource Type Name
     /// </summary>
-    public override string ResourceType => "ClinicalUseIssue";
+    public override string ResourceType => "ClinicalUseDefinition";
     /// <summary>
     /// A categorisation of the issue, primarily for dividing warnings into subject heading areas such as "Pregnancy and Lactation", "Overdose", "Effects on Ability to Drive and Use Machines".
     /// </summary>
@@ -972,7 +972,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Specifics for when this is a contraindication.
     /// </summary>
-    public ClinicalUseIssueContraindication Contraindication { get; set; }
+    public ClinicalUseDefinitionContraindication Contraindication { get; set; }
     /// <summary>
     /// General description of an effect (particularly for a general warning, rather than any of the more specific types such as indication) for when a distinct coded or textual description is not appropriate using  Indication.diseaseSymptomProcedure.text, Contraindication.diseaseSymptomProcedure.text etc. For example "May affect ability to drive".
     /// </summary>
@@ -988,15 +988,15 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Specifics for when this is an indication.
     /// </summary>
-    public ClinicalUseIssueIndication Indication { get; set; }
+    public ClinicalUseDefinitionIndication Indication { get; set; }
     /// <summary>
     /// Specifics for when this is an interaction.
     /// </summary>
-    public ClinicalUseIssueInteraction Interaction { get; set; }
+    public ClinicalUseDefinitionInteraction Interaction { get; set; }
     /// <summary>
     /// The population group to which this applies.
     /// </summary>
-    public List<Population> Population { get; set; }
+    public List<Reference> Population { get; set; }
     /// <summary>
     /// Whether this is a current issue or one that has been retired etc.
     /// </summary>
@@ -1016,7 +1016,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Describe the undesirable effects of the medicinal product.
     /// </summary>
-    public ClinicalUseIssueUndesirableEffect UndesirableEffect { get; set; }
+    public ClinicalUseDefinitionUndesirableEffect UndesirableEffect { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -1124,7 +1124,7 @@ namespace fhirCsR5.Models
         writer.WritePropertyName("population");
         writer.WriteStartArray();
 
-        foreach (Population valPopulation in Population)
+        foreach (Reference valPopulation in Population)
         {
           valPopulation.SerializeJson(writer, options, true);
         }
@@ -1178,7 +1178,7 @@ namespace fhirCsR5.Models
           break;
 
         case "contraindication":
-          Contraindication = new fhirCsR5.Models.ClinicalUseIssueContraindication();
+          Contraindication = new fhirCsR5.Models.ClinicalUseDefinitionContraindication();
           Contraindication.DeserializeJson(ref reader, options);
           break;
 
@@ -1219,12 +1219,12 @@ namespace fhirCsR5.Models
           break;
 
         case "indication":
-          Indication = new fhirCsR5.Models.ClinicalUseIssueIndication();
+          Indication = new fhirCsR5.Models.ClinicalUseDefinitionIndication();
           Indication.DeserializeJson(ref reader, options);
           break;
 
         case "interaction":
-          Interaction = new fhirCsR5.Models.ClinicalUseIssueInteraction();
+          Interaction = new fhirCsR5.Models.ClinicalUseDefinitionInteraction();
           Interaction.DeserializeJson(ref reader, options);
           break;
 
@@ -1234,11 +1234,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          Population = new List<Population>();
+          Population = new List<Reference>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.Population objPopulation = new fhirCsR5.Models.Population();
+            fhirCsR5.Models.Reference objPopulation = new fhirCsR5.Models.Reference();
             objPopulation.DeserializeJson(ref reader, options);
             Population.Add(objPopulation);
 
@@ -1297,7 +1297,7 @@ namespace fhirCsR5.Models
           break;
 
         case "undesirableEffect":
-          UndesirableEffect = new fhirCsR5.Models.ClinicalUseIssueUndesirableEffect();
+          UndesirableEffect = new fhirCsR5.Models.ClinicalUseDefinitionUndesirableEffect();
           UndesirableEffect.DeserializeJson(ref reader, options);
           break;
 
@@ -1333,9 +1333,9 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
-  /// Code Values for the ClinicalUseIssue.type field
+  /// Code Values for the ClinicalUseDefinition.type field
   /// </summary>
-  public static class ClinicalUseIssueTypeCodes {
+  public static class ClinicalUseDefinitionTypeCodes {
     public const string INDICATION = "indication";
     public const string CONTRAINDICATION = "contraindication";
     public const string INTERACTION = "interaction";

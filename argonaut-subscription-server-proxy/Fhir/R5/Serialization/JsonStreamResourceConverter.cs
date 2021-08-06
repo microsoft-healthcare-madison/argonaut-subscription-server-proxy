@@ -111,6 +111,9 @@ namespace fhirCsR5.Serialization
         case ClinicalImpression typedClinicalImpression:
           typedClinicalImpression.SerializeJson(writer, options, true);
           break;
+        case ClinicalUseDefinition typedClinicalUseDefinition:
+          typedClinicalUseDefinition.SerializeJson(writer, options, true);
+          break;
         case ClinicalUseIssue typedClinicalUseIssue:
           typedClinicalUseIssue.SerializeJson(writer, options, true);
           break;
@@ -131,6 +134,9 @@ namespace fhirCsR5.Serialization
           break;
         case ConceptMap typedConceptMap:
           typedConceptMap.SerializeJson(writer, options, true);
+          break;
+        case ConceptMap2 typedConceptMap2:
+          typedConceptMap2.SerializeJson(writer, options, true);
           break;
         case Condition typedCondition:
           typedCondition.SerializeJson(writer, options, true);
@@ -757,6 +763,10 @@ namespace fhirCsR5.Serialization
           target = new fhirCsR5.Models.ClinicalImpression();
           target.DeserializeJson(ref reader, options);
           break;
+        case "ClinicalUseDefinition":
+          target = new fhirCsR5.Models.ClinicalUseDefinition();
+          target.DeserializeJson(ref reader, options);
+          break;
         case "ClinicalUseIssue":
           target = new fhirCsR5.Models.ClinicalUseIssue();
           target.DeserializeJson(ref reader, options);
@@ -783,6 +793,10 @@ namespace fhirCsR5.Serialization
           break;
         case "ConceptMap":
           target = new fhirCsR5.Models.ConceptMap();
+          target.DeserializeJson(ref reader, options);
+          break;
+        case "ConceptMap2":
+          target = new fhirCsR5.Models.ConceptMap2();
           target.DeserializeJson(ref reader, options);
           break;
         case "Condition":

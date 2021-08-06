@@ -1072,10 +1072,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public ConsentProvision Provision { get; set; }
     /// <summary>
-    /// A selector of the type of consent being presented with the base being Privacy, Treatment,  or Research.
-    /// </summary>
-    public CodeableConcept Scope { get; set; }
-    /// <summary>
     /// The source can be contained inline (Attachment), referenced directly (Consent), referenced in a consent repository (DocumentReference), or simply by an identifier (Identifier), e.g. a CDA document id.
     /// </summary>
     public List<Attachment> SourceAttachment { get; set; }
@@ -1138,12 +1134,6 @@ namespace fhirCsR5.Models
       {
         writer.WritePropertyName("_status");
         _Status.SerializeJson(writer, options);
-      }
-
-      if (Scope != null)
-      {
-        writer.WritePropertyName("scope");
-        Scope.SerializeJson(writer, options);
       }
 
       if ((Category != null) && (Category.Count != 0))
@@ -1510,11 +1500,6 @@ namespace fhirCsR5.Models
         case "provision":
           Provision = new fhirCsR5.Models.ConsentProvision();
           Provision.DeserializeJson(ref reader, options);
-          break;
-
-        case "scope":
-          Scope = new fhirCsR5.Models.CodeableConcept();
-          Scope.DeserializeJson(ref reader, options);
           break;
 
         case "sourceAttachment":

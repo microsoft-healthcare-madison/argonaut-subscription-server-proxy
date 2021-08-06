@@ -36,7 +36,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public bool? RequireBoth { get; set; }
     /// <summary>
-    /// What behavior a server will exhibit if the previous state of a resource does NOT exist (e.g., during a CREATE).
+    /// What behavior a server will exhibit if the previous state of a resource does NOT exist (e.g., prior to a create).
     /// </summary>
     public string ResultForCreate { get; set; }
     /// <summary>
@@ -44,7 +44,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _ResultForCreate { get; set; }
     /// <summary>
-    /// What behavior a server will exhibit if the current state of a resource does NOT exist (e.g., during a DELETE).
+    /// What behavior a server will exhibit if the current state of a resource does NOT exist (e.g., after a DELETE).
     /// </summary>
     public string ResultForDelete { get; set; }
     /// <summary>
@@ -209,235 +209,10 @@ namespace fhirCsR5.Models
     public const string TEST_FAILS = "test-fails";
   }
   /// <summary>
-  /// List of properties by which Subscriptions on the subscription topic can be filtered.
-  /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopicResourceTriggerCanFilterBy>))]
-  public class SubscriptionTopicResourceTriggerCanFilterBy : BackboneElement,  IFhirJsonSerializable {
-    /// <summary>
-    /// Description of how this filter parameter is intended to be used.
-    /// </summary>
-    public string Documentation { get; set; }
-    /// <summary>
-    /// Extension container element for Documentation
-    /// </summary>
-    public Element _Documentation { get; set; }
-    /// <summary>
-    /// Allowable operators to apply when determining matches (Search Modifiers).
-    /// </summary>
-    public List<string> SearchModifier { get; set; }
-    /// <summary>
-    /// Extension container element for SearchModifier
-    /// </summary>
-    public List<Element> _SearchModifier { get; set; }
-    /// <summary>
-    /// Chained parameters are allowed (like "patient.gender") - but can not use colons or modifiers.
-    /// </summary>
-    public string SearchParamName { get; set; }
-    /// <summary>
-    /// Extension container element for SearchParamName
-    /// </summary>
-    public Element _SearchParamName { get; set; }
-    /// <summary>
-    /// Serialize to a JSON object
-    /// </summary>
-    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
-    {
-      if (includeStartObject)
-      {
-        writer.WriteStartObject();
-      }
-      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
-
-      if (!string.IsNullOrEmpty(SearchParamName))
-      {
-        writer.WriteString("searchParamName", (string)SearchParamName!);
-      }
-
-      if (_SearchParamName != null)
-      {
-        writer.WritePropertyName("_searchParamName");
-        _SearchParamName.SerializeJson(writer, options);
-      }
-
-      if ((SearchModifier != null) && (SearchModifier.Count != 0))
-      {
-        writer.WritePropertyName("searchModifier");
-        writer.WriteStartArray();
-
-        foreach (string valSearchModifier in SearchModifier)
-        {
-          writer.WriteStringValue(valSearchModifier);
-        }
-
-        writer.WriteEndArray();
-      }
-
-      if ((_SearchModifier != null) && (_SearchModifier.Count != 0))
-      {
-        writer.WritePropertyName("_searchModifier");
-        writer.WriteStartArray();
-
-        foreach (Element val_SearchModifier in _SearchModifier)
-        {
-          val_SearchModifier.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
-      if (!string.IsNullOrEmpty(Documentation))
-      {
-        writer.WriteString("documentation", (string)Documentation!);
-      }
-
-      if (_Documentation != null)
-      {
-        writer.WritePropertyName("_documentation");
-        _Documentation.SerializeJson(writer, options);
-      }
-
-      if (includeStartObject)
-      {
-        writer.WriteEndObject();
-      }
-    }
-    /// <summary>
-    /// Deserialize a JSON property
-    /// </summary>
-    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
-    {
-      switch (propertyName)
-      {
-        case "documentation":
-          Documentation = reader.GetString();
-          break;
-
-        case "_documentation":
-          _Documentation = new fhirCsR5.Models.Element();
-          _Documentation.DeserializeJson(ref reader, options);
-          break;
-
-        case "searchModifier":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          SearchModifier = new List<string>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            SearchModifier.Add(reader.GetString());
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (SearchModifier.Count == 0)
-          {
-            SearchModifier = null;
-          }
-
-          break;
-
-        case "_searchModifier":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          _SearchModifier = new List<Element>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Element obj_SearchModifier = new fhirCsR5.Models.Element();
-            obj_SearchModifier.DeserializeJson(ref reader, options);
-            _SearchModifier.Add(obj_SearchModifier);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (_SearchModifier.Count == 0)
-          {
-            _SearchModifier = null;
-          }
-
-          break;
-
-        case "searchParamName":
-          SearchParamName = reader.GetString();
-          break;
-
-        case "_searchParamName":
-          _SearchParamName = new fhirCsR5.Models.Element();
-          _SearchParamName.DeserializeJson(ref reader, options);
-          break;
-
-        default:
-          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
-          break;
-      }
-    }
-
-    /// <summary>
-    /// Deserialize a JSON object
-    /// </summary>
-    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-      string propertyName;
-
-      while (reader.Read())
-      {
-        if (reader.TokenType == JsonTokenType.EndObject)
-        {
-          return;
-        }
-
-        if (reader.TokenType == JsonTokenType.PropertyName)
-        {
-          propertyName = reader.GetString();
-          reader.Read();
-          this.DeserializeJsonProperty(ref reader, options, propertyName);
-        }
-      }
-
-      throw new JsonException();
-    }
-  }
-  /// <summary>
-  /// Code Values for the SubscriptionTopic.resourceTrigger.canFilterBy.searchModifier field
-  /// </summary>
-  public static class SubscriptionTopicResourceTriggerCanFilterBySearchModifierCodes {
-    public const string EQUALS = "=";
-    public const string EQ = "eq";
-    public const string NE = "ne";
-    public const string GT = "gt";
-    public const string LT = "lt";
-    public const string GE = "ge";
-    public const string LE = "le";
-    public const string SA = "sa";
-    public const string EB = "eb";
-    public const string AP = "ap";
-    public const string ABOVE = "above";
-    public const string BELOW = "below";
-    public const string VAL_IN = "in";
-    public const string NOT_IN = "not-in";
-    public const string OF_TYPE = "of-type";
-  }
-  /// <summary>
-  /// The criteria for including updates to a nominated resource in the subscription topic.  Thie criteria may be just a human readable description and/or a full FHIR search string or FHIRPath expression.
+  /// A definition of a resource-based event that triggers a notification based on the SubscriptionTopic. The criteria may be just a human readable description and/or a full FHIR search string or FHIRPath expression. Multiple triggers are considered OR joined (e.g., a resource update matching ANY of the definitions will trigger a notification).
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopicResourceTrigger>))]
   public class SubscriptionTopicResourceTrigger : BackboneElement,  IFhirJsonSerializable {
-    /// <summary>
-    /// List of properties by which Subscriptions on the subscription topic can be filtered.
-    /// </summary>
-    public List<SubscriptionTopicResourceTriggerCanFilterBy> CanFilterBy { get; set; }
     /// <summary>
     /// Implementation of particular subscription topics might not use a computable definition and instead base their design on the definition.
     /// </summary>
@@ -449,31 +224,31 @@ namespace fhirCsR5.Models
     /// <summary>
     /// FHIRPath expression with %previous and %current vars.
     /// </summary>
-    public List<string> FhirPathCriteria { get; set; }
+    public string FhirPathCriteria { get; set; }
     /// <summary>
     /// Extension container element for FhirPathCriteria
     /// </summary>
-    public List<Element> _FhirPathCriteria { get; set; }
-    /// <summary>
-    /// The REST interaction based rules that the server should use to determine when to trigger a notification for this topic.
-    /// </summary>
-    public List<string> MethodCriteria { get; set; }
-    /// <summary>
-    /// Extension container element for MethodCriteria
-    /// </summary>
-    public List<Element> _MethodCriteria { get; set; }
+    public Element _FhirPathCriteria { get; set; }
     /// <summary>
     /// The FHIR query based rules that the server should use to determine when to trigger a notification for this subscription topic.
     /// </summary>
     public SubscriptionTopicResourceTriggerQueryCriteria QueryCriteria { get; set; }
     /// <summary>
-    /// URL of the Resource that is the type used in this trigger.  Relative URLs are relative to the StructureDefinition root of the implemented FHIR version (e.g., http://hl7.org/fhir/StructureDefinition). For example, "Patient" maps to http://hl7.org/fhir/StructureDefinition/Patient.  For more information, see &lt;a href="elementdefinition-definitions.html#ElementDefinition.type.code"&gt;ElementDefinition.type.code&lt;/a&gt;.
+    /// URL of the Resource that is the type used in this resource trigger.  Relative URLs are relative to the StructureDefinition root of the implemented FHIR version (e.g., http://hl7.org/fhir/StructureDefinition). For example, "Patient" maps to http://hl7.org/fhir/StructureDefinition/Patient.  For more information, see &lt;a href="elementdefinition-definitions.html#ElementDefinition.type.code"&gt;ElementDefinition.type.code&lt;/a&gt;.
     /// </summary>
-    public string ResourceType { get; set; }
+    public string Resource { get; set; }
     /// <summary>
-    /// Extension container element for ResourceType
+    /// Extension container element for Resource
     /// </summary>
-    public Element _ResourceType { get; set; }
+    public Element _Resource { get; set; }
+    /// <summary>
+    /// The FHIR RESTful interaction which can be used to trigger a notification for the SubscriptionTopic. Multiple values are considered OR joined (e.g., CREATE or UPDATE).
+    /// </summary>
+    public List<string> SupportedInteraction { get; set; }
+    /// <summary>
+    /// Extension container element for SupportedInteraction
+    /// </summary>
+    public List<Element> _SupportedInteraction { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -496,38 +271,38 @@ namespace fhirCsR5.Models
         _Description.SerializeJson(writer, options);
       }
 
-      if (!string.IsNullOrEmpty(ResourceType))
+      if (!string.IsNullOrEmpty(Resource))
       {
-        writer.WriteString("resourceType", (string)ResourceType!);
+        writer.WriteString("resource", (string)Resource!);
       }
 
-      if (_ResourceType != null)
+      if (_Resource != null)
       {
-        writer.WritePropertyName("_resourceType");
-        _ResourceType.SerializeJson(writer, options);
+        writer.WritePropertyName("_resource");
+        _Resource.SerializeJson(writer, options);
       }
 
-      if ((MethodCriteria != null) && (MethodCriteria.Count != 0))
+      if ((SupportedInteraction != null) && (SupportedInteraction.Count != 0))
       {
-        writer.WritePropertyName("methodCriteria");
+        writer.WritePropertyName("supportedInteraction");
         writer.WriteStartArray();
 
-        foreach (string valMethodCriteria in MethodCriteria)
+        foreach (string valSupportedInteraction in SupportedInteraction)
         {
-          writer.WriteStringValue(valMethodCriteria);
+          writer.WriteStringValue(valSupportedInteraction);
         }
 
         writer.WriteEndArray();
       }
 
-      if ((_MethodCriteria != null) && (_MethodCriteria.Count != 0))
+      if ((_SupportedInteraction != null) && (_SupportedInteraction.Count != 0))
       {
-        writer.WritePropertyName("_methodCriteria");
+        writer.WritePropertyName("_supportedInteraction");
         writer.WriteStartArray();
 
-        foreach (Element val_MethodCriteria in _MethodCriteria)
+        foreach (Element val_SupportedInteraction in _SupportedInteraction)
         {
-          val_MethodCriteria.SerializeJson(writer, options, true);
+          val_SupportedInteraction.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -539,43 +314,15 @@ namespace fhirCsR5.Models
         QueryCriteria.SerializeJson(writer, options);
       }
 
-      if ((FhirPathCriteria != null) && (FhirPathCriteria.Count != 0))
+      if (!string.IsNullOrEmpty(FhirPathCriteria))
       {
-        writer.WritePropertyName("fhirPathCriteria");
-        writer.WriteStartArray();
-
-        foreach (string valFhirPathCriteria in FhirPathCriteria)
-        {
-          writer.WriteStringValue(valFhirPathCriteria);
-        }
-
-        writer.WriteEndArray();
+        writer.WriteString("fhirPathCriteria", (string)FhirPathCriteria!);
       }
 
-      if ((_FhirPathCriteria != null) && (_FhirPathCriteria.Count != 0))
+      if (_FhirPathCriteria != null)
       {
         writer.WritePropertyName("_fhirPathCriteria");
-        writer.WriteStartArray();
-
-        foreach (Element val_FhirPathCriteria in _FhirPathCriteria)
-        {
-          val_FhirPathCriteria.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
-      if ((CanFilterBy != null) && (CanFilterBy.Count != 0))
-      {
-        writer.WritePropertyName("canFilterBy");
-        writer.WriteStartArray();
-
-        foreach (SubscriptionTopicResourceTriggerCanFilterBy valCanFilterBy in CanFilterBy)
-        {
-          valCanFilterBy.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
+        _FhirPathCriteria.SerializeJson(writer, options);
       }
 
       if (includeStartObject)
@@ -590,33 +337,6 @@ namespace fhirCsR5.Models
     {
       switch (propertyName)
       {
-        case "canFilterBy":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          CanFilterBy = new List<SubscriptionTopicResourceTriggerCanFilterBy>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.SubscriptionTopicResourceTriggerCanFilterBy objCanFilterBy = new fhirCsR5.Models.SubscriptionTopicResourceTriggerCanFilterBy();
-            objCanFilterBy.DeserializeJson(ref reader, options);
-            CanFilterBy.Add(objCanFilterBy);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (CanFilterBy.Count == 0)
-          {
-            CanFilterBy = null;
-          }
-
-          break;
-
         case "description":
           Description = reader.GetString();
           break;
@@ -627,107 +347,12 @@ namespace fhirCsR5.Models
           break;
 
         case "fhirPathCriteria":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          FhirPathCriteria = new List<string>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            FhirPathCriteria.Add(reader.GetString());
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (FhirPathCriteria.Count == 0)
-          {
-            FhirPathCriteria = null;
-          }
-
+          FhirPathCriteria = reader.GetString();
           break;
 
         case "_fhirPathCriteria":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          _FhirPathCriteria = new List<Element>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Element obj_FhirPathCriteria = new fhirCsR5.Models.Element();
-            obj_FhirPathCriteria.DeserializeJson(ref reader, options);
-            _FhirPathCriteria.Add(obj_FhirPathCriteria);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (_FhirPathCriteria.Count == 0)
-          {
-            _FhirPathCriteria = null;
-          }
-
-          break;
-
-        case "methodCriteria":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          MethodCriteria = new List<string>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            MethodCriteria.Add(reader.GetString());
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (MethodCriteria.Count == 0)
-          {
-            MethodCriteria = null;
-          }
-
-          break;
-
-        case "_methodCriteria":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          _MethodCriteria = new List<Element>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Element obj_MethodCriteria = new fhirCsR5.Models.Element();
-            obj_MethodCriteria.DeserializeJson(ref reader, options);
-            _MethodCriteria.Add(obj_MethodCriteria);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (_MethodCriteria.Count == 0)
-          {
-            _MethodCriteria = null;
-          }
-
+          _FhirPathCriteria = new fhirCsR5.Models.Element();
+          _FhirPathCriteria.DeserializeJson(ref reader, options);
           break;
 
         case "queryCriteria":
@@ -735,13 +360,65 @@ namespace fhirCsR5.Models
           QueryCriteria.DeserializeJson(ref reader, options);
           break;
 
-        case "resourceType":
-          ResourceType = reader.GetString();
+        case "resource":
+          Resource = reader.GetString();
           break;
 
-        case "_resourceType":
-          _ResourceType = new fhirCsR5.Models.Element();
-          _ResourceType.DeserializeJson(ref reader, options);
+        case "_resource":
+          _Resource = new fhirCsR5.Models.Element();
+          _Resource.DeserializeJson(ref reader, options);
+          break;
+
+        case "supportedInteraction":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          SupportedInteraction = new List<string>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            SupportedInteraction.Add(reader.GetString());
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (SupportedInteraction.Count == 0)
+          {
+            SupportedInteraction = null;
+          }
+
+          break;
+
+        case "_supportedInteraction":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          _SupportedInteraction = new List<Element>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Element obj_SupportedInteraction = new fhirCsR5.Models.Element();
+            obj_SupportedInteraction.DeserializeJson(ref reader, options);
+            _SupportedInteraction.Add(obj_SupportedInteraction);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (_SupportedInteraction.Count == 0)
+          {
+            _SupportedInteraction = null;
+          }
+
           break;
 
         default:
@@ -776,15 +453,567 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
-  /// Code Values for the SubscriptionTopic.resourceTrigger.methodCriteria field
+  /// Code Values for the SubscriptionTopic.resourceTrigger.supportedInteraction field
   /// </summary>
-  public static class SubscriptionTopicResourceTriggerMethodCriteriaCodes {
+  public static class SubscriptionTopicResourceTriggerSupportedInteractionCodes {
     public const string CREATE = "create";
     public const string UPDATE = "update";
     public const string DELETE = "delete";
   }
   /// <summary>
-  /// Describes a stream of resource state changes identified by trigger criteria and annotated with labels useful to filter projections from this topic.
+  /// Event definition which can be used to trigger the SubscriptionTopic.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopicEventTrigger>))]
+  public class SubscriptionTopicEventTrigger : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Implementation of particular subscription topics might not use a computable definition and instead base their design on the definition.
+    /// </summary>
+    public string Description { get; set; }
+    /// <summary>
+    /// Extension container element for Description
+    /// </summary>
+    public Element _Description { get; set; }
+    /// <summary>
+    /// A well-defined event which can be used to trigger notifications from the SubscriptionTopic.
+    /// </summary>
+    public CodeableConcept Event { get; set; }
+    /// <summary>
+    /// URL of the Resource that is the focus type used in this event trigger.  Relative URLs are relative to the StructureDefinition root of the implemented FHIR version (e.g., http://hl7.org/fhir/StructureDefinition). For example, "Patient" maps to http://hl7.org/fhir/StructureDefinition/Patient.  For more information, see &lt;a href="elementdefinition-definitions.html#ElementDefinition.type.code"&gt;ElementDefinition.type.code&lt;/a&gt;.
+    /// </summary>
+    public string Resource { get; set; }
+    /// <summary>
+    /// Extension container element for Resource
+    /// </summary>
+    public Element _Resource { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(Description))
+      {
+        writer.WriteString("description", (string)Description!);
+      }
+
+      if (_Description != null)
+      {
+        writer.WritePropertyName("_description");
+        _Description.SerializeJson(writer, options);
+      }
+
+      if (Event != null)
+      {
+        writer.WritePropertyName("event");
+        Event.SerializeJson(writer, options);
+      }
+
+      if (!string.IsNullOrEmpty(Resource))
+      {
+        writer.WriteString("resource", (string)Resource!);
+      }
+
+      if (_Resource != null)
+      {
+        writer.WritePropertyName("_resource");
+        _Resource.SerializeJson(writer, options);
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "description":
+          Description = reader.GetString();
+          break;
+
+        case "_description":
+          _Description = new fhirCsR5.Models.Element();
+          _Description.DeserializeJson(ref reader, options);
+          break;
+
+        case "event":
+          Event = new fhirCsR5.Models.CodeableConcept();
+          Event.DeserializeJson(ref reader, options);
+          break;
+
+        case "resource":
+          Resource = reader.GetString();
+          break;
+
+        case "_resource":
+          _Resource = new fhirCsR5.Models.Element();
+          _Resource.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
+  /// List of properties by which Subscriptions on the SubscriptionTopic can be filtered. May be defined Search Parameters (e.g., Encounter.patient) or parameters defined within this SubscriptionTopic context (e.g., hub.event).
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopicCanFilterBy>))]
+  public class SubscriptionTopicCanFilterBy : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Description of how this filtering parameter is intended to be used.
+    /// </summary>
+    public string Description { get; set; }
+    /// <summary>
+    /// Extension container element for Description
+    /// </summary>
+    public Element _Description { get; set; }
+    /// <summary>
+    /// Chained parameters are allowed (like "patient.gender") - but can not use colons or modifiers.
+    /// </summary>
+    public string FilterParameter { get; set; }
+    /// <summary>
+    /// Extension container element for FilterParameter
+    /// </summary>
+    public Element _FilterParameter { get; set; }
+    /// <summary>
+    /// Allowable operators to apply when determining matches (Search Modifiers).
+    /// </summary>
+    public List<string> Modifier { get; set; }
+    /// <summary>
+    /// Extension container element for Modifier
+    /// </summary>
+    public List<Element> _Modifier { get; set; }
+    /// <summary>
+    /// URL of the Resource that is the type used in this filter.  Relative URLs are relative to the StructureDefinition root of the implemented FHIR version (e.g., http://hl7.org/fhir/StructureDefinition). For example, "Patient" maps to http://hl7.org/fhir/StructureDefinition/Patient.  For more information, see &lt;a href="elementdefinition-definitions.html#ElementDefinition.type.code"&gt;ElementDefinition.type.code&lt;/a&gt;.
+    /// </summary>
+    public string Resource { get; set; }
+    /// <summary>
+    /// Extension container element for Resource
+    /// </summary>
+    public Element _Resource { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(Description))
+      {
+        writer.WriteString("description", (string)Description!);
+      }
+
+      if (_Description != null)
+      {
+        writer.WritePropertyName("_description");
+        _Description.SerializeJson(writer, options);
+      }
+
+      if (!string.IsNullOrEmpty(Resource))
+      {
+        writer.WriteString("resource", (string)Resource!);
+      }
+
+      if (_Resource != null)
+      {
+        writer.WritePropertyName("_resource");
+        _Resource.SerializeJson(writer, options);
+      }
+
+      if (!string.IsNullOrEmpty(FilterParameter))
+      {
+        writer.WriteString("filterParameter", (string)FilterParameter!);
+      }
+
+      if (_FilterParameter != null)
+      {
+        writer.WritePropertyName("_filterParameter");
+        _FilterParameter.SerializeJson(writer, options);
+      }
+
+      if ((Modifier != null) && (Modifier.Count != 0))
+      {
+        writer.WritePropertyName("modifier");
+        writer.WriteStartArray();
+
+        foreach (string valModifier in Modifier)
+        {
+          writer.WriteStringValue(valModifier);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((_Modifier != null) && (_Modifier.Count != 0))
+      {
+        writer.WritePropertyName("_modifier");
+        writer.WriteStartArray();
+
+        foreach (Element val_Modifier in _Modifier)
+        {
+          val_Modifier.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "description":
+          Description = reader.GetString();
+          break;
+
+        case "_description":
+          _Description = new fhirCsR5.Models.Element();
+          _Description.DeserializeJson(ref reader, options);
+          break;
+
+        case "filterParameter":
+          FilterParameter = reader.GetString();
+          break;
+
+        case "_filterParameter":
+          _FilterParameter = new fhirCsR5.Models.Element();
+          _FilterParameter.DeserializeJson(ref reader, options);
+          break;
+
+        case "modifier":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Modifier = new List<string>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            Modifier.Add(reader.GetString());
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Modifier.Count == 0)
+          {
+            Modifier = null;
+          }
+
+          break;
+
+        case "_modifier":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          _Modifier = new List<Element>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Element obj_Modifier = new fhirCsR5.Models.Element();
+            obj_Modifier.DeserializeJson(ref reader, options);
+            _Modifier.Add(obj_Modifier);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (_Modifier.Count == 0)
+          {
+            _Modifier = null;
+          }
+
+          break;
+
+        case "resource":
+          Resource = reader.GetString();
+          break;
+
+        case "_resource":
+          _Resource = new fhirCsR5.Models.Element();
+          _Resource.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
+  /// Code Values for the SubscriptionTopic.canFilterBy.modifier field
+  /// </summary>
+  public static class SubscriptionTopicCanFilterByModifierCodes {
+    public const string EQUALS = "=";
+    public const string EQ = "eq";
+    public const string NE = "ne";
+    public const string GT = "gt";
+    public const string LT = "lt";
+    public const string GE = "ge";
+    public const string LE = "le";
+    public const string SA = "sa";
+    public const string EB = "eb";
+    public const string AP = "ap";
+    public const string ABOVE = "above";
+    public const string BELOW = "below";
+    public const string VAL_IN = "in";
+    public const string NOT_IN = "not-in";
+    public const string OF_TYPE = "of-type";
+  }
+  /// <summary>
+  /// List of properties to describe the shape (e.g., resources) included in notifications from this Subscription Topic.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopicNotificationShape>))]
+  public class SubscriptionTopicNotificationShape : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Search-style _include directives, rooted in the resource for this shape. Servers SHOULD include resources listed here, if they exist and the user is authorized to receive them.  Clients SHOULD be prepared to receive these additional resources, but SHALL function properly without them.
+    /// </summary>
+    public List<string> Include { get; set; }
+    /// <summary>
+    /// Extension container element for Include
+    /// </summary>
+    public List<Element> _Include { get; set; }
+    /// <summary>
+    /// URL of the Resource that is the type used in this filter.  Relative URLs are relative to the StructureDefinition root of the implemented FHIR version (e.g., http://hl7.org/fhir/StructureDefinition). For example, "Patient" maps to http://hl7.org/fhir/StructureDefinition/Patient.  For more information, see &lt;a href="elementdefinition-definitions.html#ElementDefinition.type.code"&gt;ElementDefinition.type.code&lt;/a&gt;.
+    /// </summary>
+    public string Resource { get; set; }
+    /// <summary>
+    /// Extension container element for Resource
+    /// </summary>
+    public Element _Resource { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(Resource))
+      {
+        writer.WriteString("resource", (string)Resource!);
+      }
+
+      if (_Resource != null)
+      {
+        writer.WritePropertyName("_resource");
+        _Resource.SerializeJson(writer, options);
+      }
+
+      if ((Include != null) && (Include.Count != 0))
+      {
+        writer.WritePropertyName("include");
+        writer.WriteStartArray();
+
+        foreach (string valInclude in Include)
+        {
+          writer.WriteStringValue(valInclude);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((_Include != null) && (_Include.Count != 0))
+      {
+        writer.WritePropertyName("_include");
+        writer.WriteStartArray();
+
+        foreach (Element val_Include in _Include)
+        {
+          val_Include.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "include":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Include = new List<string>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            Include.Add(reader.GetString());
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Include.Count == 0)
+          {
+            Include = null;
+          }
+
+          break;
+
+        case "_include":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          _Include = new List<Element>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Element obj_Include = new fhirCsR5.Models.Element();
+            obj_Include.DeserializeJson(ref reader, options);
+            _Include.Add(obj_Include);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (_Include.Count == 0)
+          {
+            _Include = null;
+          }
+
+          break;
+
+        case "resource":
+          Resource = reader.GetString();
+          break;
+
+        case "_resource":
+          _Resource = new fhirCsR5.Models.Element();
+          _Resource.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
+  /// Describes a stream of resource state changes or events and annotated with labels useful to filter projections from this topic.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<SubscriptionTopic>))]
   public class SubscriptionTopic : DomainResource,  IFhirJsonSerializable {
@@ -800,6 +1029,10 @@ namespace fhirCsR5.Models
     /// Extension container element for ApprovalDate
     /// </summary>
     public Element _ApprovalDate { get; set; }
+    /// <summary>
+    /// List of properties by which Subscriptions on the SubscriptionTopic can be filtered. May be defined Search Parameters (e.g., Encounter.patient) or parameters defined within this SubscriptionTopic context (e.g., hub.event).
+    /// </summary>
+    public List<SubscriptionTopicCanFilterBy> CanFilterBy { get; set; }
     /// <summary>
     /// May be a web site, an email address, a telephone number, etc.
     /// </summary>
@@ -841,6 +1074,10 @@ namespace fhirCsR5.Models
     /// </summary>
     public Period EffectivePeriod { get; set; }
     /// <summary>
+    /// Event definition which can be used to trigger the SubscriptionTopic.
+    /// </summary>
+    public List<SubscriptionTopicEventTrigger> EventTrigger { get; set; }
+    /// <summary>
     /// Allows filtering of SubscriptionTopic that are appropriate for use vs. not.
     /// </summary>
     public bool? Experimental { get; set; }
@@ -861,9 +1098,17 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _LastReviewDate { get; set; }
     /// <summary>
+    /// List of properties to describe the shape (e.g., resources) included in notifications from this Subscription Topic.
+    /// </summary>
+    public List<SubscriptionTopicNotificationShape> NotificationShape { get; set; }
+    /// <summary>
     /// Helps establish the "authority/credibility" of the SubscriptionTopic.  May also allow for contact.
     /// </summary>
-    public Reference Publisher { get; set; }
+    public string Publisher { get; set; }
+    /// <summary>
+    /// Extension container element for Publisher
+    /// </summary>
+    public Element _Publisher { get; set; }
     /// <summary>
     /// This element does not describe the usage of the Topic.  Rather it is for traceability of ''why'' the resource is either needed or ''why'' it is defined as it is.  This may be used to point to source materials or specifications that drove the structure of this Topic.
     /// </summary>
@@ -873,7 +1118,7 @@ namespace fhirCsR5.Models
     /// </summary>
     public Element _Purpose { get; set; }
     /// <summary>
-    /// The criteria for including updates to a nominated resource in the subscription topic.  Thie criteria may be just a human readable description and/or a full FHIR search string or FHIRPath expression.
+    /// A definition of a resource-based event that triggers a notification based on the SubscriptionTopic. The criteria may be just a human readable description and/or a full FHIR search string or FHIRPath expression. Multiple triggers are considered OR joined (e.g., a resource update matching ANY of the definitions will trigger a notification).
     /// </summary>
     public List<SubscriptionTopicResourceTrigger> ResourceTrigger { get; set; }
     /// <summary>
@@ -1029,10 +1274,15 @@ namespace fhirCsR5.Models
         _Date.SerializeJson(writer, options);
       }
 
-      if (Publisher != null)
+      if (!string.IsNullOrEmpty(Publisher))
       {
-        writer.WritePropertyName("publisher");
-        Publisher.SerializeJson(writer, options);
+        writer.WriteString("publisher", (string)Publisher!);
+      }
+
+      if (_Publisher != null)
+      {
+        writer.WritePropertyName("_publisher");
+        _Publisher.SerializeJson(writer, options);
       }
 
       if ((Contact != null) && (Contact.Count != 0))
@@ -1148,6 +1398,45 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
+      if ((EventTrigger != null) && (EventTrigger.Count != 0))
+      {
+        writer.WritePropertyName("eventTrigger");
+        writer.WriteStartArray();
+
+        foreach (SubscriptionTopicEventTrigger valEventTrigger in EventTrigger)
+        {
+          valEventTrigger.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((CanFilterBy != null) && (CanFilterBy.Count != 0))
+      {
+        writer.WritePropertyName("canFilterBy");
+        writer.WriteStartArray();
+
+        foreach (SubscriptionTopicCanFilterBy valCanFilterBy in CanFilterBy)
+        {
+          valCanFilterBy.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if ((NotificationShape != null) && (NotificationShape.Count != 0))
+      {
+        writer.WritePropertyName("notificationShape");
+        writer.WriteStartArray();
+
+        foreach (SubscriptionTopicNotificationShape valNotificationShape in NotificationShape)
+        {
+          valNotificationShape.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
       if (includeStartObject)
       {
         writer.WriteEndObject();
@@ -1167,6 +1456,33 @@ namespace fhirCsR5.Models
         case "_approvalDate":
           _ApprovalDate = new fhirCsR5.Models.Element();
           _ApprovalDate.DeserializeJson(ref reader, options);
+          break;
+
+        case "canFilterBy":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          CanFilterBy = new List<SubscriptionTopicCanFilterBy>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.SubscriptionTopicCanFilterBy objCanFilterBy = new fhirCsR5.Models.SubscriptionTopicCanFilterBy();
+            objCanFilterBy.DeserializeJson(ref reader, options);
+            CanFilterBy.Add(objCanFilterBy);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (CanFilterBy.Count == 0)
+          {
+            CanFilterBy = null;
+          }
+
           break;
 
         case "contact":
@@ -1280,6 +1596,33 @@ namespace fhirCsR5.Models
           EffectivePeriod.DeserializeJson(ref reader, options);
           break;
 
+        case "eventTrigger":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          EventTrigger = new List<SubscriptionTopicEventTrigger>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.SubscriptionTopicEventTrigger objEventTrigger = new fhirCsR5.Models.SubscriptionTopicEventTrigger();
+            objEventTrigger.DeserializeJson(ref reader, options);
+            EventTrigger.Add(objEventTrigger);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (EventTrigger.Count == 0)
+          {
+            EventTrigger = null;
+          }
+
+          break;
+
         case "experimental":
           Experimental = reader.GetBoolean();
           break;
@@ -1347,9 +1690,40 @@ namespace fhirCsR5.Models
           _LastReviewDate.DeserializeJson(ref reader, options);
           break;
 
+        case "notificationShape":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          NotificationShape = new List<SubscriptionTopicNotificationShape>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.SubscriptionTopicNotificationShape objNotificationShape = new fhirCsR5.Models.SubscriptionTopicNotificationShape();
+            objNotificationShape.DeserializeJson(ref reader, options);
+            NotificationShape.Add(objNotificationShape);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (NotificationShape.Count == 0)
+          {
+            NotificationShape = null;
+          }
+
+          break;
+
         case "publisher":
-          Publisher = new fhirCsR5.Models.Reference();
-          Publisher.DeserializeJson(ref reader, options);
+          Publisher = reader.GetString();
+          break;
+
+        case "_publisher":
+          _Publisher = new fhirCsR5.Models.Element();
+          _Publisher.DeserializeJson(ref reader, options);
           break;
 
         case "purpose":

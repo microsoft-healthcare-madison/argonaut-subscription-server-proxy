@@ -882,7 +882,7 @@ namespace fhirCsR5.Models
     public const string CHANGES = "changes";
   }
   /// <summary>
-  /// The EvidenceReport Resource is a specialized container for a collection of resources and codable concepts, adapted to support compositions of Evidence, EvidenceVariable, and Citation resources and related concepts.
+  /// The EvidenceReport Resource is a specialized container for a collection of resources and codeable concepts, adapted to support compositions of Evidence, EvidenceVariable, and Citation resources and related concepts.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<EvidenceReport>))]
   public class EvidenceReport : DomainResource,  IFhirJsonSerializable {

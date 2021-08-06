@@ -747,7 +747,7 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Used to express the reason or specific aspect for the title.
     /// </summary>
-    public CodeableConcept Type { get; set; }
+    public List<CodeableConcept> Type { get; set; }
     /// <summary>
     /// Serialize to a JSON object
     /// </summary>
@@ -759,10 +759,17 @@ namespace fhirCsR5.Models
       }
       ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
 
-      if (Type != null)
+      if ((Type != null) && (Type.Count != 0))
       {
         writer.WritePropertyName("type");
-        Type.SerializeJson(writer, options);
+        writer.WriteStartArray();
+
+        foreach (CodeableConcept valType in Type)
+        {
+          valType.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
       }
 
       if (Language != null)
@@ -809,8 +816,30 @@ namespace fhirCsR5.Models
           break;
 
         case "type":
-          Type = new fhirCsR5.Models.CodeableConcept();
-          Type.DeserializeJson(ref reader, options);
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Type = new List<CodeableConcept>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.CodeableConcept objType = new fhirCsR5.Models.CodeableConcept();
+            objType.DeserializeJson(ref reader, options);
+            Type.Add(objType);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Type.Count == 0)
+          {
+            Type = null;
+          }
+
           break;
 
         default:
@@ -1112,7 +1141,7 @@ namespace fhirCsR5.Models
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<CitationCitedArtifactRelatesTo>))]
   public class CitationCitedArtifactRelatesTo : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
-    /// How the cited artifact resource relates to the target artifact.
+    /// How the cited artifact relates to the target artifact.
     /// </summary>
     public CodeableConcept RelationshipType { get; set; }
     /// <summary>

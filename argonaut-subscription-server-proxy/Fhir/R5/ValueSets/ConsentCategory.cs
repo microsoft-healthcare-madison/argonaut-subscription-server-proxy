@@ -158,11 +158,29 @@ namespace fhirCsR5.ValueSets
     /// <summary>
     /// 
     /// </summary>
+    public static readonly Coding PrivacyConsent = new Coding
+    {
+      Code = "patient-privacy",
+      Display = "Privacy Consent",
+      System = "http://terminology.hl7.org/CodeSystem/consentscope"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
     public static readonly Coding POLST = new Coding
     {
       Code = "polst",
       Display = "POLST",
       System = "http://terminology.hl7.org/CodeSystem/consentcategorycodes"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding Research = new Coding
+    {
+      Code = "research",
+      Display = "Research",
+      System = "http://terminology.hl7.org/CodeSystem/consentscope"
     };
     /// <summary>
     /// 
@@ -217,6 +235,15 @@ namespace fhirCsR5.ValueSets
       Code = "RSREID",
       Display = "re-identifiable information access",
       System = "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+    };
+    /// <summary>
+    /// 
+    /// </summary>
+    public static readonly Coding Treatment = new Coding
+    {
+      Code = "treatment",
+      Display = "Treatment",
+      System = "http://terminology.hl7.org/CodeSystem/consentscope"
     };
 
     /// <summary>
@@ -300,9 +327,19 @@ namespace fhirCsR5.ValueSets
     public const string LiteralNoticeOfPrivacyPractices = "npp";
 
     /// <summary>
+    /// Literal for code: PrivacyConsent
+    /// </summary>
+    public const string LiteralPrivacyConsent = "patient-privacy";
+
+    /// <summary>
     /// Literal for code: POLST
     /// </summary>
     public const string LiteralPOLST = "polst";
+
+    /// <summary>
+    /// Literal for code: Research
+    /// </summary>
+    public const string LiteralResearch = "research";
 
     /// <summary>
     /// Literal for code: ResearchInformationAccess
@@ -333,5 +370,10 @@ namespace fhirCsR5.ValueSets
     /// Literal for code: ReIdentifiableInformationAccess_2
     /// </summary>
     public const string LiteralReIdentifiableInformationAccess_2 = "RSREID";
+
+    /// <summary>
+    /// Literal for code: Treatment
+    /// </summary>
+    public const string LiteralTreatment = "treatment";
   };
 }

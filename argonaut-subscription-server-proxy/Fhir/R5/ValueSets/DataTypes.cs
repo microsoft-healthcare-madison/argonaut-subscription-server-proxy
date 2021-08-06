@@ -399,15 +399,6 @@ namespace fhirCsR5.ValueSets
       System = "http://hl7.org/fhir/data-types"
     };
     /// <summary>
-    /// An ordered list (distribution) of statistics.
-    /// </summary>
-    public static readonly Coding OrderedDistribution = new Coding
-    {
-      Code = "OrderedDistribution",
-      Display = "OrderedDistribution",
-      System = "http://hl7.org/fhir/data-types"
-    };
-    /// <summary>
     /// The parameters to the module. This collection specifies both the input and output parameters. Input parameters are provided by the caller as part of the $evaluate operation. Output parameters are included in the GuidanceResponse.
     /// </summary>
     public static readonly Coding ParameterDefinition = new Coding
@@ -549,15 +540,6 @@ namespace fhirCsR5.ValueSets
     {
       Code = "SimpleQuantity",
       Display = "SimpleQuantity",
-      System = "http://hl7.org/fhir/data-types"
-    };
-    /// <summary>
-    /// A fact or piece of data from a  study of a large quantity of numerical data.  A mathematical or quantified characteristic of a group of observations.
-    /// </summary>
-    public static readonly Coding Statistic = new Coding
-    {
-      Code = "Statistic",
-      Display = "Statistic",
       System = "http://hl7.org/fhir/data-types"
     };
     /// <summary>
@@ -867,11 +849,6 @@ namespace fhirCsR5.ValueSets
     public const string LiteralOid = "oid";
 
     /// <summary>
-    /// Literal for code: OrderedDistribution
-    /// </summary>
-    public const string LiteralOrderedDistribution = "OrderedDistribution";
-
-    /// <summary>
     /// Literal for code: ParameterDefinition
     /// </summary>
     public const string LiteralParameterDefinition = "ParameterDefinition";
@@ -950,11 +927,6 @@ namespace fhirCsR5.ValueSets
     /// Literal for code: SimpleQuantity
     /// </summary>
     public const string LiteralSimpleQuantity = "SimpleQuantity";
-
-    /// <summary>
-    /// Literal for code: Statistic
-    /// </summary>
-    public const string LiteralStatistic = "Statistic";
 
     /// <summary>
     /// Literal for code: VALString

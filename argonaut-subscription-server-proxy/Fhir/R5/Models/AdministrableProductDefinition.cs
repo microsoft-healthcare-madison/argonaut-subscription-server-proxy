@@ -631,6 +631,10 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<Reference> Device { get; set; }
     /// <summary>
+    /// The medicinal product that this is an administrable form of. This is not a reference to the item(s) that make up this administrable form - it is the whole product.
+    /// </summary>
+    public List<Reference> FormOf { get; set; }
+    /// <summary>
     /// An identifier for the administrable product.
     /// </summary>
     public List<Identifier> Identifier { get; set; }
@@ -650,10 +654,6 @@ namespace fhirCsR5.Models
     /// The path by which the product is taken into or makes contact with the body. In some regions this is referred to as the licenced or approved route.
     /// </summary>
     public List<AdministrableProductDefinitionRouteOfAdministration> RouteOfAdministration { get; set; }
-    /// <summary>
-    /// The medicinal product that this is an administrable form of. This is not a reference to the item(s) that make up this administrable form - it is the whole product.
-    /// </summary>
-    public List<Reference> Subject { get; set; }
     /// <summary>
     /// The units of presentation for the administrable product, for example 'tablet'.
     /// </summary>
@@ -688,14 +688,14 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
-      if ((Subject != null) && (Subject.Count != 0))
+      if ((FormOf != null) && (FormOf.Count != 0))
       {
-        writer.WritePropertyName("subject");
+        writer.WritePropertyName("formOf");
         writer.WriteStartArray();
 
-        foreach (Reference valSubject in Subject)
+        foreach (Reference valFormOf in FormOf)
         {
-          valSubject.SerializeJson(writer, options, true);
+          valFormOf.SerializeJson(writer, options, true);
         }
 
         writer.WriteEndArray();
@@ -818,6 +818,33 @@ namespace fhirCsR5.Models
           if (Device.Count == 0)
           {
             Device = null;
+          }
+
+          break;
+
+        case "formOf":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          FormOf = new List<Reference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.Reference objFormOf = new fhirCsR5.Models.Reference();
+            objFormOf.DeserializeJson(ref reader, options);
+            FormOf.Add(objFormOf);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (FormOf.Count == 0)
+          {
+            FormOf = null;
           }
 
           break;
@@ -953,33 +980,6 @@ namespace fhirCsR5.Models
           if (RouteOfAdministration.Count == 0)
           {
             RouteOfAdministration = null;
-          }
-
-          break;
-
-        case "subject":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Subject = new List<Reference>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.Reference objSubject = new fhirCsR5.Models.Reference();
-            objSubject.DeserializeJson(ref reader, options);
-            Subject.Add(objSubject);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Subject.Count == 0)
-          {
-            Subject = null;
           }
 
           break;

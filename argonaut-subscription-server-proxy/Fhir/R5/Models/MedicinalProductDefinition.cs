@@ -748,22 +748,14 @@ namespace fhirCsR5.Models
     }
   }
   /// <summary>
-  /// Package representation for the product.
+  /// Package representation for the product. See also PackagedProductDefinition resource.
   /// </summary>
   [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<MedicinalProductDefinitionPackage>))]
   public class MedicinalProductDefinitionPackage : BackboneElement,  IFhirJsonSerializable {
     /// <summary>
-    /// Full package representation for the product.
-    /// </summary>
-    public Reference Package { get; set; }
-    /// <summary>
     /// The amount of items, or of substance, in the package.
     /// </summary>
-    public Quantity SizeQuantity { get; set; }
-    /// <summary>
-    /// The amount of items, or of substance, in the package.
-    /// </summary>
-    public int? SizeInteger { get; set; }
+    public Quantity Size { get; set; }
     /// <summary>
     /// A descriptive type for this package, such as box, carton or bottle.
     /// </summary>
@@ -785,21 +777,10 @@ namespace fhirCsR5.Models
         Type.SerializeJson(writer, options);
       }
 
-      if (SizeQuantity != null)
+      if (Size != null)
       {
-        writer.WritePropertyName("sizeQuantity");
-        SizeQuantity.SerializeJson(writer, options);
-      }
-
-      if (SizeInteger != null)
-      {
-        writer.WriteNumber("sizeInteger", (int)SizeInteger!);
-      }
-
-      if (Package != null)
-      {
-        writer.WritePropertyName("package");
-        Package.SerializeJson(writer, options);
+        writer.WritePropertyName("size");
+        Size.SerializeJson(writer, options);
       }
 
       if (includeStartObject)
@@ -814,141 +795,14 @@ namespace fhirCsR5.Models
     {
       switch (propertyName)
       {
-        case "package":
-          Package = new fhirCsR5.Models.Reference();
-          Package.DeserializeJson(ref reader, options);
-          break;
-
-        case "sizeQuantity":
-          SizeQuantity = new fhirCsR5.Models.Quantity();
-          SizeQuantity.DeserializeJson(ref reader, options);
-          break;
-
-        case "sizeInteger":
-          SizeInteger = reader.GetInt32();
+        case "size":
+          Size = new fhirCsR5.Models.Quantity();
+          Size.DeserializeJson(ref reader, options);
           break;
 
         case "type":
           Type = new fhirCsR5.Models.CodeableConcept();
           Type.DeserializeJson(ref reader, options);
-          break;
-
-        default:
-          ((fhirCsR5.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
-          break;
-      }
-    }
-
-    /// <summary>
-    /// Deserialize a JSON object
-    /// </summary>
-    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-      string propertyName;
-
-      while (reader.Read())
-      {
-        if (reader.TokenType == JsonTokenType.EndObject)
-        {
-          return;
-        }
-
-        if (reader.TokenType == JsonTokenType.PropertyName)
-        {
-          propertyName = reader.GetString();
-          reader.Read();
-          this.DeserializeJsonProperty(ref reader, options, propertyName);
-        }
-      }
-
-      throw new JsonException();
-    }
-  }
-  /// <summary>
-  /// The product in its final form, mixed from its components if necessary, and ready to be administered to the patient. Also known as the 'Pharmaceutical Product'. Can repeat, for cases where the product has components that result in more than one administrable item.
-  /// </summary>
-  [JsonConverter(typeof(fhirCsR5.Serialization.JsonStreamComponentConverter<MedicinalProductDefinitionAdministrableProduct>))]
-  public class MedicinalProductDefinitionAdministrableProduct : BackboneElement,  IFhirJsonSerializable {
-    /// <summary>
-    /// Full description of the administrable product.
-    /// </summary>
-    public Reference Product { get; set; }
-    /// <summary>
-    /// The path by which the product is taken into or makes contact with the body. In some regions this is referred to as the licenced or approved route.
-    /// </summary>
-    public List<CodeableConcept> Route { get; set; }
-    /// <summary>
-    /// Serialize to a JSON object
-    /// </summary>
-    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
-    {
-      if (includeStartObject)
-      {
-        writer.WriteStartObject();
-      }
-      ((fhirCsR5.Models.BackboneElement)this).SerializeJson(writer, options, false);
-
-      if ((Route != null) && (Route.Count != 0))
-      {
-        writer.WritePropertyName("route");
-        writer.WriteStartArray();
-
-        foreach (CodeableConcept valRoute in Route)
-        {
-          valRoute.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
-      if (Product != null)
-      {
-        writer.WritePropertyName("product");
-        Product.SerializeJson(writer, options);
-      }
-
-      if (includeStartObject)
-      {
-        writer.WriteEndObject();
-      }
-    }
-    /// <summary>
-    /// Deserialize a JSON property
-    /// </summary>
-    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
-    {
-      switch (propertyName)
-      {
-        case "product":
-          Product = new fhirCsR5.Models.Reference();
-          Product.DeserializeJson(ref reader, options);
-          break;
-
-        case "route":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          Route = new List<CodeableConcept>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.CodeableConcept objRoute = new fhirCsR5.Models.CodeableConcept();
-            objRoute.DeserializeJson(ref reader, options);
-            Route.Add(objRoute);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (Route.Count == 0)
-          {
-            Route = null;
-          }
-
           break;
 
         default:
@@ -996,10 +850,6 @@ namespace fhirCsR5.Models
     /// </summary>
     public CodeableConcept AdditionalMonitoringIndicator { get; set; }
     /// <summary>
-    /// The product in its final form, mixed from its components if necessary, and ready to be administered to the patient. Also known as the 'Pharmaceutical Product'. Can repeat, for cases where the product has components that result in more than one administrable item.
-    /// </summary>
-    public List<MedicinalProductDefinitionAdministrableProduct> AdministrableProduct { get; set; }
-    /// <summary>
     /// Additional information or supporting documentation about the medicinal product.
     /// </summary>
     public List<Reference> AttachedDocument { get; set; }
@@ -1046,9 +896,9 @@ namespace fhirCsR5.Models
     /// <summary>
     /// Any component of the drug product which is not the chemical entity defined as the drug substance or an excipient in the drug product. This includes process-related impurities and contaminants, product-related impurities including degradation products.
     /// </summary>
-    public List<Reference> Impurity { get; set; }
+    public List<CodeableReference> Impurity { get; set; }
     /// <summary>
-    /// Description of indication(s) for this product, used when structured indications are not required. In cases where structured indications are required, they are captured using the ClinicalUseIssue resource. An indication is a medical situation for which using the product is appropriate.
+    /// Description of indication(s) for this product, used when structured indications are not required. In cases where structured indications are required, they are captured using the ClinicalUseDefinition resource. An indication is a medical situation for which using the product is appropriate.
     /// </summary>
     public string Indication { get; set; }
     /// <summary>
@@ -1080,13 +930,17 @@ namespace fhirCsR5.Models
     /// </summary>
     public List<MedicinalProductDefinitionOperation> Operation { get; set; }
     /// <summary>
-    /// Package representation for the product.
+    /// Package representation for the product. See also PackagedProductDefinition resource.
     /// </summary>
     public List<MedicinalProductDefinitionPackage> Package { get; set; }
     /// <summary>
     /// If authorised for use in children.
     /// </summary>
-    public CodeableConcept PaediatricUseIndicator { get; set; }
+    public CodeableConcept PediatricUseIndicator { get; set; }
+    /// <summary>
+    /// The path by which the product is taken into or makes contact with the body. In some regions this is referred to as the licenced or approved route. See also AdministrableProductDefinition resource.
+    /// </summary>
+    public List<CodeableConcept> Route { get; set; }
     /// <summary>
     /// Whether the Medicinal Product is subject to special measures for regulatory reasons.
     /// </summary>
@@ -1202,6 +1056,19 @@ namespace fhirCsR5.Models
         CombinedPharmaceuticalDoseForm.SerializeJson(writer, options);
       }
 
+      if ((Route != null) && (Route.Count != 0))
+      {
+        writer.WritePropertyName("route");
+        writer.WriteStartArray();
+
+        foreach (CodeableConcept valRoute in Route)
+        {
+          valRoute.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
       if (!string.IsNullOrEmpty(Indication))
       {
         writer.WriteString("indication", (string)Indication!);
@@ -1238,10 +1105,10 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
-      if (PaediatricUseIndicator != null)
+      if (PediatricUseIndicator != null)
       {
-        writer.WritePropertyName("paediatricUseIndicator");
-        PaediatricUseIndicator.SerializeJson(writer, options);
+        writer.WritePropertyName("pediatricUseIndicator");
+        PediatricUseIndicator.SerializeJson(writer, options);
       }
 
       if ((Classification != null) && (Classification.Count != 0))
@@ -1301,7 +1168,7 @@ namespace fhirCsR5.Models
         writer.WritePropertyName("impurity");
         writer.WriteStartArray();
 
-        foreach (Reference valImpurity in Impurity)
+        foreach (CodeableReference valImpurity in Impurity)
         {
           valImpurity.SerializeJson(writer, options, true);
         }
@@ -1413,19 +1280,6 @@ namespace fhirCsR5.Models
         writer.WriteEndArray();
       }
 
-      if ((AdministrableProduct != null) && (AdministrableProduct.Count != 0))
-      {
-        writer.WritePropertyName("administrableProduct");
-        writer.WriteStartArray();
-
-        foreach (MedicinalProductDefinitionAdministrableProduct valAdministrableProduct in AdministrableProduct)
-        {
-          valAdministrableProduct.SerializeJson(writer, options, true);
-        }
-
-        writer.WriteEndArray();
-      }
-
       if (includeStartObject)
       {
         writer.WriteEndObject();
@@ -1441,33 +1295,6 @@ namespace fhirCsR5.Models
         case "additionalMonitoringIndicator":
           AdditionalMonitoringIndicator = new fhirCsR5.Models.CodeableConcept();
           AdditionalMonitoringIndicator.DeserializeJson(ref reader, options);
-          break;
-
-        case "administrableProduct":
-          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
-          {
-            throw new JsonException();
-          }
-
-          AdministrableProduct = new List<MedicinalProductDefinitionAdministrableProduct>();
-
-          while (reader.TokenType != JsonTokenType.EndArray)
-          {
-            fhirCsR5.Models.MedicinalProductDefinitionAdministrableProduct objAdministrableProduct = new fhirCsR5.Models.MedicinalProductDefinitionAdministrableProduct();
-            objAdministrableProduct.DeserializeJson(ref reader, options);
-            AdministrableProduct.Add(objAdministrableProduct);
-
-            if (!reader.Read())
-            {
-              throw new JsonException();
-            }
-          }
-
-          if (AdministrableProduct.Count == 0)
-          {
-            AdministrableProduct = null;
-          }
-
           break;
 
         case "attachedDocument":
@@ -1684,11 +1511,11 @@ namespace fhirCsR5.Models
             throw new JsonException();
           }
 
-          Impurity = new List<Reference>();
+          Impurity = new List<CodeableReference>();
 
           while (reader.TokenType != JsonTokenType.EndArray)
           {
-            fhirCsR5.Models.Reference objImpurity = new fhirCsR5.Models.Reference();
+            fhirCsR5.Models.CodeableReference objImpurity = new fhirCsR5.Models.CodeableReference();
             objImpurity.DeserializeJson(ref reader, options);
             Impurity.Add(objImpurity);
 
@@ -1881,9 +1708,36 @@ namespace fhirCsR5.Models
 
           break;
 
-        case "paediatricUseIndicator":
-          PaediatricUseIndicator = new fhirCsR5.Models.CodeableConcept();
-          PaediatricUseIndicator.DeserializeJson(ref reader, options);
+        case "pediatricUseIndicator":
+          PediatricUseIndicator = new fhirCsR5.Models.CodeableConcept();
+          PediatricUseIndicator.DeserializeJson(ref reader, options);
+          break;
+
+        case "route":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          Route = new List<CodeableConcept>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR5.Models.CodeableConcept objRoute = new fhirCsR5.Models.CodeableConcept();
+            objRoute.DeserializeJson(ref reader, options);
+            Route.Add(objRoute);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (Route.Count == 0)
+          {
+            Route = null;
+          }
+
           break;
 
         case "specialMeasures":
