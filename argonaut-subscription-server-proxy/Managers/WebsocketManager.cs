@@ -369,6 +369,30 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
+        /// <summary>Queue messages for subscription.</summary>
+        /// <param name="subscription">The subscription.</param>
+        /// <param name="json">        The resource.</param>
+        public static void QueueMessagesForSubscription(
+            r4.Subscription subscription,
+            string json)
+        {
+            if (subscription == null)
+            {
+                return;
+            }
+
+            if (!_instance._subscriptionInfosDict.ContainsKey(subscription.Id))
+            {
+                return;
+            }
+
+            foreach (WebsocketClientInformation client in _instance._subscriptionInfosDict[subscription.Id])
+            {
+                // add this message to this client's queue (caller should have set it up correctly)
+                client.MessageQ.Enqueue(json);
+            }
+        }
+
         /// <summary>Check or create instance.</summary>
         private static void CheckOrCreateInstance()
         {

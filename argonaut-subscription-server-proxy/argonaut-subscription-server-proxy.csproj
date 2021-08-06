@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Backport\SubscriptionConverter.cs" />
+    <Compile Remove="Converters\ConverterR4.cs" />
     <Compile Remove="Managers\SubscriptionManagerProto.cs" />
     <Compile Remove="Managers\SubscriptionTopicManagerProto.cs" />
     <Compile Remove="Models\Channel.cs" />
@@ -55,6 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Converters\" />
     <Folder Include="Fhir\R4B\" />
   </ItemGroup>
 

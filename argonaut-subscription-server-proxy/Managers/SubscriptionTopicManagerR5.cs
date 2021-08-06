@@ -9,12 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using fhir5.Hl7.Fhir.Model;
-using fhir5.Hl7.Fhir.Serialization;
-using Hl7.Fhir.ElementModel;
-using Hl7.Fhir.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
+using fhirCsR5.Models;
+using fhirCsR5.Serialization;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
@@ -30,10 +27,6 @@ namespace argonaut_subscription_server_proxy.Managers
         private Dictionary<string, SubscriptionTopic> _localUrlTopicDict;
         private Dictionary<string, SubscriptionTopic> _idTopicDict;
 
-        private CamelCasePropertyNamesContractResolver _contractResolver;
-
-        private FhirJsonSerializer _firelySerializer;
-
         /// <summary>
         /// Prevents a default instance of the
         /// <see cref="SubscriptionTopicManagerR5"/> class from being
@@ -46,10 +39,6 @@ namespace argonaut_subscription_server_proxy.Managers
             _canonicalUrlTopicDict = new Dictionary<string, SubscriptionTopic>();
             _localUrlTopicDict = new Dictionary<string, SubscriptionTopic>();
             _idTopicDict = new Dictionary<string, SubscriptionTopic>();
-
-            // serialization related
-            _firelySerializer = new FhirJsonSerializer();
-            _contractResolver = new CamelCasePropertyNamesContractResolver();
         }
 
         /// <summary>Initializes this object.</summary>
@@ -180,56 +169,15 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string key, out string serialized)
         {
-            if (TryGetTopic(key, out SubscriptionTopic subscription))
+            if (TryGetTopic(key, out SubscriptionTopic resource))
             {
-                serialized = _instance._firelySerializer.SerializeToString(subscription);
+                serialized = JsonSerializer.Serialize(resource);
 
                 return true;
             }
 
             serialized = null;
             return false;
-        }
-
-        /// <summary>Attempts to get basic serialized a string from the given string.</summary>
-        /// <param name="key">       The key for the topic.</param>
-        /// <param name="serialized">[out] The serialized.</param>
-        /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetBasicSerialized(string key, out string serialized)
-        {
-            if (TryGetTopic(key, out SubscriptionTopic topic))
-            {
-                Basic basic = _instance.WrapInBasic(topic);
-                serialized = _instance._firelySerializer.SerializeToString(basic);
-
-                return true;
-            }
-
-            serialized = null;
-            return false;
-        }
-
-        /// <summary>Wrap in basic.</summary>
-        /// <param name="topic">The topic.</param>
-        /// <returns>A Basic.</returns>
-        private Basic WrapInBasic(SubscriptionTopic topic)
-        {
-            return new Basic()
-            {
-                Id = topic.Id,
-                Code = new CodeableConcept(
-                    "http://hl7.org/fhir/resource-types",
-                    "R5SubscriptionTopic",
-                    "Backported R5 SubscriptionTopic"),
-                Extension = new List<Extension>()
-                {
-                    new Extension()
-                    {
-                        Url = "http://hl7.org/fhir/StructureDefinition/json-embedded-resource",
-                        Value = new FhirString(_firelySerializer.SerializeToString(topic)),
-                    },
-                },
-            };
         }
 
         /// <summary>Gets topics bundle.</summary>
@@ -239,24 +187,24 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             Bundle bundle = new Bundle()
             {
-                Type = Bundle.BundleType.Searchset,
-                Total = _titleTopicDict.Count,
+                Type = BundleTypeCodes.SEARCHSET,
+                Total = (uint)_titleTopicDict.Count,
                 Meta = new Meta()
                 {
-                    LastUpdated = new DateTimeOffset(DateTime.Now.ToUniversalTime()),
+                    LastUpdated = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
                 },
-                Entry = new List<Bundle.EntryComponent>(),
+                Entry = new List<BundleEntry>(),
             };
 
             foreach (SubscriptionTopic topic in _idTopicDict.Values)
             {
-                bundle.Entry.Add(new Bundle.EntryComponent()
+                bundle.Entry.Add(new BundleEntry()
                 {
                     FullUrl = Program.UrlForR5ResourceId("SubscriptionTopic", topic.Id),
-                    Resource = wrapInBasic ? (Resource)WrapInBasic(topic) : (Resource)topic,
-                    Search = new Bundle.SearchComponent()
+                    Resource = (Resource)topic,
+                    Search = new BundleEntrySearch
                     {
-                        Mode = Bundle.SearchEntryMode.Match,
+                        Mode = BundleEntrySearchModeCodes.MATCH,
                     },
                 });
             }
@@ -351,32 +299,6 @@ namespace argonaut_subscription_server_proxy.Managers
             }
         }
 
-        /// <summary>Dumps a node.</summary>
-        /// <param name="node">The node.</param>
-        private void DumpNode(ISourceNode node)
-        {
-            Console.WriteLine(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0,70} {1,20} {2}",
-                    "Location",
-                    "Name",
-                    "Text"));
-            _DumpNode(node);
-        }
-
-        /// <summary>Dumps a node.</summary>
-        /// <param name="node">The node.</param>
-        private void _DumpNode(ISourceNode node)
-        {
-            Console.WriteLine($"{node.Location,70} {node.Name,20} {node.Text}");
-
-            foreach (ISourceNode child in node.Children())
-            {
-                _DumpNode(child);
-            }
-        }
-
         /// <summary>Creates the topics.</summary>
         private void CreateTopics()
         {
@@ -392,39 +314,54 @@ namespace argonaut_subscription_server_proxy.Managers
                 Id = "encounter-start",
                 Url = "http://argonautproject.org/encounters-ig/SubscriptionTopic/encounter-start",
                 Version = "1.1",
-                Status = PublicationStatus.Draft,
+                Status = SubscriptionTopicStatusCodes.DRAFT,
                 Experimental = true,
-                Description = new Markdown("Beginning of a clinical encounter"),
-                Date = "2020-05-11",
-                ResourceTrigger = new SubscriptionTopic.ResourceTriggerComponent()
+                Description = "Beginning of a clinical encounter",
+                Date = "2021-08-03",
+                ResourceTrigger = new List<SubscriptionTopicResourceTrigger>()
                 {
-                    Description = "Beginning of a clinical encounter",
-                    ResourceType = new ResourceType?[]
+                    new SubscriptionTopicResourceTrigger()
                     {
-                        ResourceType.Encounter,
-                    },
-                    QueryCriteria = new SubscriptionTopic.QueryCriteriaComponent()
-                    {
-                        Previous = "status:not=in-progress",
-                        Current = "status:in-progress",
-                        RequireBoth = true,
-                    },
-                    FhirPathCriteria = new string[]
-                    {
-                        "%previous.status!='in-progress' and %current.status='in-progress'",
+                        Description = "Beginning of a clinical encounter",
+                        Resource = "Encounter",
+                        QueryCriteria = new SubscriptionTopicResourceTriggerQueryCriteria()
+                        {
+                            Previous = "status:not=in-progress",
+                            ResultForCreate = SubscriptionTopicResourceTriggerQueryCriteriaResultForCreateCodes.TEST_PASSES,
+                            Current = "status:in-progress",
+                            ResultForDelete = SubscriptionTopicResourceTriggerQueryCriteriaResultForDeleteCodes.TEST_FAILS,
+                            RequireBoth = true,
+                        },
+                        FhirPathCriteria = "%previous.status!='in-progress' and %current.status='in-progress'",
                     },
                 },
-                CanFilterBy = new List<SubscriptionTopic.CanFilterByComponent>()
+                CanFilterBy = new List<SubscriptionTopicCanFilterBy>()
                 {
-                    new SubscriptionTopic.CanFilterByComponent()
+                    new SubscriptionTopicCanFilterBy()
                     {
-                        SearchParamName = "patient",
-                        SearchModifier = new SubscriptionSearchModifier?[]
+                        Description = "Exact match to a patient resource (reference)",
+                        Resource = "Encounter",
+                        FilterParameter = "patient",
+                        // FilterParameter = "http://hl7.org/fhir/build/SearchParameter/Encounter-patient",
+                        Modifier = new List<string>()
                         {
-                            SubscriptionSearchModifier.Equal,
-                            SubscriptionSearchModifier.In,
+                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralEqual,
+                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralIn,
                         },
-                        Documentation = new Markdown("Exact match to a patient resource (reference)"),
+                    },
+                },
+                NotificationShape = new List<SubscriptionTopicNotificationShape>()
+                {
+                    new SubscriptionTopicNotificationShape()
+                    {
+                        Resource = "Encounter",
+                        Include = new List<string>()
+                        {
+                            "Encounter:patient",
+                            "Encounter:practitioner",
+                            "Encounter:observation",
+                            "Encounter:location",
+                        },
                     },
                 },
             };

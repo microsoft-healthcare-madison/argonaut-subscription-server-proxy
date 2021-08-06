@@ -302,9 +302,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
             lock (_resourceSubscriptionDictLock)
             {
-                if (node.Subscriptions.Contains(subscription))
+                if (node.SubscriptionsR5.Contains(subscription))
                 {
-                    node.Subscriptions.Remove(subscription);
+                    node.SubscriptionsR5.Remove(subscription);
                 }
             }
 
@@ -340,7 +340,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
-            if ((node.Subscriptions.Count == 0) &&
+            if ((node.SubscriptionsR5.Count == 0) &&
                 (node.Inclusions.Count == 0) &&
                 (node.Exclusions.Count == 0))
             {
@@ -558,9 +558,9 @@ namespace argonaut_subscription_server_proxy.Managers
             ref List<Subscription> subscriptions)
         {
             // add subscriptions on this level
-            if (node.Subscriptions.Count > 0)
+            if (node.SubscriptionsR5.Count > 0)
             {
-                subscriptions.AddRange(node.Subscriptions);
+                subscriptions.AddRange(node.SubscriptionsR5);
             }
 
             // check each of our keys
@@ -745,7 +745,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 $" {subscription.Content})");
 
             // get the topic for this subscription
-            SubscriptionTopic topic = SubscriptionTopicManagerR5.GetTopic(
+            fhirCsR5.Models.SubscriptionTopic topic = SubscriptionTopicManagerR5.GetTopic(
                 Program.ResourceIdFromReference(subscription.Topic.Reference));
 
             // check for unknown topic
@@ -780,7 +780,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     _resourceSubscriptionDict.Add(resourceName, new SubscriptionFilterNode()
                     {
-                        Subscriptions = new List<Subscription>(),
+                        SubscriptionsR5 = new List<Subscription>(),
                         Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
                         Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
                     })
@@ -793,14 +793,15 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">[out] The subscription.</param>
         /// <param name="topic">       The topic.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool TrackSubscription(Subscription subscription, SubscriptionTopic topic)
+        private bool TrackSubscription(
+            Subscription subscription,
+            fhirCsR5.Models.SubscriptionTopic topic)
         {
             // check for unfiltered subscriptions
-            if ((subscription.FilterBy == null) || (subscription.FilterBy.Count == 0))
+            if ((subscription.FilterBy == null) || (!subscription.FilterBy.Any()))
             {
                 // check for resource types
-                if ((topic.ResourceTrigger.ResourceType == null) ||
-                    (!topic.ResourceTrigger.ResourceType.Any()))
+                if (!topic.ResourceTrigger.Any())
                 {
                     // reject this subscription
                     Console.WriteLine("SubscriptionManager.TrackSubscription <<< invalid resource triggers: [].");
@@ -809,17 +810,17 @@ namespace argonaut_subscription_server_proxy.Managers
                 else
                 {
                     // loop over resource types
-                    foreach (Code<fhir5.Hl7.Fhir.Model.ResourceType> resourceType in topic.ResourceTrigger.ResourceTypeElement)
+                    foreach (fhirCsR5.Models.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
                     {
-                        if (resourceType == null)
+                        if (string.IsNullOrEmpty(resourceTrigger.Resource))
                         {
                             continue;
                         }
 
-                        TrackResource(resourceType.ToString());
+                        TrackResource(resourceTrigger.Resource);
                         lock (_resourceSubscriptionDictLock)
                         {
-                            _resourceSubscriptionDict[resourceType.ToString()].Subscriptions.Add(subscription);
+                            _resourceSubscriptionDict[resourceTrigger.Resource].SubscriptionsR5.Add(subscription);
                         }
                     }
                 }
@@ -845,18 +846,18 @@ namespace argonaut_subscription_server_proxy.Managers
                     $"{b.SearchParamName}{b.SearchModifier.ToString()}{b.Value}"));
 
             // loop over resources in the topic
-            foreach (ResourceType? resourceType in topic.ResourceTrigger.ResourceType)
+            foreach (fhirCsR5.Models.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
             {
-                if ((resourceType == null) || (!resourceType.HasValue))
+                if (string.IsNullOrEmpty(resourceTrigger.Resource))
                 {
                     continue;
                 }
 
                 // make sure this resource is tracked
-                TrackResource(resourceType.ToString());
+                TrackResource(resourceTrigger.Resource);
 
                 // track based on filters
-                if (!TrackFilterNode(subscription, _resourceSubscriptionDict[resourceType.ToString()], filters))
+                if (!TrackFilterNode(subscription, _resourceSubscriptionDict[resourceTrigger.Resource], filters))
                 {
                     return false;
                 }
@@ -880,7 +881,7 @@ namespace argonaut_subscription_server_proxy.Managers
             if (filters.Count == 0)
             {
                 // add the subscription to this node
-                node.Subscriptions.Add(subscription);
+                node.SubscriptionsR5.Add(subscription);
 
                 // done
                 return true;
@@ -921,7 +922,7 @@ namespace argonaut_subscription_server_proxy.Managers
                             {
                                 node.Exclusions.Add(filterKey, new SubscriptionFilterNode()
                                 {
-                                    Subscriptions = new List<Subscription>(),
+                                    SubscriptionsR5 = new List<Subscription>(),
                                     Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
                                     Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
                                 });
@@ -946,7 +947,7 @@ namespace argonaut_subscription_server_proxy.Managers
                             {
                                 node.Inclusions.Add(filterKey, new SubscriptionFilterNode()
                                 {
-                                    Subscriptions = new List<Subscription>(),
+                                    SubscriptionsR5 = new List<Subscription>(),
                                     Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
                                     Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
                                 });
