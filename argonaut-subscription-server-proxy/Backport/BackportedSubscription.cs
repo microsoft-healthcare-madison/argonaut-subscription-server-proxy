@@ -20,7 +20,7 @@ using r5s = fhir5.Hl7.Fhir.Serialization;
 namespace argonaut_subscription_server_proxy.Backport
 {
     /// <summary>
-    /// Class with Subscription extensions for R5 Backported R4 Subscriptions
+    /// Class with Subscription extensions for R5 Backported R4 Subscriptions.
     /// </summary>
     public static class BackportedSubscription
     {
@@ -40,10 +40,16 @@ namespace argonaut_subscription_server_proxy.Backport
         public const string ExtensionUrlContent = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content";
 
         /// <summary>The extension notification URL localtion.</summary>
-        public const string ExtensionNotificationUrlLocaltion = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-notification-url-location";
+        public const string ExtensionUrlNotificationUrlLocaltion = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-notification-url-location";
 
         /// <summary>Number of extension maximums.</summary>
-        public const string ExtensionMaxCount = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-max-count";
+        public const string ExtensionUrlMaxCount = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-max-count";
+
+        /// <summary>The extension URL for a notification focus resource.</summary>
+        public const string ExtensionUrlNotificationFocus = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/subscription-notification-focus-resource";
+
+        /// <summary>The extension URL for notification additional resource.</summary>
+        public const string ExtensionUrlNotificationIncluded = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/subscription-notification-included-resource";
 
         /// <summary>Type of the canonical channel.</summary>
         public const string CanonicalChannelType = "http://hl7.org/fhir/ValueSet/subscription-channel-type";

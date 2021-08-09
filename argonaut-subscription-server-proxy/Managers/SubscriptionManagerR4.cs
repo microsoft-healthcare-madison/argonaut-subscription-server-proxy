@@ -1183,6 +1183,14 @@ namespace argonaut_subscription_server_proxy.Managers
                         bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                         {
                             FullUrl = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
+                            Extension = new List<fhirCsR4.Models.Extension>()
+                            {
+                                new fhirCsR4.Models.Extension()
+                                {
+                                    Url = BackportedSubscription.ExtensionUrlNotificationFocus,
+                                    ValueString = subscriptionEventCount.ToString(),
+                                },
+                            },
                         });
                         break;
                     case BackportedSubscription.ContentCodeFullResource:
@@ -1191,10 +1199,179 @@ namespace argonaut_subscription_server_proxy.Managers
                         {
                             FullUrl = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
                             Resource = content,
+                            Extension = new List<fhirCsR4.Models.Extension>()
+                            {
+                                new fhirCsR4.Models.Extension()
+                                {
+                                    Url = BackportedSubscription.ExtensionUrlNotificationFocus,
+                                    ValueString = subscriptionEventCount.ToString(),
+                                },
+                            },
                         });
                         break;
                 }
+
+                // check for related resources and add them
+                TryGetRelatedResources(
+                    subscription,
+                    content,
+                    subscriptionEventCount,
+                    ref bundle);
             }
+        }
+
+        /// <summary>Attempts to get related resources.</summary>
+        /// <param name="subscription">[out] The subscription.</param>
+        /// <param name="content">     The content.</param>
+        /// <param name="bundle">      [out] The bundle.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        private static bool TryGetRelatedResources(
+            Subscription subscription,
+            fhirCsR4.Models.Resource content,
+            long eventNumber,
+            ref fhirCsR4.Models.Bundle bundle)
+        {
+            if (content == null)
+            {
+                return true;
+            }
+
+            string subscriptionContent = subscription.BackportContentGet();
+
+            FhirClient client = null;
+
+            // get the topic
+            string topicUrl = subscription.BackportTopicGet();
+
+            if (string.IsNullOrEmpty(topicUrl))
+            {
+                return false;
+            }
+
+            List<string> includeDirectives = new List<string>();
+
+            SubscriptionTopicManagerR4.TryGetTopic(topicUrl, out fhirCsR4.Models.SubscriptionTopic topic);
+
+            if ((topic.NotificationShape == null) || (!topic.NotificationShape.Any()))
+            {
+                return true;
+            }
+
+            foreach (fhirCsR4.Models.SubscriptionTopicNotificationShape shape in topic.NotificationShape)
+            {
+                if (shape.Resource != content.ResourceType)
+                {
+                    continue;
+                }
+
+                includeDirectives.AddRange(shape.Include);
+            }
+
+            if (!includeDirectives.Any())
+            {
+                return true;
+            }
+
+            // attempt to get additional data
+            try
+            {
+                // get a FHIR client
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                if (!_instance.TryGetFhirClient(out client))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                {
+                    return false;
+                }
+
+                // ask for the resource, plus our includes
+                Bundle results = client.Search(
+                    content.ResourceType,
+                    new string[] { $"_id={content.Id}" },
+                    includeDirectives.ToArray());
+
+                if ((results == null) ||
+                    (results.Entry == null) ||
+                    (results.Entry.Count == 0))
+                {
+                    return true;
+                }
+
+                switch (subscriptionContent)
+                {
+                    case BackportedSubscription.ContentCodeEmpty:
+                        break;
+
+                    case BackportedSubscription.ContentCodeIdOnly:
+
+                        foreach (Bundle.EntryComponent entry in results.Entry)
+                        {
+                            if ((entry.Resource.TypeName == content.ResourceType) &&
+                                (entry.Resource.Id == content.Id))
+                            {
+                                continue;
+                            }
+
+                            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                            {
+                                FullUrl = Program.UrlForR4ResourceId(entry.Resource.TypeName, entry.Resource.Id),
+                                Extension = new List<fhirCsR4.Models.Extension>()
+                                {
+                                    new fhirCsR4.Models.Extension()
+                                    {
+                                        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
+                                        ValueString = eventNumber.ToString(),
+                                    },
+                                },
+                            });
+                        }
+
+                        break;
+
+                    case BackportedSubscription.ContentCodeFullResource:
+
+                        foreach (Bundle.EntryComponent entry in results.Entry)
+                        {
+                            if ((entry.Resource.TypeName == content.ResourceType) &&
+                                (entry.Resource.Id == content.Id))
+                            {
+                                continue;
+                            }
+
+                            string json = _instance._fhirSerializer.SerializeToString(entry.Resource);
+                            fhirCsR4.Models.Resource res = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Resource>(json);
+
+                            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                            {
+                                FullUrl = Program.UrlForR4ResourceId(res.ResourceType, res.Id),
+                                Resource = res,
+                                Extension = new List<fhirCsR4.Models.Extension>()
+                                {
+                                    new fhirCsR4.Models.Extension()
+                                    {
+                                        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
+                                        ValueString = eventNumber.ToString(),
+                                    },
+                                },
+                            });
+                        }
+
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ProcessEncounter <<< failed to get groups, ignoring: {ex.Message}");
+            }
+            finally
+            {
+                if (client != null)
+                {
+                    // return to our queue
+                    _instance.ReturnFhirClientToQ(ref client);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>Error concept for string.</summary>
