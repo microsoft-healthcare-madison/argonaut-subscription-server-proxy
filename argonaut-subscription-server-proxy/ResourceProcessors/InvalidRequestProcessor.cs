@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {

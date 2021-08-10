@@ -150,7 +150,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
-        public static void ProcessEncounter(string content, Uri location)
+        public static void ProcessEncounter(string content, string location)
         {
             _ = System.Threading.Tasks.Task.Run((Action)(() => _instance._ProcessEncounter(content, location)));
         }
@@ -446,7 +446,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
-        private void _ProcessEncounter(string content, Uri location)
+        private void _ProcessEncounter(string content, string location)
         {
             List<Subscription> subscriptions = new List<Subscription>();
 
@@ -634,7 +634,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 // check for the topic
                 if ((subscription.Topic == null) ||
-                    (!SubscriptionTopicManagerR5.IsImplemented(subscription.Topic.Reference)))
+                    (!SubscriptionTopicManagerR5.IsImplemented(subscription.Topic)))
                 {
                     statusCode = HttpStatusCode.BadRequest;
                     failureContent = $"Invalid SubscriptionTopic: {subscription.Topic}!";
@@ -746,12 +746,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // get the topic for this subscription
             fhirCsR5.Models.SubscriptionTopic topic = SubscriptionTopicManagerR5.GetTopic(
-                Program.ResourceIdFromReference(subscription.Topic.Reference));
+                Program.ResourceIdFromReference(subscription.Topic));
 
             // check for unknown topic
             if (topic == null)
             {
-                Console.WriteLine($"SubscriptionManager._AddOrUpdate <<< could not find topic: {subscription.Topic.Reference}");
+                Console.WriteLine($"SubscriptionManager._AddOrUpdate <<< could not find topic: {subscription.Topic}");
                 return false;
             }
 
@@ -1130,7 +1130,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 EventsInNotification = eventsInNotification,
                 Status = subscription.Status,
                 Subscription = new ResourceReference(Program.UrlForR5ResourceId("Subscription", subscription.Id)),
-                Topic = new Canonical(subscription.Topic.Reference),
+                Topic = new Canonical(subscription.Topic),
             };
 
             if (isForQuery)

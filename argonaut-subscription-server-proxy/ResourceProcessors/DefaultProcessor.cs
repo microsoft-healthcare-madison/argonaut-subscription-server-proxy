@@ -4,7 +4,6 @@
 // </copyright>
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -16,27 +15,27 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="fhirServerUrl">URL of the fhir server.</param>
         public static void ProcessRequest(IApplicationBuilder appInner, string fhirServerUrl)
         {
-            // run the proxy for this request
-            appInner.RunProxy(async context =>
-            {
-                // look for a FHIR server header
-                if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
-                    (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
-                {
-                    fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
-                }
+            //// run the proxy for this request
+            //appInner.RunProxy(async context =>
+            //{
+            //    // look for a FHIR server header
+            //    if (context.Request.Headers.ContainsKey(Program._proxyHeaderKey) &&
+            //        (context.Request.Headers[Program._proxyHeaderKey].Count > 0))
+            //    {
+            //        fhirServerUrl = context.Request.Headers[Program._proxyHeaderKey][0];
+            //    }
 
-                if (context.Request.Path.Value.Length > 4)
-                {
-                    context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
-                }
+            //    if (context.Request.Path.Value.Length > 4)
+            //    {
+            //        context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
+            //    }
 
-                // proxy this call
-                ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+            //    // proxy this call
+            //    ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
 
-                // send to server and await response
-                return await proxiedContext.Send().ConfigureAwait(false);
-            });
+            //    // send to server and await response
+            //    return await proxiedContext.Send().ConfigureAwait(false);
+            //});
         }
     }
 }

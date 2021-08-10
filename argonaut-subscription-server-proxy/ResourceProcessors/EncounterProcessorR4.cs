@@ -2,12 +2,11 @@
 //     Copyright (c) Microsoft Corporation. All rights reserved.
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
-using System.Net.Http;
+
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
-using Microsoft.AspNetCore.Builder;
+using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -17,21 +16,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>Process the request.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
-        internal static async Task<HttpResponseMessage> Process(HttpContext context)
+        internal static async Task Process(HttpContext context)
         {
-            string fhirServerUrl = ProcessorUtils.GetFhirServerUrlR4(context.Request);
-
             if (context.Request.Path.Value.Length > 4)
             {
                 context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
             }
 
-            // context.Request.Headers["Accept-Encoding"] = "";
-            // proxy this call
-            ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+            ForwarderResponse forwarderResponse = await FhirForwardingService.Current.RequestR4(context.Request);
 
-            // send to server and await response
-            HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+            await FhirForwardingService.Current.SendResponse(context, forwarderResponse);
 
             // get copies of data when we care
             switch (context.Request.Method.ToUpperInvariant())
@@ -39,15 +33,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 case "PUT":
                 case "POST":
 
-                    // grab the message body to look at
-                    string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                    if (response.IsSuccessStatusCode)
+                    if (forwarderResponse.IsSuccessStatusCode)
                     {
                         // run this Encounter through our Subscription Manager
                         SubscriptionManagerR4.ProcessEncounter(
-                            responseContent,
-                            response.Headers.Location);
+                            forwarderResponse.Body,
+                            forwarderResponse.Location);
                     }
 
                     break;
@@ -57,9 +48,6 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     // ignore
                     break;
             }
-
-            // return the results of the proxied call
-            return response;
         }
     }
 }

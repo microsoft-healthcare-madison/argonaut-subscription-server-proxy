@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy
 {
@@ -30,19 +29,7 @@ namespace argonaut_subscription_server_proxy
             // inject the configuration singleton into our services
             services.AddSingleton<IConfiguration>(Program.Configuration);
 
-            // configure automatic decompression for our proxy
-            HttpMessageHandler CreatePrimaryHandler()
-            {
-                return new HttpClientHandler
-                {
-                    AutomaticDecompression = System.Net.DecompressionMethods.GZip |
-                        System.Net.DecompressionMethods.Deflate,
-                };
-            }
-
-            // add proxy services
-            services.AddProxy(httpClientBuilder =>
-                httpClientBuilder.ConfigurePrimaryHttpMessageHandler(CreatePrimaryHandler));
+            services.AddHostedService<Managers.FhirForwardingService>();
         }
 
         /// <summary>This method gets called by the runtime. Use this method to configure the HTTP request pipeline.</summary>
@@ -69,44 +56,25 @@ namespace argonaut_subscription_server_proxy
             app.UseMiddleware<SubscriptionWebsocketHandler>($"/r4{Program.WebsocketUrl}");
             app.UseMiddleware<SubscriptionWebsocketHandler>($"/r5{Program.WebsocketUrl}");
 
-            // handle specific routes we want to intercept
-            app
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r4/metadata", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessorR4.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r5/metadata", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.CapabilitiesProcessorR5.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r4/SubscriptionTopic", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionTopicProcessorR4.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r5/SubscriptionTopic", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionTopicProcessorR5.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r4/Subscription", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessorR4.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r5/Subscription", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.SubscriptionProcessorR5.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r4/Encounter", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessorR4.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r5/Encounter", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.EncounterProcessorR5.Process))
+            app.UseRouting();
 
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r4", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessorR4.Process))
-                .UseWhen(
-                    context => context.Request.Path.StartsWithSegments($"/r5", StringComparison.Ordinal),
-                    appInner => appInner.RunProxy(ResourceProcessors.ResourceProcessorR5.Process))
-                ;
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/r4/metadata", ResourceProcessors.CapabilitiesProcessorR4.Process);
+                endpoints.Map("/r5/metadata", ResourceProcessors.CapabilitiesProcessorR5.Process);
 
-            app.UseWhen(
-                context => true,
-                appInner => appInner.RunProxy(ResourceProcessors.InvalidRequestProcessor.Process));
+                endpoints.Map("/r4/SubscriptionTopic", ResourceProcessors.SubscriptionTopicProcessorR4.Process);
+                endpoints.Map("/r5/SubscriptionTopic", ResourceProcessors.SubscriptionTopicProcessorR5.Process);
+
+                endpoints.Map("/r4/Subscription", ResourceProcessors.SubscriptionProcessorR4.Process);
+                endpoints.Map("/r5/Subscription", ResourceProcessors.SubscriptionProcessorR5.Process);
+
+                endpoints.Map("/r4/Encounter", ResourceProcessors.EncounterProcessorR4.Process);
+                endpoints.Map("/r5/Encounter", ResourceProcessors.EncounterProcessorR5.Process);
+
+                endpoints.Map("/r4", ResourceProcessors.ResourceProcessorR4.Process);
+                endpoints.Map("/r5", ResourceProcessors.ResourceProcessorR5.Process);
+            });
         }
     }
 }

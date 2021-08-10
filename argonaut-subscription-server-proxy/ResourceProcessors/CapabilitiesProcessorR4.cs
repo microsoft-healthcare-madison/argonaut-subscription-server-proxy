@@ -3,18 +3,15 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir4;
-
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
-using fhir4.Hl7.Fhir.Model;
-using fhir4.Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Builder;
+using argonaut_subscription_server_proxy.Managers;
+using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -24,70 +21,71 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>The extension capability websocket.</summary>
         private const string ExtensionCapabilityWebsocket = "http://hl7.org/fhir/StructureDefinition/capabilitystatement-websocket";
 
-        /// <summary>The FHIR parser.</summary>
-        private static FhirJsonParser _fhirParser = new FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
-        {
-            AcceptUnknownMembers = true,
-            AllowUnrecognizedEnums = true,
-            PermissiveParsing = true,
-        });
-
         /// <summary>Process the request.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
-        internal static async Task<HttpResponseMessage> Process(HttpContext context)
+        internal static async Task Process(HttpContext context)
         {
-            string fhirServerUrl = ProcessorUtils.GetFhirServerUrlR4(context.Request);
-
             if (context.Request.Path.Value.Length > 4)
             {
                 context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
             }
 
-            // proxy this call
-            ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+            ForwarderResponse fhirResponse = await FhirForwardingService.Current.RequestR4(context.Request);
 
-            // send to server and await response
-            HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+            if (!fhirResponse.IsSuccessStatusCode)
+            {
+                context.Response.StatusCode = (int)fhirResponse.StatusCode;
+                if (!string.IsNullOrEmpty(fhirResponse.Body))
+                {
+                    await context.Response.WriteAsync(fhirResponse.Body);
+                }
 
-            // get copies of data when we care
+                return;
+            }
+
             switch (context.Request.Method.ToUpperInvariant())
             {
                 case "GET":
-                    ProcessGet(ref context, ref response);
-
+                    await ProcessGetAndRespond(context, fhirResponse);
                     break;
 
+                // pass through the original response, plus any modifications
+                case "DELETE":
+                case "HEAD":
+                case "POST":
+                case "PUT":
+                case "TRACE":
                 default:
+                    context.Response.StatusCode = (int)fhirResponse.StatusCode;
+                    if (!string.IsNullOrEmpty(fhirResponse.Body))
+                    {
+                        await context.Response.WriteAsync(fhirResponse.Body);
+                    }
 
-                    // ignore
                     break;
             }
-
-            // return the originator response, plus any modifications we've done
-            return response;
         }
 
-        /// <summary>Process an R4 metadata GET.</summary>
-        /// <param name="context"> [in,out] The context.</param>
-        /// <param name="response">[in,out] The response.</param>
-        private static void ProcessGet(
-            ref HttpContext context,
-            ref HttpResponseMessage response)
+        /// <summary>Process an R4 metadata GET to add our proxy information.</summary>
+        /// <param name="context">     The context.</param>
+        /// <param name="fhirResponse">The response.</param>
+        /// <returns>An asynchronous result.</returns>
+        private static async Task ProcessGetAndRespond(
+            HttpContext context,
+            ForwarderResponse fhirResponse)
         {
             // check for a valid capability statement
             try
             {
-                // grab the message body to look at
-                string responseContent = response.Content.ReadAsStringAsync().Result;
-
-                CapabilityStatement capabilities = _fhirParser.Parse<CapabilityStatement>(responseContent);
+                fhirCsR4.Models.CapabilityStatement capabilities =
+                    JsonSerializer.Deserialize<fhirCsR4.Models.CapabilityStatement>(fhirResponse.Body);
 
                 if (capabilities.Software == null)
                 {
-                    capabilities.Software = new CapabilityStatement.SoftwareComponent()
+                    capabilities.Software = new fhirCsR4.Models.CapabilityStatementSoftware()
                     {
-                        Name = $"Argo-Proxy: {Program.FhirServerUrlR5}",
+                        Name = $"Argo-Proxy: {Program.FhirServerUrlR4}",
                         Version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString(),
                     };
                 }
@@ -99,17 +97,18 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         + ": " + capabilities.Software.Version;
                 }
 
-                capabilities.Implementation = new CapabilityStatement.ImplementationComponent()
+                capabilities.Implementation = new fhirCsR4.Models.CapabilityStatementImplementation()
                 {
-                    Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrlR5}",
+                    Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrlR4}",
                     Url = Program.PublicUrl,
                 };
 
                 // only support application/fhir+json
-                capabilities.Format = new string[] { "application/fhir+json" };
+                capabilities.Format = new List<string>() { "application/fhir+json" };
 
                 // make sure Subscription is present
                 bool foundSubscription = false;
+                bool foundSubscriptionTopic = false;
                 bool foundWebSocketUrl = false;
 
                 for (int restIndex = 0;
@@ -120,11 +119,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             resourceIndex < capabilities.Rest[restIndex].Resource.Count;
                             resourceIndex++)
                     {
-                        switch (capabilities.Rest[restIndex].Resource[resourceIndex].TypeName)
+                        switch (capabilities.Rest[restIndex].Resource[resourceIndex].Type)
                         {
                             case "Subscription":
                                 foundSubscription = true;
                                 capabilities.Rest[restIndex].Resource[resourceIndex] = BuildSubscriptionResourceComponent();
+                                break;
+
+                            case "SubscriptionTopic":
+                                foundSubscriptionTopic = true;
+                                capabilities.Rest[restIndex].Resource[resourceIndex] = BuildSubscriptionTopicResourceComponent();
                                 break;
                         }
                     }
@@ -138,7 +142,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             if (capabilities.Rest[restIndex].Extension[extIndex].Url == ExtensionCapabilityWebsocket)
                             {
                                 foundWebSocketUrl = true;
-                                capabilities.Rest[restIndex].Extension[extIndex].Value = new Hl7.Fhir.Model.FhirUri(Program.WebsocketUrl);
+                                capabilities.Rest[restIndex].Extension[extIndex].ValueUri = Program.WebsocketUrl;
                             }
                         }
                     }
@@ -149,22 +153,27 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     capabilities.Rest[0].Resource.Add(BuildSubscriptionResourceComponent());
                 }
 
+                if (!foundSubscriptionTopic)
+                {
+                    capabilities.Rest[0].Resource.Add(BuildSubscriptionTopicResourceComponent());
+                }
+
                 if (!foundWebSocketUrl)
                 {
                     if (capabilities.Rest[0].Extension == null)
                     {
-                        capabilities.Rest[0].Extension = new System.Collections.Generic.List<Hl7.Fhir.Model.Extension>();
+                        capabilities.Rest[0].Extension = new List<fhirCsR4.Models.Extension>();
                     }
 
-                    capabilities.Rest[0].Extension.Add(new Hl7.Fhir.Model.Extension()
+                    capabilities.Rest[0].Extension.Add(new fhirCsR4.Models.Extension()
                     {
                         Url = ExtensionCapabilityWebsocket,
-                        Value = new Hl7.Fhir.Model.FhirUri(Program.WebsocketUrl),
+                        ValueUri = Program.WebsocketUrl,
                     });
                 }
 
-                // serialize
-                ProcessorUtils.SerializeR4(ref response, capabilities);
+                // serialize and respond
+                await ProcessorUtils.SerializeR4(context, capabilities);
             }
             catch (Exception ex)
             {
@@ -175,44 +184,62 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         /// <summary>Builds subscription resource component.</summary>
         /// <returns>A CapabilityStatement.ResourceComponent.</returns>
-        private static CapabilityStatement.ResourceComponent BuildSubscriptionResourceComponent()
+        private static fhirCsR4.Models.CapabilityStatementRestResource BuildSubscriptionResourceComponent()
         {
-            return new CapabilityStatement.ResourceComponent()
+            return new fhirCsR4.Models.CapabilityStatementRestResource()
             {
-                Type = ResourceType.Subscription,
-                Interaction = new System.Collections.Generic.List<CapabilityStatement.ResourceInteractionComponent>()
+                Type = "Subscription",
+                Interaction = new List<fhirCsR4.Models.CapabilityStatementRestResourceInteraction>()
                 {
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR4.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = CapabilityStatement.TypeRestfulInteraction.Create,
+                        Code = fhirCsR4.Models.CapabilityStatementRestResourceInteractionCodeCodes.CREATE,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR4.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = CapabilityStatement.TypeRestfulInteraction.Read,
+                        Code = fhirCsR4.Models.CapabilityStatementRestResourceInteractionCodeCodes.READ,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR4.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = CapabilityStatement.TypeRestfulInteraction.Update,
+                        Code = fhirCsR4.Models.CapabilityStatementRestResourceInteractionCodeCodes.UPDATE,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR4.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = CapabilityStatement.TypeRestfulInteraction.Delete,
+                        Code = fhirCsR4.Models.CapabilityStatementRestResourceInteractionCodeCodes.DELETE,
                     },
                 },
-                Versioning = CapabilityStatement.ResourceVersionPolicy.NoVersion,
-                Operation = new System.Collections.Generic.List<CapabilityStatement.OperationComponent>()
+                Versioning = fhirCsR4.Models.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
+                Operation = new List<fhirCsR4.Models.CapabilityStatementRestResourceOperation>()
                 {
-                    new CapabilityStatement.OperationComponent()
-                    {
-                        Name = "$topic-list",
-                        Definition = "http://hl7.org/fhir/uv/subscriptions-backport/OperationDefinition/Backport-subscriptiontopic-list",
-                    },
-                    new CapabilityStatement.OperationComponent()
+                    new fhirCsR4.Models.CapabilityStatementRestResourceOperation()
                     {
                         Name = "$status",
-                        Definition = "http://hl7.org/fhir/uv/subscriptions-backport/OperationDefinition/Backport-subscription-status",
+                        Definition = "http://hl7.org/fhir/uv/subscriptions-backport/OperationDefinition/backport-subscription-status",
+                    },
+                    new fhirCsR4.Models.CapabilityStatementRestResourceOperation()
+                    {
+                        Name = "$get-ws-binding-token",
+                        Definition = "http://hl7.org/fhir/uv/subscriptions-backport/OperationDefinition/backport-subscription-get-ws-binding-token",
                     },
                 },
+            };
+        }
+
+        /// <summary>Builds subscription resource component.</summary>
+        /// <returns>A CapabilityStatement.ResourceComponent.</returns>
+        private static fhirCsR4.Models.CapabilityStatementRestResource BuildSubscriptionTopicResourceComponent()
+        {
+            return new fhirCsR4.Models.CapabilityStatementRestResource()
+            {
+                Type = "SubscriptionTopic",
+                Interaction = new List<fhirCsR4.Models.CapabilityStatementRestResourceInteraction>()
+                {
+                    new fhirCsR4.Models.CapabilityStatementRestResourceInteraction()
+                    {
+                        Code = fhirCsR4.Models.CapabilityStatementRestResourceInteractionCodeCodes.READ,
+                    },
+                },
+                Versioning = fhirCsR4.Models.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
             };
         }
     }
