@@ -117,6 +117,28 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 return;
             }
 
+            if (operationName == "$events")
+            {
+                // act on the method
+                switch (context.Request.Method.ToUpperInvariant())
+                {
+                    case "POST":
+                    case "GET":
+                        await ProcessOperationEvents(context, previousComponent);
+
+                        break;
+
+                    case "PUT":
+                    case "DELETE":
+                    default:
+                        // tell client this isn't supported
+                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                        break;
+                }
+
+                return;
+            }
+
             // tell client this isn't supported
             context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
         }
@@ -254,6 +276,70 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             // serialize and write back to the caller
             await ProcessorUtils.SerializeR4(context, bundle);
+        }
+
+        /// <summary>Process the operation events R4.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="previousComponent">The previous component.</param>
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessOperationEvents(
+            HttpContext context,
+            string previousComponent)
+        {
+            string subscriptionId;
+
+            if (previousComponent != "Subscription")
+            {
+                subscriptionId = previousComponent;
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return;
+            }
+
+            long eventLow = -1;
+            long eventHigh = -1;
+            string contentHint = string.Empty;
+
+            foreach (KeyValuePair<string, StringValues> query in context.Request.Query)
+            {
+                switch (query.Key)
+                {
+                    case "eventsSinceNumber":
+                        if (!long.TryParse(query.Value[0], out eventLow))
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            return;
+                        }
+
+                        break;
+
+                    case "eventsUntilNumber":
+                        if (!long.TryParse(query.Value[0], out eventHigh))
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            return;
+                        }
+
+                        break;
+                }
+            }
+
+            if (SubscriptionManagerR4.TryGetBundleForEvents(
+                    subscriptionId,
+                    eventLow,
+                    eventHigh,
+                    out fhirCsR4.Models.Bundle bundle))
+            {
+                // serialize and write back to the caller
+                await ProcessorUtils.SerializeR4(context, bundle);
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return;
+            }
         }
 
         /// <summary>Process an HTTP POST for FHIR R4.</summary>

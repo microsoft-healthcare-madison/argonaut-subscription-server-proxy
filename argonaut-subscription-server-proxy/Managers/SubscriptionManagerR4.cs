@@ -30,11 +30,17 @@ namespace argonaut_subscription_server_proxy.Managers
     /// <summary>Manager for subscriptions.</summary>
     public class SubscriptionManagerR4
     {
+        /// <summary>The maximum cached events.</summary>
+        private const int MaxCachedEvents = 10;
+
         /// <summary>The instance for singleton pattern.</summary>
         private static SubscriptionManagerR4 _instance;
 
         /// <summary>Dictionary of subscriptions, by ID.</summary>
         private Dictionary<string, Subscription> _idSubscriptionDict;
+
+        /// <summary>The subscription event cache.</summary>
+        private Dictionary<string, Dictionary<long, CachedNotificationEvent>> _subscriptionEventCache;
 
         /// <summary>Dictionary of identifier status.</summary>
         private Dictionary<string, long> _idEventCountDict;
@@ -67,6 +73,7 @@ namespace argonaut_subscription_server_proxy.Managers
         {
             // create our index objects
             _idSubscriptionDict = new Dictionary<string, Subscription>();
+            _subscriptionEventCache = new Dictionary<string, Dictionary<long, CachedNotificationEvent>>();
             _idEventCountDict = new Dictionary<string, long>();
             _idLockDict = new Dictionary<string, object>();
             _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
@@ -370,6 +377,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // remove from the main dictionary
             _idSubscriptionDict.Remove(id);
+
+            // remove from event cache
+            _subscriptionEventCache.Remove(id);
 
             // remove from status
             _idEventCountDict.Remove(id);
@@ -713,7 +723,6 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Adds or updates a Topic.</summary>
         /// <param name="subscription">The subscription.</param>
-        /// <param name="s5">          The R5 Subscription.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool _AddOrUpdate(Subscription subscription)
         {
@@ -722,6 +731,11 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // remove from the main dict
                 _idSubscriptionDict.Remove(subscription.Id);
+            }
+
+            if (_subscriptionEventCache.ContainsKey(subscription.Id))
+            {
+                _subscriptionEventCache.Remove(subscription.Id);
             }
 
             if (_idEventCountDict.ContainsKey(subscription.Id))
@@ -737,6 +751,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // add to the main dictionaries
             _idSubscriptionDict.Add(subscription.Id, subscription);
+            _subscriptionEventCache.Add(subscription.Id, new Dictionary<long, CachedNotificationEvent>());
             _idEventCountDict.Add(subscription.Id, 0);
 
             // log this addition
@@ -1128,16 +1143,20 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="content">               The content.</param>
         /// <param name="bundle">                [out] The bundle.</param>
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
+        /// <param name="cachedNotification">    [out] The cached notification.</param>
         public static void BundleForSubscriptionNotification(
             Subscription subscription,
             fhirCsR4.Models.Resource content,
             out fhirCsR4.Models.Bundle bundle,
-            out long subscriptionEventCount)
+            out long subscriptionEventCount,
+            out CachedNotificationEvent cachedNotification)
         {
             if (subscription == null)
             {
                 throw new ArgumentNullException(nameof(subscription));
             }
+
+            cachedNotification = null;
 
             // check our event count
             lock (_instance._idLockDict[subscription.Id])
@@ -1216,23 +1235,28 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription,
                     content,
                     subscriptionEventCount,
-                    ref bundle);
+                    ref bundle,
+                    out cachedNotification);
             }
         }
 
         /// <summary>Attempts to get related resources.</summary>
-        /// <param name="subscription">[out] The subscription.</param>
-        /// <param name="content">     The content.</param>
-        /// <param name="bundle">      [out] The bundle.</param>
+        /// <param name="subscription">      [out] The subscription.</param>
+        /// <param name="content">           The content.</param>
+        /// <param name="eventNumber">       The event number.</param>
+        /// <param name="bundle">            [out] The bundle.</param>
+        /// <param name="cachedNotification">[out] The cached notification.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private static bool TryGetRelatedResources(
             Subscription subscription,
             fhirCsR4.Models.Resource content,
             long eventNumber,
-            ref fhirCsR4.Models.Bundle bundle)
+            ref fhirCsR4.Models.Bundle bundle,
+            out CachedNotificationEvent cachedNotification)
         {
             if (content == null)
             {
+                cachedNotification = null;
                 return true;
             }
 
@@ -1245,8 +1269,14 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (string.IsNullOrEmpty(topicUrl))
             {
+                cachedNotification = null;
                 return false;
             }
+
+            cachedNotification = new CachedNotificationEvent()
+            {
+                Focus = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
+            };
 
             List<string> includeDirectives = new List<string>();
 
@@ -1296,24 +1326,29 @@ namespace argonaut_subscription_server_proxy.Managers
                     return true;
                 }
 
-                switch (subscriptionContent)
+                foreach (Bundle.EntryComponent entry in results.Entry)
                 {
-                    case BackportedSubscription.ContentCodeEmpty:
-                        break;
+                    if ((entry.Resource.TypeName == content.ResourceType) &&
+                        (entry.Resource.Id == content.Id))
+                    {
+                        continue;
+                    }
 
-                    case BackportedSubscription.ContentCodeIdOnly:
+                    string json = _instance._fhirSerializer.SerializeToString(entry.Resource);
+                    fhirCsR4.Models.Resource res = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Resource>(json);
 
-                        foreach (Bundle.EntryComponent entry in results.Entry)
-                        {
-                            if ((entry.Resource.TypeName == content.ResourceType) &&
-                                (entry.Resource.Id == content.Id))
-                            {
-                                continue;
-                            }
+                    string fullUrl = Program.UrlForR4ResourceId(entry.Resource.TypeName, entry.Resource.Id);
+                    cachedNotification.AdditionalR4.Add(fullUrl, res);
 
+                    switch (subscriptionContent)
+                    {
+                        case BackportedSubscription.ContentCodeEmpty:
+                            break;
+
+                        case BackportedSubscription.ContentCodeIdOnly:
                             bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                             {
-                                FullUrl = Program.UrlForR4ResourceId(entry.Resource.TypeName, entry.Resource.Id),
+                                FullUrl = fullUrl,
                                 Extension = new List<fhirCsR4.Models.Extension>()
                                 {
                                     new fhirCsR4.Models.Extension()
@@ -1323,26 +1358,12 @@ namespace argonaut_subscription_server_proxy.Managers
                                     },
                                 },
                             });
-                        }
+                            break;
 
-                        break;
-
-                    case BackportedSubscription.ContentCodeFullResource:
-
-                        foreach (Bundle.EntryComponent entry in results.Entry)
-                        {
-                            if ((entry.Resource.TypeName == content.ResourceType) &&
-                                (entry.Resource.Id == content.Id))
-                            {
-                                continue;
-                            }
-
-                            string json = _instance._fhirSerializer.SerializeToString(entry.Resource);
-                            fhirCsR4.Models.Resource res = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Resource>(json);
-
+                        case BackportedSubscription.ContentCodeFullResource:
                             bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                             {
-                                FullUrl = Program.UrlForR4ResourceId(res.ResourceType, res.Id),
+                                FullUrl = fullUrl,
                                 Resource = res,
                                 Extension = new List<fhirCsR4.Models.Extension>()
                                 {
@@ -1353,9 +1374,8 @@ namespace argonaut_subscription_server_proxy.Managers
                                     },
                                 },
                             });
-                        }
-
-                        break;
+                            break;
+                    }
                 }
             }
             catch (Exception ex)
@@ -1389,15 +1409,157 @@ namespace argonaut_subscription_server_proxy.Managers
             };
         }
 
+        /// <summary>Attempts to get bundle for events.</summary>
+        /// <param name="subscriptionId"> The subscription id.</param>
+        /// <param name="eventNumberLow"> The event number low.</param>
+        /// <param name="eventNumberHigh">The event number high.</param>
+        /// <param name="contentHint">    The content hint.</param>
+        /// <param name="bundle">         [out] The bundle.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        public static bool TryGetBundleForEvents(
+            string subscriptionId,
+            long eventNumberLow,
+            long eventNumberHigh,
+            string contentHint,
+            out fhirCsR4.Models.Bundle bundle)
+        {
+            return _instance._TryGetBundleForEvents(
+                subscriptionId,
+                eventNumberLow,
+                eventNumberHigh,
+                contentHint,
+                out bundle);
+        }
+
+        /// <summary>Attempts to get bundle for events.</summary>
+        /// <param name="subscriptionId"> The subscription id.</param>
+        /// <param name="eventNumberLow"> The event number low.</param>
+        /// <param name="eventNumberHigh">The event number high.</param>
+        /// <param name="contentHint">    The content hint.</param>
+        /// <param name="bundle">         [out] The bundle.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        private bool _TryGetBundleForEvents(
+            string subscriptionId,
+            long eventNumberLow,
+            long eventNumberHigh,
+            string contentHint,
+            out fhirCsR4.Models.Bundle bundle)
+        {
+            // sanity checks
+            if (string.IsNullOrEmpty(subscriptionId) ||
+                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            {
+                bundle = null;
+                return false;
+            }
+
+            Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+            long low = (eventNumberLow < 1) ? 1 : eventNumberLow;
+            long high = ((eventNumberHigh < 0) || (eventNumberHigh > _idEventCountDict[subscriptionId]))
+                ? _idEventCountDict[subscriptionId]
+                : eventNumberHigh;
+
+            if (low > high)
+            {
+                long temp = high;
+                high = low;
+                low = temp;
+            }
+
+            fhirCsR4.Models.SubscriptionStatus status = new fhirCsR4.Models.SubscriptionStatus()
+            {
+                EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId].ToString(),
+                EventsInNotification = (int)((high - low) + 1),
+                Status = subscription.Status.ToString(),
+                Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
+                Subscription = new fhirCsR4.Models.Reference()
+                {
+                    ReferenceField = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                },
+                Topic = subscription.BackportTopicGet(),
+            };
+
+            // create a bundle for this message message
+            bundle = new fhirCsR4.Models.Bundle()
+            {
+                Type = fhirCsR4.Models.BundleTypeCodes.HISTORY,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Meta = new fhirCsR4.Models.Meta(),
+                Entry = new List<fhirCsR4.Models.BundleEntry>(),
+            };
+
+            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+            {
+                FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$events",
+                Resource = status,
+            });
+
+            // if there's no content hint, use the subscription style
+            if (string.IsNullOrEmpty(contentHint))
+            {
+                contentHint = subscription.BackportContentGet();
+
+                // if we still don't have a content type, use id-only
+                if (string.IsNullOrEmpty(contentHint))
+                {
+                    contentHint = BackportedSubscription.ContentCodeIdOnly;
+                }
+            }
+
+            for (long i = low; i <= high; i++)
+            {
+                if (!_subscriptionEventCache[subscriptionId].ContainsKey(i))
+                {
+                    continue;
+                }
+
+                bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                {
+                    FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
+                    Extension = new List<fhirCsR4.Models.Extension>()
+                    {
+                        new fhirCsR4.Models.Extension()
+                        {
+                            Url = BackportedSubscription.ExtensionUrlNotificationFocus,
+                            ValueString = i.ToString(),
+                        },
+                    },
+                    Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
+                        ? _subscriptionEventCache[subscriptionId][i].FocusR4
+                        : null,
+                });
+
+                foreach (KeyValuePair<string, fhirCsR4.Models.Resource> kvp in _subscriptionEventCache[subscriptionId][i].AdditionalR4)
+                {
+                    bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                    {
+                        FullUrl = kvp.Key,
+                        Extension = new List<fhirCsR4.Models.Extension>()
+                        {
+                            new fhirCsR4.Models.Extension()
+                            {
+                                Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
+                                ValueString = i.ToString(),
+                            },
+                        },
+                        Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
+                            ? kvp.Value
+                            : null,
+                    });
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="csContent">     (Optional) The fhirC# typed content.</param>
-        /// <param name="sdkContent">    (Optional) The Firely SDK typed content.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(
             string subscriptionId,
-            fhirCsR4.Models.Resource csContent = null,
-            Resource sdkContent = null)
+            fhirCsR4.Models.Resource csContent = null)
         {
             // sanity checks
             if (string.IsNullOrEmpty(subscriptionId) ||
@@ -1407,8 +1569,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            string contentTypeName = (sdkContent == null) ? string.Empty : sdkContent.TypeName;
-            string contentId = (sdkContent == null) ? string.Empty : sdkContent.Id;
+            string contentTypeName = (csContent == null) ? string.Empty : csContent.ResourceType;
+            string contentId = (csContent == null) ? string.Empty : csContent.Id;
 
             // get the subscription
             Subscription subscription = _idSubscriptionDict[subscriptionId];
@@ -1418,7 +1580,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 subscription,
                 csContent,
                 out fhirCsR4.Models.Bundle bundle,
-                out long subscriptionEventCount);
+                out long subscriptionEventCount,
+                out CachedNotificationEvent cacheNotification);
 
             string json = System.Text.Json.JsonSerializer.Serialize(bundle);
 
@@ -1486,6 +1649,15 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 // send via websocket
                 WebsocketManager.QueueMessagesForSubscription(subscription, json);
+            }
+
+            if (cacheNotification != null)
+            {
+                _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
+                if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
+                {
+                    _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
+                }
             }
 
             // done
