@@ -3,18 +3,15 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir5;
-
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
-using fhir5.Hl7.Fhir.Model;
-using fhir5.Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Builder;
+using argonaut_subscription_server_proxy.Managers;
+using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -24,70 +21,71 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>The extension capability websocket.</summary>
         private const string ExtensionCapabilityWebsocket = "http://hl7.org/fhir/StructureDefinition/capabilitystatement-websocket";
 
-        /// <summary>The FHIR parser.</summary>
-        private static FhirJsonParser _fhirParser = new FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
-        {
-            AcceptUnknownMembers = true,
-            AllowUnrecognizedEnums = true,
-            PermissiveParsing = true,
-        });
-
         /// <summary>Process the request.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
-        internal static async Task<HttpResponseMessage> Process(HttpContext context)
+        internal static async Task Process(HttpContext context)
         {
-            string fhirServerUrl = ProcessorUtils.GetFhirServerUrlR5(context.Request);
-
             if (context.Request.Path.Value.Length > 4)
             {
                 context.Request.Path = new PathString(context.Request.Path.Value.Substring(3));
             }
 
-            // proxy this call
-            ForwardContext proxiedContext = context.ForwardTo(fhirServerUrl);
+            ForwarderResponse fhirResponse = await FhirForwardingService.Current.RequestR5(context.Request);
 
-            // send to server and await response
-            HttpResponseMessage response = await proxiedContext.Send().ConfigureAwait(false);
+            if (!fhirResponse.IsSuccessStatusCode)
+            {
+                context.Response.StatusCode = (int)fhirResponse.StatusCode;
+                if (!string.IsNullOrEmpty(fhirResponse.Body))
+                {
+                    await context.Response.WriteAsync(fhirResponse.Body);
+                }
 
-            // get copies of data when we care
+                return;
+            }
+
             switch (context.Request.Method.ToUpperInvariant())
             {
                 case "GET":
-                    ProcessGet(ref context, ref response);
-
+                    await ProcessGetAndRespond(context, fhirResponse);
                     break;
 
+                // pass through the original response, plus any modifications
+                case "DELETE":
+                case "HEAD":
+                case "POST":
+                case "PUT":
+                case "TRACE":
                 default:
+                    context.Response.StatusCode = (int)fhirResponse.StatusCode;
+                    if (!string.IsNullOrEmpty(fhirResponse.Body))
+                    {
+                        await context.Response.WriteAsync(fhirResponse.Body);
+                    }
 
-                    // ignore
                     break;
             }
-
-            // return the originator response, plus any modifications we've done
-            return response;
         }
 
         /// <summary>Process an R5 metadata GET.</summary>
-        /// <param name="context"> [in,out] The context.</param>
-        /// <param name="response">[in,out] The response.</param>
-        private static void ProcessGet(
-            ref HttpContext context,
-            ref HttpResponseMessage response)
+        /// <param name="context">     The context.</param>
+        /// <param name="fhirResponse">The FHIR response.</param>
+        /// <returns>An asynchronous result.</returns>
+        private static async Task ProcessGetAndRespond(
+            HttpContext context,
+            ForwarderResponse fhirResponse)
         {
             // check for a valid capability statement
             try
             {
-                // grab the message body to look at
-                string responseContent = response.Content.ReadAsStringAsync().Result;
-
-                CapabilityStatement capabilities = _fhirParser.Parse<CapabilityStatement>(responseContent);
+                fhirCsR5.Models.CapabilityStatement capabilities =
+                    JsonSerializer.Deserialize<fhirCsR5.Models.CapabilityStatement>(fhirResponse.Body);
 
                 if (capabilities.Software == null)
                 {
-                    capabilities.Software = new CapabilityStatement.SoftwareComponent()
+                    capabilities.Software = new fhirCsR5.Models.CapabilityStatementSoftware()
                     {
-                        Name = $"Argo-Proxy: {Program.FhirServerUrlR5}",
+                        Name = $"Argo-Proxy: {Program.FhirServerUrlR4}",
                         Version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).FileVersion.ToString(),
                     };
                 }
@@ -99,16 +97,16 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         + ": " + capabilities.Software.Version;
                 }
 
-                capabilities.Implementation = new CapabilityStatement.ImplementationComponent()
+                capabilities.Implementation = new fhirCsR5.Models.CapabilityStatementImplementation()
                 {
-                    Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrlR5}",
+                    Description = $"Argonaut Subscription Proxy to: {Program.FhirServerUrlR4}",
                     Url = Program.PublicUrl,
                 };
 
                 // only support application/fhir+json
-                capabilities.Format = new string[] { "application/fhir+json" };
+                capabilities.Format = new List<string>() { "application/fhir+json" };
 
-                // make sure resources we need are present
+                // make sure Subscription is present
                 bool foundSubscription = false;
                 bool foundSubscriptionTopic = false;
                 bool foundWebSocketUrl = false;
@@ -121,7 +119,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             resourceIndex < capabilities.Rest[restIndex].Resource.Count;
                             resourceIndex++)
                     {
-                        switch (capabilities.Rest[restIndex].Resource[resourceIndex].TypeName)
+                        switch (capabilities.Rest[restIndex].Resource[resourceIndex].Type)
                         {
                             case "Subscription":
                                 foundSubscription = true;
@@ -144,7 +142,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             if (capabilities.Rest[restIndex].Extension[extIndex].Url == ExtensionCapabilityWebsocket)
                             {
                                 foundWebSocketUrl = true;
-                                capabilities.Rest[restIndex].Extension[extIndex].Value = new Hl7.Fhir.Model.FhirUri(Program.WebsocketUrl);
+                                capabilities.Rest[restIndex].Extension[extIndex].ValueUri = Program.WebsocketUrl;
                             }
                         }
                     }
@@ -164,18 +162,18 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 {
                     if (capabilities.Rest[0].Extension == null)
                     {
-                        capabilities.Rest[0].Extension = new System.Collections.Generic.List<Hl7.Fhir.Model.Extension>();
+                        capabilities.Rest[0].Extension = new List<fhirCsR5.Models.Extension>();
                     }
 
-                    capabilities.Rest[0].Extension.Add(new Hl7.Fhir.Model.Extension()
+                    capabilities.Rest[0].Extension.Add(new fhirCsR5.Models.Extension()
                     {
                         Url = ExtensionCapabilityWebsocket,
-                        Value = new Hl7.Fhir.Model.FhirUri(Program.WebsocketUrl),
+                        ValueUri = Program.WebsocketUrl,
                     });
                 }
 
-                // serialize and return
-                ProcessorUtils.SerializeR5(ref response, capabilities);
+                // serialize and respond
+                await ProcessorUtils.SerializeR5(context, capabilities);
             }
             catch (Exception ex)
             {
@@ -186,37 +184,42 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         /// <summary>Builds subscription resource component.</summary>
         /// <returns>A CapabilityStatement.ResourceComponent.</returns>
-        private static CapabilityStatement.ResourceComponent BuildSubscriptionResourceComponent()
+        private static fhirCsR5.Models.CapabilityStatementRestResource BuildSubscriptionResourceComponent()
         {
-            return new CapabilityStatement.ResourceComponent()
+            return new fhirCsR5.Models.CapabilityStatementRestResource()
             {
-                Type = ResourceType.Subscription,
-                Interaction = new System.Collections.Generic.List<CapabilityStatement.ResourceInteractionComponent>()
+                Type = "Subscription",
+                Interaction = new List<fhirCsR5.Models.CapabilityStatementRestResourceInteraction>()
                 {
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = TypeRestfulInteraction.Create,
+                        Code = fhirCsR5.Models.CapabilityStatementRestResourceInteractionCodeCodes.CREATE,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = TypeRestfulInteraction.Read,
+                        Code = fhirCsR5.Models.CapabilityStatementRestResourceInteractionCodeCodes.READ,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = TypeRestfulInteraction.Update,
+                        Code = fhirCsR5.Models.CapabilityStatementRestResourceInteractionCodeCodes.UPDATE,
                     },
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = TypeRestfulInteraction.Delete,
+                        Code = fhirCsR5.Models.CapabilityStatementRestResourceInteractionCodeCodes.DELETE,
                     },
                 },
-                Versioning = CapabilityStatement.ResourceVersionPolicy.NoVersion,
-                Operation = new System.Collections.Generic.List<CapabilityStatement.OperationComponent>()
+                Versioning = fhirCsR5.Models.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
+                Operation = new List<fhirCsR5.Models.CapabilityStatementRestResourceOperation>()
                 {
-                    new CapabilityStatement.OperationComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceOperation()
                     {
                         Name = "$status",
                         Definition = "http://hl7.org/fhir/OperationDefinition/Subscription-status",
+                    },
+                    new fhirCsR5.Models.CapabilityStatementRestResourceOperation()
+                    {
+                        Name = "$get-ws-binding-token",
+                        Definition = "http://hl7.org/fhir/OperationDefinition/Subscription-get-ws-binding-token",
                     },
                 },
             };
@@ -224,19 +227,19 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
         /// <summary>Builds subscription resource component.</summary>
         /// <returns>A CapabilityStatement.ResourceComponent.</returns>
-        private static CapabilityStatement.ResourceComponent BuildSubscriptionTopicResourceComponent()
+        private static fhirCsR5.Models.CapabilityStatementRestResource BuildSubscriptionTopicResourceComponent()
         {
-            return new CapabilityStatement.ResourceComponent()
+            return new fhirCsR5.Models.CapabilityStatementRestResource()
             {
-                Type = ResourceType.SubscriptionTopic,
-                Interaction = new System.Collections.Generic.List<CapabilityStatement.ResourceInteractionComponent>()
+                Type = "SubscriptionTopic",
+                Interaction = new List<fhirCsR5.Models.CapabilityStatementRestResourceInteraction>()
                 {
-                    new CapabilityStatement.ResourceInteractionComponent()
+                    new fhirCsR5.Models.CapabilityStatementRestResourceInteraction()
                     {
-                        Code = TypeRestfulInteraction.Read,
+                        Code = fhirCsR5.Models.CapabilityStatementRestResourceInteractionCodeCodes.READ,
                     },
                 },
-                Versioning = CapabilityStatement.ResourceVersionPolicy.NoVersion,
+                Versioning = fhirCsR5.Models.CapabilityStatementRestResourceVersioningCodes.NO_VERSION,
             };
         }
     }

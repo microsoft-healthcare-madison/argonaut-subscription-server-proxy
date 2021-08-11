@@ -3,16 +3,9 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir5;
-
-using System.Net.Http;
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
-using fhir5.Hl7.Fhir.Model;
-using fhir5.Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -22,42 +15,34 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>Process the given context.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
-        internal static async Task<HttpResponseMessage> Process(HttpContext context)
+        internal static async Task Process(HttpContext context)
         {
-            // create our response object
-            HttpResponseMessage response = new HttpResponseMessage();
-
-            if (ProcessorUtils.IsOperation(context.Request, out string operationName, out string prevComponent))
+            if (ProcessorUtils.IsOperation(context.Request, out _, out string _))
             {
-                response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-                return response;
+                context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                return;
             }
 
             // get copies of data when we care
             switch (context.Request.Method.ToUpperInvariant())
             {
                 case "GET":
-                    ProcessGet(ref context, ref response);
-
+                    await ProcessGet(context);
                     break;
 
                 default:
-                    // tell client we didn't understand
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
+                    // tell client this isn't supported
+                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
                     break;
             }
-
-            // return the originator response, plus any modifications we've done
-            return response;
         }
 
         /// <summary>Process the get.</summary>
-        /// <param name="context"> [in,out] The context.</param>
-        /// <param name="response">[in,out] The response message.</param>
-        internal static void ProcessGet(ref HttpContext context, ref HttpResponseMessage response)
+        /// <param name="context">The context.</param>
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessGet(HttpContext context)
         {
-            ProcessorUtils.SerializeR5(ref response, SubscriptionTopicManagerR5.GetTopicsBundle());
+            await ProcessorUtils.SerializeR5(context, SubscriptionTopicManagerR5.GetTopicsBundle());
         }
     }
 }

@@ -8,108 +8,69 @@ extern alias fhir4;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using argonaut_subscription_server_proxy.Backport;
 using argonaut_subscription_server_proxy.Managers;
 using argonaut_subscription_server_proxy.Models;
-using fhir4.Hl7.Fhir.Model;
-using fhir4.Hl7.Fhir.Serialization;
-using Hl7.Fhir.Model;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using ProxyKit;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
     /// <summary>A subscription processor.</summary>
     public abstract class SubscriptionProcessorR4
     {
-        /// <summary>The FHIR serializer.</summary>
-        private static FhirJsonSerializer _fhirSerializer = new FhirJsonSerializer(new Hl7.Fhir.Serialization.SerializerSettings()
-        {
-            AppendNewLine = false,
-            Pretty = false,
-        });
-
-        /// <summary>The FHIR parser.</summary>
-        private static FhirJsonParser _fhirParser = new FhirJsonParser(new Hl7.Fhir.Serialization.ParserSettings()
-        {
-            AcceptUnknownMembers = true,
-            AllowUnrecognizedEnums = true,
-            PermissiveParsing = true,
-        });
-
         /// <summary>Process the request.</summary>
         /// <param name="context">The context.</param>
         /// <returns>An asynchronous result that yields a HttpResponseMessage.</returns>
-        internal static async Task<HttpResponseMessage> Process(HttpContext context)
+        internal static async Task Process(HttpContext context)
         {
-            // create our response objects
-            HttpResponseMessage response = new HttpResponseMessage();
-
             if (ProcessorUtils.IsOperation(context.Request, out string operationName, out string prevComponent))
             {
-                ProcessOperation(ref context, ref response, operationName, prevComponent);
-                return response;
+                await ProcessOperationAndRespond(context, operationName, prevComponent);
+                return;
             }
 
             // get copies of data when we care
             switch (context.Request.Method.ToUpperInvariant())
             {
                 case "GET":
-                    ProcessGet(ref context, ref response);
-
-                    break;
-
-                case "PUT":
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
+                    await ProcessGetAndRespond(context);
                     break;
 
                 case "POST":
-                    ProcessPost(ref context, ref response);
-
+                    await ProcessPostAndRespond(context);
                     break;
 
                 case "DELETE":
                     // ask the subscription manager to deal with this
                     if (SubscriptionManagerR5.HandleDelete(context.Request))
                     {
-                        response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NoContent;
                     }
                     else
                     {
-                        response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotFound;
                     }
 
                     break;
 
+                case "PUT":
                 default:
-                    // tell client we didn't understand
-                    response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
+                    // tell client this isn't supported
+                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
                     break;
             }
-
-            // return the originator response, plus any modifications we've done
-            return response;
         }
 
         /// <summary>Process the operation.</summary>
-        /// <param name="context">          [in,out] The context.</param>
-        /// <param name="response">         [in,out] The response.</param>
+        /// <param name="context">          The context.</param>
         /// <param name="operationName">    Name of the operation.</param>
         /// <param name="previousComponent">The previous component.</param>
-        internal static void ProcessOperation(
-            ref HttpContext context,
-            ref HttpResponseMessage response,
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessOperationAndRespond(
+            HttpContext context,
             string operationName,
             string previousComponent)
         {
@@ -120,39 +81,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 {
                     case "POST":
                     case "GET":
-                        ProcessOperationStatus(ref context, ref response, previousComponent);
-
+                        await ProcessOperationStatus(context, previousComponent);
                         break;
 
                     case "PUT":
                     case "DELETE":
                     default:
-                        // tell client we didn't understand
-                        response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
-                        break;
-                }
-
-                return;
-            }
-
-            if (operationName == "$topic-list")
-            {
-                // act on the method
-                switch (context.Request.Method.ToUpperInvariant())
-                {
-                    case "POST":
-                    case "GET":
-                        ProcessOperationTopicList(ref response);
-
-                        break;
-
-                    case "PUT":
-                    case "DELETE":
-                    default:
-                        // tell client we didn't understand
-                        response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
+                        // tell client this isn't supported
+                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
                         break;
                 }
 
@@ -166,30 +102,31 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 {
                     case "POST":
                     case "GET":
-                        ProcessOperationGetWsBindingToken(ref context, ref response, previousComponent);
+                        await ProcessOperationGetWsBindingToken(context, previousComponent);
 
                         break;
 
                     case "PUT":
                     case "DELETE":
                     default:
-                        // tell client we didn't understand
-                        response.StatusCode = System.Net.HttpStatusCode.NotImplemented;
-
+                        // tell client this isn't supported
+                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
                         break;
                 }
 
                 return;
             }
+
+            // tell client this isn't supported
+            context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
         }
 
         /// <summary>Process the operation get ws binding token described by response.</summary>
-        /// <param name="context">          [in,out] The context.</param>
-        /// <param name="response">         [in,out] The response.</param>
+        /// <param name="context">          The context.</param>
         /// <param name="previousComponent">The previous component.</param>
-        internal static void ProcessOperationGetWsBindingToken(
-            ref HttpContext context,
-            ref HttpResponseMessage response,
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessOperationGetWsBindingToken(
+            HttpContext context,
             string previousComponent)
         {
             List<string> ids = new List<string>();
@@ -206,21 +143,22 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     {
                         string requestContent = reader.ReadToEndAsync().Result;
 
-                        Parameters opParams = _fhirParser.Parse<Parameters>(requestContent);
+                        fhirCsR4.Models.Parameters opParams = JsonSerializer.Deserialize<fhirCsR4.Models.Parameters>(requestContent);
 
-                        foreach (Parameters.ParameterComponent param in opParams.Parameter)
+                        foreach (fhirCsR4.Models.ParametersParameter param in opParams.Parameter)
                         {
                             if (param.Name == "ids")
                             {
-                                ids.Add((param.Value as Id).ToString());
+                                ids.Add(param.ValueString);
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    response.Content = new StringContent("Caught exception: " + ex.Message);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync("Caught exception: " + ex.Message);
                     return;
                 }
             }
@@ -229,8 +167,9 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 if (!SubscriptionManagerR4.Exists(id))
                 {
-                    response.StatusCode = HttpStatusCode.BadRequest;
-                    response.Content = new StringContent($"Invalid subscription id: {id}");
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync($"Invalid subscription id: {id}");
                     return;
                 }
             }
@@ -239,37 +178,36 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             WebsocketManager.RegisterToken(token);
 
-            Parameters parameters = new Parameters();
+            fhirCsR4.Models.Parameters parameters = new fhirCsR4.Models.Parameters();
 
-            parameters.Add("token", new FhirString(token.Token.ToString()));
-            parameters.Add("expiration", new FhirDateTime(new DateTimeOffset(token.ExpiresAt)));
-            parameters.Add("subscriptions", new FhirString(string.Join(',', ids)));
-
-            ProcessorUtils.SerializeR4(ref response, parameters);
-        }
-
-        /// <summary>Process the operation topic list R4.</summary>
-        /// <param name="response">[in,out] The response.</param>
-        internal static void ProcessOperationTopicList(
-            ref HttpResponseMessage response)
-        {
-            Parameters topics = new Parameters();
-
-            foreach (string topicUrl in SubscriptionTopicManagerR5.GetTopicUrlList())
+            parameters.Parameter = new List<fhirCsR4.Models.ParametersParameter>()
             {
-                topics.Add("subscription-topic-canonical", new Canonical(topicUrl));
-            }
+                new fhirCsR4.Models.ParametersParameter()
+                {
+                    Name = "token",
+                    ValueString = token.Token.ToString(),
+                },
+                new fhirCsR4.Models.ParametersParameter()
+                {
+                    Name = "expiration",
+                    ValueDateTime = token.ExpiresAt.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                },
+                new fhirCsR4.Models.ParametersParameter()
+                {
+                    Name = "subscriptions",
+                    ValueString = string.Join(',', ids),
+                },
+            };
 
-            ProcessorUtils.SerializeR4(ref response, topics);
+            await ProcessorUtils.SerializeR4(context, parameters);
         }
 
         /// <summary>Process the operation status R4.</summary>
-        /// <param name="context">          [in,out] The context.</param>
-        /// <param name="response">         [in,out] The response.</param>
+        /// <param name="context">          The context.</param>
         /// <param name="previousComponent">The previous component.</param>
-        internal static void ProcessOperationStatus(
-            ref HttpContext context,
-            ref HttpResponseMessage response,
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessOperationStatus(
+            HttpContext context,
             string previousComponent)
         {
             List<string> ids = new List<string>();
@@ -314,25 +252,38 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 }
             }
 
-            ProcessorUtils.SerializeR4(ref response, bundle);
+            // serialize and write back to the caller
+            await ProcessorUtils.SerializeR4(context, bundle);
         }
 
-        /// <summary>Process an HTTP POST for FHIR R4</summary>
-        /// <param name="context"> [in,out] The context.</param>
-        /// <param name="response">[in,out] The response.</param>
-        internal static void ProcessPost(ref HttpContext context, ref HttpResponseMessage response)
+        /// <summary>Process an HTTP POST for FHIR R4.</summary>
+        /// <param name="context">The context.</param>
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessPostAndRespond(HttpContext context)
         {
-            StringContent localResponse;
-
             // default to returning the representation if not specified
-            string preferredResponse = "return=representation";
+            ProcessorUtils.ReturnPref preferredResponse = ProcessorUtils.ReturnPref.Representation;
 
             // check for headers we are interested in
             foreach (KeyValuePair<string, StringValues> kvp in context.Request.Headers)
             {
-                if (kvp.Key.ToLowerInvariant() == "prefer")
+                if (kvp.Key.ToUpperInvariant() == "PREFER")
                 {
-                    preferredResponse = kvp.Value;
+                    switch (kvp.Value[0].ToUpperInvariant())
+                    {
+                        case "RETURN=MINIMAL":
+                            preferredResponse = ProcessorUtils.ReturnPref.Minimal;
+                            break;
+
+                        case "RETURN=OPERATIONOUTCOME":
+                            preferredResponse = ProcessorUtils.ReturnPref.OperationOutcome;
+                            break;
+
+                        case "RETURN=REPRESENTATION":
+                        default:
+                            preferredResponse = ProcessorUtils.ReturnPref.Representation;
+                            break;
+                    }
                 }
             }
 
@@ -347,94 +298,36 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             // check to see if the manager does anything with this text
             SubscriptionManagerR4.HandlePost(
                 requestContent,
-                out Subscription subscription,
+                out fhir4.Hl7.Fhir.Model.Subscription subscription,
                 out HttpStatusCode statusCode,
                 out string failureContent);
 
-            // check for errors
-            if (statusCode != HttpStatusCode.Created)
+            if (statusCode == HttpStatusCode.Created)
             {
-                switch (preferredResponse)
-                {
-                    case "return=minimal":
-                        localResponse = new StringContent(string.Empty, Encoding.UTF8, "text/plain");
-                        break;
-                    case "return=OperationOutcome":
-                        OperationOutcome outcome = new OperationOutcome()
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Issue = new List<OperationOutcome.IssueComponent>()
-                            {
-                                new OperationOutcome.IssueComponent()
-                                {
-                                    Severity = OperationOutcome.IssueSeverity.Error,
-                                    Code = OperationOutcome.IssueType.Unknown,
-                                    Diagnostics = failureContent,
-                                },
-                            },
-                        };
-                        localResponse = new StringContent(
-                            _fhirSerializer.SerializeToString(outcome),
-                            Encoding.UTF8,
-                            "application/fhir+json");
-
-                        break;
-                    default:
-                        localResponse = new StringContent(failureContent, Encoding.UTF8, "text/plain");
-                        break;
-                }
-
-                response.Content = localResponse;
-                response.StatusCode = statusCode;
-
-                return;
+                await ProcessorUtils.SerializeR4(
+                    context,
+                    subscription,
+                    (int)statusCode,
+                    Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                    preferredResponse,
+                    failureContent);
             }
-
-            // figure out our link to this resource
-            string url = Program.UrlForR4ResourceId("Subscription", subscription.Id);
-
-            switch (preferredResponse)
+            else
             {
-                case "return=minimal":
-                    localResponse = new StringContent(string.Empty, Encoding.UTF8, "text/plain");
-                    break;
-                case "return=OperationOutcome":
-                    OperationOutcome outcome = new OperationOutcome()
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Issue = new List<OperationOutcome.IssueComponent>()
-                        {
-                            new OperationOutcome.IssueComponent()
-                            {
-                                Severity = OperationOutcome.IssueSeverity.Information,
-                                Code = OperationOutcome.IssueType.Value,
-                            },
-                        },
-                    };
-                    localResponse = new StringContent(
-                        _fhirSerializer.SerializeToString(outcome),
-                        Encoding.UTF8,
-                        "application/fhir+json");
-
-                    break;
-                default:
-                    localResponse = new StringContent(
-                        _fhirSerializer.SerializeToString(subscription),
-                        Encoding.UTF8,
-                        "application/fhir+json");
-                    break;
+                await ProcessorUtils.SerializeR4(
+                    context,
+                    subscription,
+                    (int)statusCode,
+                    string.Empty,
+                    preferredResponse,
+                    failureContent);
             }
-
-            response.Headers.Add("Location", url);
-            response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
-            response.Content = localResponse;
-            response.StatusCode = HttpStatusCode.Created;
         }
 
-        /// <summary>Process an HTTP GET in FHIR R4</summary>
-        /// <param name="context"> [in,out] The context.</param>
-        /// <param name="response">[in,out] The response.</param>
-        internal static void ProcessGet(ref HttpContext context, ref HttpResponseMessage response)
+        /// <summary>Process an HTTP GET in FHIR R4.</summary>
+        /// <param name="context">The context.</param>
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessGetAndRespond(HttpContext context)
         {
             // check for an ID
             string requestUrl = context.Request.Path;
@@ -447,15 +340,15 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             if (id.ToLowerInvariant() == "subscription")
             {
-                ProcessorUtils.SerializeR4(ref response, SubscriptionManagerR4.GetSubscriptionsBundle());
+                await ProcessorUtils.SerializeR4(context, SubscriptionManagerR4.GetSubscriptionsBundle());
             }
-            else if (SubscriptionManagerR4.TryGetSubscription(id, out Subscription foundSub))
+            else if (SubscriptionManagerR4.TryGetSubscription(id, out fhir4.Hl7.Fhir.Model.Subscription foundSub))
             {
-                ProcessorUtils.SerializeR4(ref response, foundSub);
+                await ProcessorUtils.SerializeR4(context, foundSub);
             }
             else
             {
-                response.StatusCode = HttpStatusCode.NotFound;
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             }
         }
     }

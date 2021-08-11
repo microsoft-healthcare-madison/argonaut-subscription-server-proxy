@@ -44,6 +44,277 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             '&',
         };
 
+        /// <summary>Values that represent return Preferences.</summary>
+        public enum ReturnPref
+        {
+            /// <summary>An enum constant representing the minimal option.</summary>
+            Minimal,
+
+            /// <summary>An enum constant representing the operation outcome option.</summary>
+            OperationOutcome,
+
+            /// <summary>An enum constant representing the representation option.</summary>
+            Representation,
+        }
+
+        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="resource">         The resource.</param>
+        /// <param name="statusCode">       (Optional) The status code.</param>
+        /// <param name="location">         (Optional) The location.</param>
+        /// <param name="preferredResponse">(Optional) The preferred return.</param>
+        /// <param name="failureContent">   (Optional) The failure content.</param>
+        /// <returns>A System.Threading.Tasks.Task.</returns>
+        internal static async System.Threading.Tasks.Task SerializeR4(
+            HttpContext context,
+            fhirCsR4.Models.Resource resource,
+            int statusCode = 200,
+            string location = "",
+            ReturnPref preferredResponse = ReturnPref.Representation,
+            string failureContent = "")
+        {
+            switch (resource.ResourceType)
+            {
+                case "OperationOutcome":
+                case "Bundle":
+                case "Parameters":
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+
+                default:
+                    if (string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", Program.UrlForR4ResourceId(resource.ResourceType, resource.Id));
+                    }
+                    else
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+            }
+
+            context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+
+            switch (preferredResponse)
+            {
+                case ReturnPref.Minimal:
+                    context.Response.ContentType = "text/plain";
+                    break;
+
+                case ReturnPref.OperationOutcome:
+                    fhirCsR4.Models.OperationOutcome outcome = new fhirCsR4.Models.OperationOutcome()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Issue = new List<fhirCsR4.Models.OperationOutcomeIssue>()
+                        {
+                            new fhirCsR4.Models.OperationOutcomeIssue()
+                            {
+                                Severity = fhirCsR4.Models.OperationOutcomeIssueSeverityCodes.ERROR,
+                                Code = fhirCsR4.ValueSets.IssueTypeCodes.LiteralProcessingFailure,
+                                Diagnostics = failureContent,
+                            },
+                        },
+                    };
+
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(outcome));
+                    break;
+
+                case ReturnPref.Representation:
+                default:
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(resource));
+                    break;
+            }
+        }
+
+        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <param name="context"> The context.</param>
+        /// <param name="resource">The resource.</param>
+        /// <returns>A System.Threading.Tasks.Task.</returns>
+        internal static async System.Threading.Tasks.Task SerializeR5(HttpContext context, fhirCsR5.Models.Resource resource)
+        {
+            switch (resource.ResourceType)
+            {
+                case "OperationOutcome":
+                case "Bundle":
+                    context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+                    break;
+
+                default:
+                    context.Response.Headers.Add("Location", Program.UrlForR5ResourceId(resource.ResourceType, resource.Id));
+                    context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+                    break;
+            }
+
+            context.Response.ContentType = "application/fhir+json";
+            context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+            await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(resource));
+        }
+
+        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="resource">         The resource.</param>
+        /// <param name="statusCode">       (Optional) The status code.</param>
+        /// <param name="location">         (Optional) The location.</param>
+        /// <param name="preferredResponse">(Optional) The preferred return.</param>
+        /// <param name="failureContent">   (Optional) The failure content.</param>
+        /// <returns>A System.Threading.Tasks.Task.</returns>
+        internal static async System.Threading.Tasks.Task SerializeR4(
+            HttpContext context,
+            Resource resource,
+            int statusCode = 200,
+            string location = "",
+            ReturnPref preferredResponse = ReturnPref.Representation,
+            string failureContent = "")
+        {
+            switch (resource.TypeName)
+            {
+                case "OperationOutcome":
+                case "Bundle":
+                case "Parameters":
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+
+                default:
+                    if (string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", Program.UrlForR4ResourceId(resource.TypeName, resource.Id));
+                    }
+                    else
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+            }
+
+            context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+
+            switch (preferredResponse)
+            {
+                case ReturnPref.Minimal:
+                    context.Response.ContentType = "text/plain";
+                    break;
+
+                case ReturnPref.OperationOutcome:
+                    Hl7.Fhir.Model.OperationOutcome outcome = new OperationOutcome()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Issue = new List<OperationOutcome.IssueComponent>()
+                        {
+                            new OperationOutcome.IssueComponent()
+                            {
+                                Severity = OperationOutcome.IssueSeverity.Error,
+                                Code = OperationOutcome.IssueType.Unknown,
+                                Diagnostics = failureContent,
+                            },
+                        },
+                    };
+
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(_serializerR4.SerializeToString(outcome));
+                    break;
+
+                case ReturnPref.Representation:
+                default:
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(_serializerR4.SerializeToString(resource));
+                    break;
+            }
+        }
+
+        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="resource">         The resource.</param>
+        /// <param name="statusCode">       (Optional) The status code.</param>
+        /// <param name="location">         (Optional) The location.</param>
+        /// <param name="preferredResponse">(Optional) The preferred return.</param>
+        /// <param name="failureContent">   (Optional) The failure content.</param>
+        /// <returns>A System.Threading.Tasks.Task.</returns>
+        internal static async System.Threading.Tasks.Task SerializeR5(
+            HttpContext context,
+            Resource resource,
+            int statusCode = 200,
+            string location = "",
+            ReturnPref preferredResponse = ReturnPref.Representation,
+            string failureContent = "")
+        {
+            switch (resource.TypeName)
+            {
+                case "OperationOutcome":
+                case "Bundle":
+                case "Parameters":
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+
+                default:
+                    if (string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", Program.UrlForR5ResourceId(resource.TypeName, resource.Id));
+                    }
+                    else
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+            }
+
+            context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+
+            switch (preferredResponse)
+            {
+                case ReturnPref.Minimal:
+                    context.Response.ContentType = "text/plain";
+                    break;
+
+                case ReturnPref.OperationOutcome:
+                    Hl7.Fhir.Model.OperationOutcome outcome = new OperationOutcome()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Issue = new List<OperationOutcome.IssueComponent>()
+                        {
+                            new OperationOutcome.IssueComponent()
+                            {
+                                Severity = OperationOutcome.IssueSeverity.Error,
+                                Code = OperationOutcome.IssueType.Unknown,
+                                Diagnostics = failureContent,
+                            },
+                        },
+                    };
+
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(_serializerR5.SerializeToString(outcome));
+                    break;
+
+                case ReturnPref.Representation:
+                default:
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(_serializerR5.SerializeToString(resource));
+                    break;
+            }
+        }
+
         /// <summary>Serialize an R4 C# Basic resource.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>

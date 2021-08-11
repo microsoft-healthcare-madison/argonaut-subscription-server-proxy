@@ -149,7 +149,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
-        public static void ProcessEncounter(string content, Uri location)
+        public static void ProcessEncounter(string content, string location)
         {
             _ = System.Threading.Tasks.Task.Run((Action)(() => _instance._ProcessEncounter(content, location)));
         }
@@ -437,7 +437,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Process the encounter described by content.</summary>
         /// <param name="content"> The content.</param>
         /// <param name="location">The location.</param>
-        private void _ProcessEncounter(string content, Uri location)
+        private void _ProcessEncounter(string content, string location)
         {
             List<Subscription> subscriptions = new List<Subscription>();
 
