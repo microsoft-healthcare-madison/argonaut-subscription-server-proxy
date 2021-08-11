@@ -27,6 +27,9 @@ namespace argonaut_subscription_server_proxy.Backport
         /// <summary>URL of the profile.</summary>
         public const string ProfileUrl = "http://hl7.org/fhir/uv/subscriptions-backport";
 
+        /// <summary>Type of the extension URL additional channel.</summary>
+        public const string ExtensionUrlAdditionalChannelType = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-channel-type";
+
         /// <summary>The extension URL filter criteria.</summary>
         public const string ExtensionUrlFilterCriteria = "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-filter-criteria";
 
@@ -62,6 +65,31 @@ namespace argonaut_subscription_server_proxy.Backport
 
         /// <summary>The content code full resource.</summary>
         public const string ContentCodeFullResource = "full-resource";
+
+        /// <summary>
+        /// A r4.Subscription extension method that attempts to backport additional channel type get a
+        /// string from the given r4.Subscription.
+        /// </summary>
+        /// <param name="resource">   The resource.</param>
+        /// <param name="channelType">[out] Type of the channel.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        public static bool BackportAdditionalChannelTypeTryGet(this r4.Subscription resource, out string channelType)
+        {
+            if (resource == null)
+            {
+                channelType = null;
+                return false;
+            }
+
+            if (!resource.Channel.HasExtensions())
+            {
+                channelType = null;
+                return false;
+            }
+
+            channelType = resource.Channel.GetStringExtension(ExtensionUrlAdditionalChannelType);
+            return true;
+        }
 
         /// <summary>A r4.Subscription extension method that backport filters get.</summary>
         /// <param name="resource">The resource.</param>

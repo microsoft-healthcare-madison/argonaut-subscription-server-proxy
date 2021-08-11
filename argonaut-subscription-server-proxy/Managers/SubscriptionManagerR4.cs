@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using argonaut_subscription_server_proxy.Backport;
 using argonaut_subscription_server_proxy.Models;
+using argonaut_subscription_server_proxy.Zulip;
 using fhir4.Hl7.Fhir.Model;
 using fhir4.Hl7.Fhir.Rest;
 using fhir4.Hl7.Fhir.Serialization;
@@ -1553,6 +1554,30 @@ namespace argonaut_subscription_server_proxy.Managers
             return true;
         }
 
+        /// <summary>Updates the error state.</summary>
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="notified">      True if notified.</param>
+        private void UpdateErrorState(
+            string subscriptionId,
+            bool notified)
+        {
+            if (notified)
+            {
+                // check to see if we need to clear an error
+                if (_idSubscriptionDict[subscriptionId].Status == Subscription.SubscriptionStatus.Error)
+                {
+                    // _idSubscriptionDict[subscription.Id].Error = null;
+                    _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Active;
+                }
+            }
+            else
+            {
+                // done
+                // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+                _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Error;
+            }
+        }
+
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="csContent">     (Optional) The fhirC# typed content.</param>
@@ -1585,6 +1610,74 @@ namespace argonaut_subscription_server_proxy.Managers
 
             string json = System.Text.Json.JsonSerializer.Serialize(bundle);
 
+            if (cacheNotification != null)
+            {
+                _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
+                if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
+                {
+                    _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
+                }
+            }
+
+            // check for additional channel types
+            if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
+            {
+                bool notified = false;
+
+                switch (channelType.ToUpperInvariant())
+                {
+                    case "ZULIP":
+                        {
+                            bool usePm = subscription.R4ZulipPmUserIdTryGet(out string pmUserId);
+                            bool useStream = subscription.R4ZulipStreamIdTryGet(out string streamId);
+
+                            if ((!usePm) && (!useStream))
+                            {
+                                UpdateErrorState(subscriptionId, false);
+                                return false;
+                            }
+
+                            if (!subscription.R4ZulipSiteTryGet(out string site))
+                            {
+                                site = Program.Configuration["Zulip_Site"];
+                            }
+
+                            if (!subscription.R4ZulipEmailTryGet(out string email))
+                            {
+                                email = Program.Configuration["Zulip_Email"];
+                            }
+
+                            if (!subscription.R4ZulipKeyTryGet(out string key))
+                            {
+                                key = Program.Configuration["Zulip_Key"];
+                            }
+
+                            notified = NotificationManager.TryNotifyZulip(
+                                subscriptionId,
+                                Program.UrlForR4ResourceId("Subscription", subscriptionId),
+                                site,
+                                email,
+                                key,
+                                streamId,
+                                pmUserId,
+                                subscription.Channel.Payload,
+                                subscription.BackportContentGet(),
+                                json,
+                                contentTypeName,
+                                contentId,
+                                Program.UrlForR4ResourceId(contentTypeName, contentId),
+                                subscriptionEventCount);
+                        }
+
+                        break;
+                }
+
+                UpdateErrorState(subscriptionId, notified);
+
+                // cannot have additional channel types
+                return true;
+            }
+
             // check for a rest-hook
             if (subscription.Channel.Type == Subscription.SubscriptionChannelType.RestHook)
             {
@@ -1598,21 +1691,10 @@ namespace argonaut_subscription_server_proxy.Managers
                     contentId,
                     subscriptionEventCount);
 
-                if (notified)
-                {
-                    // check to see if we need to clear an error
-                    if (_idSubscriptionDict[subscriptionId].Status == Subscription.SubscriptionStatus.Error)
-                    {
-                        // _idSubscriptionDict[subscription.Id].Error = null;
-                        _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Active;
-                    }
-                }
-                else
-                {
-                    // done
-                    // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-                    _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Error;
-                }
+                UpdateErrorState(subscriptionId, notified);
+
+                // cannot have additional channel types
+                return true;
             }
 
             if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Email)
@@ -1628,40 +1710,23 @@ namespace argonaut_subscription_server_proxy.Managers
                     contentId,
                     subscriptionEventCount);
 
-                if (notified)
-                {
-                    // check to see if we need to clear an error
-                    if (_idSubscriptionDict[subscriptionId].Status == Subscription.SubscriptionStatus.Error)
-                    {
-                        // _idSubscriptionDict[subscription.Id].Error = null;
-                        _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Active;
-                    }
-                }
-                else
-                {
-                    // done
-                    // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-                    _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Error;
-                }
+                UpdateErrorState(subscriptionId, notified);
+
+                // cannot have additional channel types
+                return true;
             }
 
             if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Websocket)
             {
                 // send via websocket
                 WebsocketManager.QueueMessagesForSubscription(subscription, json);
+
+                // cannot have additional channel types
+                return true;
             }
 
-            if (cacheNotification != null)
-            {
-                _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
-                if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
-                {
-                    _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
-                }
-            }
-
-            // done
-            return true;
+            // no notification has been sent
+            return false;
         }
 
         /// <summary>Clean up thread function.</summary>

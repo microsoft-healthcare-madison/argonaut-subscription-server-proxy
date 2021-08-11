@@ -24,6 +24,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>The SendPulse email client.</summary>
         private SendPulse.Sendpulse _sendpulseClient;
 
+        /// <summary>The zulip client.</summary>
+        private zulip_cs_lib.ZulipClient _zulipClient;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationManager"/> class.
         /// </summary>
@@ -43,6 +46,21 @@ namespace argonaut_subscription_server_proxy.Managers
                 _sendpulseClient = new SendPulse.Sendpulse(
                     Program.Configuration["Sendpulse_User_Id"],
                     Program.Configuration["Sendpulse_Secret"]);
+            }
+
+            if (string.IsNullOrEmpty(Program.Configuration["Zulip_Site"]) ||
+                string.IsNullOrEmpty(Program.Configuration["Zulip_Email"]) ||
+                string.IsNullOrEmpty(Program.Configuration["Zulip_Key"]))
+            {
+                Console.WriteLine("Zulip information not found, will be disabled!");
+                _zulipClient = null;
+            }
+            else
+            {
+                _zulipClient = new zulip_cs_lib.ZulipClient(
+                    Program.Configuration["Zulip_Site"],
+                    Program.Configuration["Zulip_Email"],
+                    Program.Configuration["Zulip_Key"]);
             }
         }
 
@@ -168,15 +186,154 @@ namespace argonaut_subscription_server_proxy.Managers
             return true;
         }
 
+        /// <summary>Attempts to notify zulip.</summary>
+        /// <param name="subscriptionId">        The subscription id.</param>
+        /// <param name="subscriptionUrl">       URL of the subscription.</param>
+        /// <param name="site">                  The site.</param>
+        /// <param name="sendingUser">           The sending user.</param>
+        /// <param name="apiKey">                The API key.</param>
+        /// <param name="destinationStream">     Stream to write data to.</param>
+        /// <param name="destinationUser">       Destination user.</param>
+        /// <param name="contentMimeType">       MIME type of the content.</param>
+        /// <param name="content">               The content (empty/id-only/full-resource).</param>
+        /// <param name="json">                  The content.</param>
+        /// <param name="contentTypeName">       Type of the content.</param>
+        /// <param name="contentId">             [out] The bundle.</param>
+        /// <param name="contentUrl">            URL of the content.</param>
+        /// <param name="subscriptionEventCount">Number of bundle events.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        internal static bool TryNotifyZulip(
+            string subscriptionId,
+            string subscriptionUrl,
+            string site,
+            string sendingUser,
+            string apiKey,
+            string destinationStream,
+            string destinationUser,
+            string contentMimeType,
+            string content,
+            string json,
+            string contentTypeName,
+            string contentId,
+            string contentUrl,
+            long subscriptionEventCount)
+        {
+            if (_instance._zulipClient == null)
+            {
+                Console.WriteLine($" <<< attempted ZULIP notification for" +
+                    $" {subscriptionId}" +
+                    $" NOT SENT!");
+                return false;
+            }
+
+            string messageText = GetZulipMessageText(
+                subscriptionId,
+                subscriptionUrl,
+                content,
+                json,
+                contentId,
+                contentUrl,
+                subscriptionEventCount);
+
+            if ((!string.IsNullOrEmpty(destinationStream)) &&
+                int.TryParse(destinationStream, out int streamId))
+            {
+                (bool success, string details, ulong messageId) result = _instance._zulipClient.Messages.TrySendStream(
+                    messageText,
+                    "Subscription Notification",
+                    new int[] { streamId }).Result;
+
+                return result.success;
+            }
+
+            if ((!string.IsNullOrEmpty(destinationUser)) &&
+                int.TryParse(destinationStream, out int userId))
+            {
+                (bool success, string details, ulong messageId) result = _instance._zulipClient.Messages.TrySendPrivate(
+                    messageText,
+                    new int[] { userId }).Result;
+
+                return result.success;
+            }
+
+            return false;
+        }
+
+        /// <summary>Gets zulip message text.</summary>
+        /// <param name="subscriptionId">        The subscription id.</param>
+        /// <param name="subscriptionUrl">       URL of the subscription.</param>
+        /// <param name="content">               The content (empty/id-only/full-resource).</param>
+        /// <param name="json">                  The content.</param>
+        /// <param name="contentId">             [out] The bundle.</param>
+        /// <param name="contentUrl">            URL of the content.</param>
+        /// <param name="subscriptionEventCount">[out] Number of events.</param>
+        /// <returns>The zulip message text.</returns>
+        internal static string GetZulipMessageText(
+            string subscriptionId,
+            string subscriptionUrl,
+            string content,
+            string json,
+            string contentId,
+            string contentUrl,
+            long subscriptionEventCount)
+        {
+            // check for no content
+            if (string.IsNullOrEmpty(contentId) && (subscriptionEventCount == 0))
+            {
+                return $"Subscription [{subscriptionId}]({subscriptionUrl}) has been configured to send messages here!";
+            }
+
+            if (string.IsNullOrEmpty(contentId))
+            {
+                return $"Subscription [{subscriptionId}]({subscriptionUrl}) is working, but has not processed any events.";
+            }
+
+            // act depending on payload type
+            switch (content)
+            {
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralEmpty:
+                    return $"Subscription [{subscriptionId}]({subscriptionUrl})" +
+                        $" has received event: #{subscriptionEventCount}.\n" +
+                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"?eventsSinceNumber={subscriptionEventCount}" +
+                        $"&eventsUntilNumber={subscriptionEventCount}" +
+                        $"&content=full-resource).";
+
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralIdOnly:
+                    return $"Subscription [{subscriptionId}]({subscriptionUrl})" +
+                        $" has received event: #{subscriptionEventCount}.\n" +
+                        $"The focus of the event can be retrieved directly [here]({contentUrl}).\n" +
+                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"?eventsSinceNumber={subscriptionEventCount}" +
+                        $"&eventsUntilNumber={subscriptionEventCount}" +
+                        $"&content=full-resource).";
+
+                case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralFullResource:
+                    return $"Subscription [{subscriptionId}]({subscriptionUrl})" +
+                        $" has received event: #{subscriptionEventCount}.\n" +
+                        $"The focus of the event can be retrieved directly [here]({contentUrl}).\n" +
+                        $"Or, you can see the resource here:\n" +
+                        $"```spoiler" +
+                        $"{json}" +
+                        $"```" +
+                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"?eventsSinceNumber={subscriptionEventCount}" +
+                        $"&eventsUntilNumber={subscriptionEventCount}" +
+                        $"&content=full-resource).";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>Gets email text.</summary>
         /// <param name="content">               The content (empty/id-only/full-resource).</param>
         /// <param name="contentId">             [out] The bundle.</param>
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
         /// <returns>The email text.</returns>
         internal static string GetEmailText(
-                                    string content,
-                                    string contentId,
-                                    long subscriptionEventCount)
+            string content,
+            string contentId,
+            long subscriptionEventCount)
         {
             // check for no content
             if (string.IsNullOrEmpty(contentId) && (subscriptionEventCount == 0))

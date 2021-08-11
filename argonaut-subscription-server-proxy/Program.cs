@@ -124,6 +124,11 @@ namespace argonaut_subscription_server_proxy
         /// <returns>A string.</returns>
         public static string UrlForR5ResourceId(string resource, string id)
         {
+            if (string.IsNullOrEmpty(resource) || string.IsNullOrEmpty(id))
+            {
+                return string.Empty;
+            }
+
             return new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"/r5/{resource}/{id}", UriKind.Relative))
@@ -136,6 +141,11 @@ namespace argonaut_subscription_server_proxy
         /// <returns>A string.</returns>
         public static string UrlForR4ResourceId(string resource, string id)
         {
+            if (string.IsNullOrEmpty(resource) || string.IsNullOrEmpty(id))
+            {
+                return string.Empty;
+            }
+
             return new Uri(
                 new Uri(Program.Configuration["Server_Public_Url"], UriKind.Absolute),
                 new Uri($"/r4/{resource}/{id}", UriKind.Relative))
