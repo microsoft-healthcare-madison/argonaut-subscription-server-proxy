@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -51,6 +52,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 "Accept",
                 "Content-Length",
                 "Host",
+                "Accept-Encoding",
             };
         }
 
@@ -166,6 +168,54 @@ namespace argonaut_subscription_server_proxy.Managers
             await context.Response.WriteAsync(response.Body);
         }
 
+        /// <summary>Adds a FHIR headers to 'fhirRequest'.</summary>
+        /// <param name="incomingRequest">The incoming request.</param>
+        /// <param name="fhirRequest">    The FHIR request.</param>
+        private void AddFhirHeaders(
+            HttpRequest incomingRequest,
+            HttpRequestMessage fhirRequest)
+        {
+            if (incomingRequest.Headers.Any())
+            {
+                foreach (KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> reqHeader in incomingRequest.Headers)
+                {
+                    if (_ignoredHeaders.Contains(reqHeader.Key))
+                    {
+                        continue;
+                    }
+
+                    fhirRequest.Headers.Add(reqHeader.Key, reqHeader.Value.ToArray());
+                }
+            }
+
+            fhirRequest.Headers.Add("Accept", "application/fhir+json");
+        }
+
+        /// <summary>Adds a content to 'fhirRequest'.</summary>
+        /// <param name="incomingRequest">The incoming request.</param>
+        /// <param name="fhirRequest">    The FHIR request.</param>
+        /// <param name="response">       [in,out] The response.</param>
+        private void AddContent(
+            HttpRequest incomingRequest,
+            HttpRequestMessage fhirRequest,
+            ref ForwarderResponse response)
+        {
+            response.InitialBody = string.Empty;
+
+            if (incomingRequest.Body != null)
+            {
+                using (TextReader reader = new StreamReader(incomingRequest.Body))
+                {
+                    response.InitialBody = reader.ReadToEndAsync().Result;
+                }
+
+                if (!string.IsNullOrEmpty(response.InitialBody))
+                {
+                    fhirRequest.Content = new StringContent(response.InitialBody, Encoding.UTF8, "application/fhir+json");
+                }
+            }
+        }
+
         /// <summary>Forward a request to a FHIR R4 Server.</summary>
         /// <param name="incomingRequest">The incoming request.</param>
         /// <returns>An asynchronous result that yields a ForwarderResponse.</returns>
@@ -197,28 +247,15 @@ namespace argonaut_subscription_server_proxy.Managers
                     forwarderResponse.Method,
                     new Uri(_uriR4, relativePath));
 
-                if (incomingRequest.Headers.Any())
-                {
-                    foreach (KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> reqHeader in incomingRequest.Headers)
-                    {
-                        if (_ignoredHeaders.Contains(reqHeader.Key))
-                        {
-                            continue;
-                        }
-
-                        Console.WriteLine($" <<< Adding header: {reqHeader.Key}={reqHeader.Value}");
-                        fhirRequest.Headers.Add(reqHeader.Key, reqHeader.Value.ToArray());
-                    }
-                }
-
-                fhirRequest.Headers.Add("Accept", "application/fhir+json");
+                AddFhirHeaders(incomingRequest, fhirRequest);
+                AddContent(incomingRequest, fhirRequest, ref forwarderResponse);
 
                 HttpResponseMessage fhirResponse = await _clientR4.SendAsync(fhirRequest);
 
                 forwarderResponse.StatusCode = fhirResponse.StatusCode;
                 forwarderResponse.IsSuccessStatusCode = fhirResponse.IsSuccessStatusCode;
-                byte[] contents = await fhirResponse.Content.ReadAsByteArrayAsync();
-                forwarderResponse.Body = UTF8Encoding.UTF8.GetString(contents);
+
+                forwarderResponse.Body = await fhirResponse.Content.ReadAsStringAsync();
 
                 if (fhirResponse.Headers.Contains("Location"))
                 {
@@ -277,13 +314,8 @@ namespace argonaut_subscription_server_proxy.Managers
                         new Uri(_uriR5, incomingRequest.Path));
                 }
 
-                if (incomingRequest.Headers.Any())
-                {
-                    foreach (KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> reqHeader in incomingRequest.Headers)
-                    {
-                        fhirRequest.Headers.Add(reqHeader.Key, reqHeader.Value.ToArray());
-                    }
-                }
+                AddFhirHeaders(incomingRequest, fhirRequest);
+                AddContent(incomingRequest, fhirRequest, ref forwarderResponse);
 
                 HttpResponseMessage fhirResponse = await _clientR5.SendAsync(fhirRequest);
 

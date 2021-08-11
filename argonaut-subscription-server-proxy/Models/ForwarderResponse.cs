@@ -30,6 +30,9 @@ namespace argonaut_subscription_server_proxy.Models
         /// <summary>Gets or sets the body.</summary>
         public string Body { get; set; }
 
+        /// <summary>Gets or sets the initial body.</summary>
+        public string InitialBody { get; set; }
+
         /// <summary>Gets or sets the location.</summary>
         public string Location { get; set; }
 

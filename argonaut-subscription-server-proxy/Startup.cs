@@ -60,20 +60,20 @@ namespace argonaut_subscription_server_proxy
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/r4/metadata", ResourceProcessors.CapabilitiesProcessorR4.Process);
-                endpoints.Map("/r5/metadata", ResourceProcessors.CapabilitiesProcessorR5.Process);
+                endpoints.Map("/r4/metadata/{**components}", ResourceProcessors.CapabilitiesProcessorR4.Process);
+                endpoints.Map("/r5/metadata/{**components}", ResourceProcessors.CapabilitiesProcessorR5.Process);
 
-                endpoints.Map("/r4/SubscriptionTopic", ResourceProcessors.SubscriptionTopicProcessorR4.Process);
-                endpoints.Map("/r5/SubscriptionTopic", ResourceProcessors.SubscriptionTopicProcessorR5.Process);
+                endpoints.Map("/r4/SubscriptionTopic/{**components}", ResourceProcessors.SubscriptionTopicProcessorR4.Process);
+                endpoints.Map("/r5/SubscriptionTopic/{**components}", ResourceProcessors.SubscriptionTopicProcessorR5.Process);
 
-                endpoints.Map("/r4/Subscription", ResourceProcessors.SubscriptionProcessorR4.Process);
-                endpoints.Map("/r5/Subscription", ResourceProcessors.SubscriptionProcessorR5.Process);
+                endpoints.Map("/r4/Subscription/{**components}", ResourceProcessors.SubscriptionProcessorR4.Process);
+                endpoints.Map("/r5/Subscription/{**components}", ResourceProcessors.SubscriptionProcessorR5.Process);
 
-                endpoints.Map("/r4/Encounter", ResourceProcessors.EncounterProcessorR4.Process);
-                endpoints.Map("/r5/Encounter", ResourceProcessors.EncounterProcessorR5.Process);
+                endpoints.Map("/r4/Encounter/{**components}", ResourceProcessors.EncounterProcessorR4.Process);
+                endpoints.Map("/r5/Encounter/{**components}", ResourceProcessors.EncounterProcessorR5.Process);
 
-                endpoints.Map("/r4", ResourceProcessors.ResourceProcessorR4.Process);
-                endpoints.Map("/r5", ResourceProcessors.ResourceProcessorR5.Process);
+                endpoints.Map("/r4/{**components}", ResourceProcessors.ResourceProcessorR4.Process);
+                endpoints.Map("/r5/{**components}", ResourceProcessors.ResourceProcessorR5.Process);
             });
         }
     }
