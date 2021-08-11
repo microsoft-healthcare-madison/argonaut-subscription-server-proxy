@@ -323,6 +323,10 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         }
 
                         break;
+
+                    case "content":
+                        contentHint = query.Value[0];
+                        break;
                 }
             }
 
@@ -330,6 +334,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     subscriptionId,
                     eventLow,
                     eventHigh,
+                    contentHint,
                     out fhirCsR4.Models.Bundle bundle))
             {
                 // serialize and write back to the caller
