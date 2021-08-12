@@ -206,6 +206,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 case ReturnPref.Minimal:
                     context.Response.ContentType = "text/plain";
+                    context.Response.StatusCode = statusCode;
                     break;
 
                 case ReturnPref.OperationOutcome:
@@ -235,6 +236,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     await context.Response.WriteAsync(_serializerR4.SerializeToString(resource));
                     break;
             }
+
+            _ = context.Response.CompleteAsync();
         }
 
         /// <summary>Serialize an R4 C# Basic resource.</summary>

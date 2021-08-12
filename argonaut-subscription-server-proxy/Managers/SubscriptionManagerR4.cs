@@ -621,15 +621,6 @@ namespace argonaut_subscription_server_proxy.Managers
                     throw new ArgumentException("Invalid subscription content", nameof(content));
                 }
 
-                // check for no channel
-                if ((subscription.Channel.Type == null) ||
-                    (subscription.Channel.Type == Subscription.SubscriptionChannelType.Sms))
-                {
-                    statusCode = HttpStatusCode.BadRequest;
-                    failureContent = "Invalid channel";
-                    return;
-                }
-
                 // check for invalid content type
                 if (string.IsNullOrEmpty(subscription.Channel.Payload) ||
                     subscription.Channel.Payload.Contains("xml", StringComparison.OrdinalIgnoreCase))

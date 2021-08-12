@@ -45,7 +45,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
                 case "DELETE":
                     // ask the subscription manager to deal with this
-                    if (SubscriptionManagerR5.HandleDelete(context.Request))
+                    if (SubscriptionManagerR4.HandleDelete(context.Request))
                     {
                         context.Response.StatusCode = (int)System.Net.HttpStatusCode.NoContent;
                     }
@@ -54,12 +54,14 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotFound;
                     }
 
+                    _ = context.Response.CompleteAsync();
                     break;
 
                 case "PUT":
                 default:
                     // tell client this isn't supported
                     context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                    _ = context.Response.CompleteAsync();
                     break;
             }
         }
