@@ -670,35 +670,53 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 bool shouldSendHandshake = false;
 
-                switch (subscription.Channel.Type)
+                if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
                 {
-                    case Subscription.SubscriptionChannelType.RestHook:
-                        if (string.IsNullOrEmpty(subscription.Channel.Endpoint) ||
-                            (!Uri.TryCreate(subscription.Channel.Endpoint, UriKind.Absolute, out _)))
-                        {
+                    Console.WriteLine($" <<< extended channel: {channelType}");
+                    switch (channelType)
+                    {
+                        case ZulipExtensionsR4.ZulipChannelUrl:
+                            shouldSendHandshake = true;
+                            break;
+
+                        default:
                             statusCode = HttpStatusCode.BadRequest;
-                            failureContent = $"Invalid Endpoint for rest-hook subscription: {subscription.Channel.Endpoint}";
+                            failureContent = $"Invalid channel type requested: {channelType}";
                             return;
-                        }
+                    }
+                }
+                else
+                {
+                    switch (subscription.Channel.Type)
+                    {
+                        case Subscription.SubscriptionChannelType.RestHook:
+                            if (string.IsNullOrEmpty(subscription.Channel.Endpoint) ||
+                                (!Uri.TryCreate(subscription.Channel.Endpoint, UriKind.Absolute, out _)))
+                            {
+                                statusCode = HttpStatusCode.BadRequest;
+                                failureContent = $"Invalid Endpoint for rest-hook subscription: {subscription.Channel.Endpoint}";
+                                return;
+                            }
 
-                        // rest-hook sends handshake
-                        shouldSendHandshake = true;
-                        break;
+                            // rest-hook sends handshake
+                            shouldSendHandshake = true;
+                            break;
 
-                    case Subscription.SubscriptionChannelType.Email:
-                        // email sends handshake
-                        shouldSendHandshake = true;
-                        break;
+                        case Subscription.SubscriptionChannelType.Email:
+                            // email sends handshake
+                            shouldSendHandshake = true;
+                            break;
 
-                    case Subscription.SubscriptionChannelType.Websocket:
-                        // websocket does NOT send handshake
-                        shouldSendHandshake = false;
-                        break;
+                        case Subscription.SubscriptionChannelType.Websocket:
+                            // websocket does NOT send handshake
+                            shouldSendHandshake = false;
+                            break;
 
-                    default:
-                        statusCode = HttpStatusCode.BadRequest;
-                        failureContent = $"Invalid channel type requested: {subscription.Channel.Type}";
-                        return;
+                        default:
+                            statusCode = HttpStatusCode.BadRequest;
+                            failureContent = $"Invalid channel type requested: {subscription.Channel.Type}";
+                            return;
+                    }
                 }
 
                 if (shouldSendHandshake)
@@ -755,11 +773,20 @@ namespace argonaut_subscription_server_proxy.Managers
             _subscriptionEventCache.Add(subscription.Id, new Dictionary<long, CachedNotificationEvent>());
             _idEventCountDict.Add(subscription.Id, 0);
 
-            // log this addition
-            Console.WriteLine($" <<< added Subscription:" +
-                $" {subscription.Id}" +
-                $" ({subscription.Channel.Type})," +
-                $" {subscription.BackportTopicGet()}");
+            if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
+            {
+                Console.WriteLine($" <<< added Subscription:" +
+                    $" {subscription.Id}" +
+                    $" ({channelType})," +
+                    $" {subscription.BackportTopicGet()}");
+            }
+            else
+            {
+                Console.WriteLine($" <<< added Subscription:" +
+                    $" {subscription.Id}" +
+                    $" ({subscription.Channel.Type})," +
+                    $" {subscription.BackportTopicGet()}");
+            }
 
             // get the topic for this subscription
             fhirCsR4.Models.SubscriptionTopic topic = SubscriptionTopicManagerR4.GetTopic(subscription.BackportTopicGet());
@@ -985,14 +1012,6 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             Subscription subscription = _idSubscriptionDict[subscriptionId];
-
-            if (string.IsNullOrEmpty(subscription.Channel.Endpoint))
-            {
-                // nothing to do
-                _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Error;
-
-                return false;
-            }
 
             bool notified = TryNotifySubscription(subscriptionId, null);
 
@@ -1277,6 +1296,7 @@ namespace argonaut_subscription_server_proxy.Managers
             cachedNotification = new CachedNotificationEvent()
             {
                 Focus = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
+                FocusR4 = content,
             };
 
             List<string> includeDirectives = new List<string>();
@@ -1624,9 +1644,9 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 bool notified = false;
 
-                switch (channelType.ToUpperInvariant())
+                switch (channelType)
                 {
-                    case "ZULIP":
+                    case ZulipExtensionsR4.ZulipChannelUrl:
                         {
                             bool usePm = subscription.R4ZulipPmUserIdTryGet(out string pmUserId);
                             bool useStream = subscription.R4ZulipStreamIdTryGet(out string streamId);

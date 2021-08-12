@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using argonaut_subscription_server_proxy.Zulip;
 using Microsoft.Extensions.Hosting;
 
 namespace argonaut_subscription_server_proxy.Managers
@@ -24,8 +25,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>The SendPulse email client.</summary>
         private SendPulse.Sendpulse _sendpulseClient;
 
-        /// <summary>The zulip client.</summary>
-        private zulip_cs_lib.ZulipClient _zulipClient;
+        private static string _zulipSite;
+        private static string _zulipEmail;
+        private static string _zulipKey;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationManager"/> class.
@@ -52,15 +54,17 @@ namespace argonaut_subscription_server_proxy.Managers
                 string.IsNullOrEmpty(Program.Configuration["Zulip_Email"]) ||
                 string.IsNullOrEmpty(Program.Configuration["Zulip_Key"]))
             {
-                Console.WriteLine("Zulip information not found, will be disabled!");
-                _zulipClient = null;
+                Console.WriteLine("Default Zulip information not found!");
             }
             else
             {
-                _zulipClient = new zulip_cs_lib.ZulipClient(
-                    Program.Configuration["Zulip_Site"],
-                    Program.Configuration["Zulip_Email"],
-                    Program.Configuration["Zulip_Key"]);
+                _zulipSite = Program.Configuration["Zulip_Site"];
+                _zulipEmail = Program.Configuration["Zulip_Email"];
+                _zulipKey = Program.Configuration["Zulip_Key"];
+
+                Console.WriteLine($"Found zulip configuration for: {_zulipSite} ({_zulipEmail})");
+
+                ZulipClientPool.AddOrRegisterClient(_zulipEmail, _zulipEmail, _zulipKey);
             }
         }
 
@@ -218,7 +222,23 @@ namespace argonaut_subscription_server_proxy.Managers
             string contentUrl,
             long subscriptionEventCount)
         {
-            if (_instance._zulipClient == null)
+            string zulipSite = string.IsNullOrEmpty(site) ? _zulipSite : site;
+            string zulipEmail = string.IsNullOrEmpty(sendingUser) ? _zulipEmail : sendingUser;
+            string zulipKey = string.IsNullOrEmpty(apiKey) ? _zulipKey : apiKey;
+
+            if (string.IsNullOrEmpty(zulipSite) ||
+                string.IsNullOrEmpty(zulipEmail) ||
+                string.IsNullOrEmpty(zulipKey))
+            {
+                Console.WriteLine($" <<< required information missing! ZULIP notification for" +
+                    $" {subscriptionId}" +
+                    $" NOT SENT!");
+                return false;
+            }
+
+            zulip_cs_lib.ZulipClient client = ZulipClientPool.GetOrCreateClient(zulipSite, zulipEmail, zulipKey);
+
+            if (client == null)
             {
                 Console.WriteLine($" <<< attempted ZULIP notification for" +
                     $" {subscriptionId}" +
@@ -238,7 +258,7 @@ namespace argonaut_subscription_server_proxy.Managers
             if ((!string.IsNullOrEmpty(destinationStream)) &&
                 int.TryParse(destinationStream, out int streamId))
             {
-                (bool success, string details, ulong messageId) result = _instance._zulipClient.Messages.TrySendStream(
+                (bool success, string details, ulong messageId) result = client.Messages.TrySendStream(
                     messageText,
                     "Subscription Notification",
                     new int[] { streamId }).Result;
@@ -247,9 +267,9 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             if ((!string.IsNullOrEmpty(destinationUser)) &&
-                int.TryParse(destinationStream, out int userId))
+                int.TryParse(destinationUser, out int userId))
             {
-                (bool success, string details, ulong messageId) result = _instance._zulipClient.Messages.TrySendPrivate(
+                (bool success, string details, ulong messageId) result = client.Messages.TrySendPrivate(
                     messageText,
                     new int[] { userId }).Result;
 
@@ -294,7 +314,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 case fhirCsR5.ValueSets.SubscriptionPayloadContentCodes.LiteralEmpty:
                     return $"Subscription [{subscriptionId}]({subscriptionUrl})" +
                         $" has received event: #{subscriptionEventCount}.\n" +
-                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"For more information, see: [$events]({subscriptionUrl}/$events" +
                         $"?eventsSinceNumber={subscriptionEventCount}" +
                         $"&eventsUntilNumber={subscriptionEventCount}" +
                         $"&content=full-resource).";
@@ -303,7 +323,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     return $"Subscription [{subscriptionId}]({subscriptionUrl})" +
                         $" has received event: #{subscriptionEventCount}.\n" +
                         $"The focus of the event can be retrieved directly [here]({contentUrl}).\n" +
-                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"For more information, see: [$events]({subscriptionUrl}/$events" +
                         $"?eventsSinceNumber={subscriptionEventCount}" +
                         $"&eventsUntilNumber={subscriptionEventCount}" +
                         $"&content=full-resource).";
@@ -313,10 +333,12 @@ namespace argonaut_subscription_server_proxy.Managers
                         $" has received event: #{subscriptionEventCount}.\n" +
                         $"The focus of the event can be retrieved directly [here]({contentUrl}).\n" +
                         $"Or, you can see the resource here:\n" +
-                        $"```spoiler" +
-                        $"{json}" +
-                        $"```" +
-                        $"For more information, see: ({subscriptionUrl}/$events" +
+                        $"```spoiler\n" +
+                        $"```json\n" +
+                        $"{json}\n" +
+                        $"```\n" +
+                        $"```\n" +
+                        $"For more information, see: [$events]({subscriptionUrl}/$events" +
                         $"?eventsSinceNumber={subscriptionEventCount}" +
                         $"&eventsUntilNumber={subscriptionEventCount}" +
                         $"&content=full-resource).";

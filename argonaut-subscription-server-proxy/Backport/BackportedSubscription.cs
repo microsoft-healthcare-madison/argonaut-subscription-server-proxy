@@ -81,14 +81,31 @@ namespace argonaut_subscription_server_proxy.Backport
                 return false;
             }
 
-            if (!resource.Channel.HasExtensions())
+            if ((resource.Channel.Extension == null) ||
+                (!resource.Channel.Extension.Any()))
             {
                 channelType = null;
                 return false;
             }
 
-            channelType = resource.Channel.GetStringExtension(ExtensionUrlAdditionalChannelType);
-            return true;
+            foreach (Extension ext in resource.Channel.Extension)
+            {
+                if (ext.Url != ExtensionUrlAdditionalChannelType)
+                {
+                    continue;
+                }
+
+                if ((ext != null) &&
+                    (ext.Value != null) &&
+                    (ext.Value is Coding))
+                {
+                    channelType = $"{((Coding)ext.Value).System}#{((Coding)ext.Value).Code}";
+                    return true;
+                }
+            }
+
+            channelType = null;
+            return false;
         }
 
         /// <summary>A r4.Subscription extension method that backport filters get.</summary>

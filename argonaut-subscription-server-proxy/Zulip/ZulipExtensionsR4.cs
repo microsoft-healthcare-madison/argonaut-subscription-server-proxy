@@ -37,6 +37,9 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <summary>Identifier for the extension URL pm user.</summary>
         public const string ExtensionUrlPmUserId = "http://fhir-extension.zulip.org/pm-user-id";
 
+        /// <summary>URL of the zulip channel.</summary>
+        public const string ZulipChannelUrl = "http://fhir-extensions.zulip.org/subscription-channel-type#zulip";
+
         /// <summary>
         /// A r4.Subscription extension method that backport zulip pm user identifier try get.
         /// </summary>
@@ -45,20 +48,25 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool R4ZulipPmUserIdTryGet(this r4.Subscription resource, out string value)
         {
-            if (resource == null)
+            if ((resource == null) ||
+                (resource.Extension == null) ||
+                (!resource.Extension.Any()))
             {
                 value = null;
                 return false;
             }
 
-            if (!resource.HasExtensions())
+            foreach (Extension ext in resource.Extension)
             {
-                value = null;
-                return false;
+                if (ext.Url == ExtensionUrlPmUserId)
+                {
+                    value = ext.Value.ToString();
+                    return true;
+                }
             }
 
-            value = resource.GetStringExtension(ExtensionUrlPmUserId);
-            return true;
+            value = null;
+            return false;
         }
 
         /// <summary>
@@ -69,20 +77,25 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool R4ZulipStreamIdTryGet(this r4.Subscription resource, out string value)
         {
-            if (resource == null)
+            if ((resource == null) ||
+                (resource.Extension == null) ||
+                (!resource.Extension.Any()))
             {
                 value = null;
                 return false;
             }
 
-            if (!resource.HasExtensions())
+            foreach (Extension ext in resource.Extension)
             {
-                value = null;
-                return false;
+                if (ext.Url == ExtensionUrlStreamId)
+                {
+                    value = ext.Value.ToString();
+                    return true;
+                }
             }
 
-            value = resource.GetStringExtension(ExtensionUrlStreamId);
-            return true;
+            value = null;
+            return false;
         }
 
         /// <summary>A r4.Subscription extension method that backport zulip key try get.</summary>
@@ -91,20 +104,25 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool R4ZulipKeyTryGet(this r4.Subscription resource, out string value)
         {
-            if (resource == null)
+            if ((resource == null) ||
+                (resource.Extension == null) ||
+                (!resource.Extension.Any()))
             {
                 value = null;
                 return false;
             }
 
-            if (!resource.HasExtensions())
+            foreach (Extension ext in resource.Extension)
             {
-                value = null;
-                return false;
+                if (ext.Url == ExtensionUrlKey)
+                {
+                    value = ext.Value.ToString();
+                    return true;
+                }
             }
 
-            value = resource.GetStringExtension(ExtensionUrlKey);
-            return true;
+            value = null;
+            return false;
         }
 
         /// <summary>A r4.Subscription extension method that backport zulip email try get.</summary>
@@ -113,20 +131,25 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool R4ZulipEmailTryGet(this r4.Subscription resource, out string value)
         {
-            if (resource == null)
+            if ((resource == null) ||
+                (resource.Extension == null) ||
+                (!resource.Extension.Any()))
             {
                 value = null;
                 return false;
             }
 
-            if (!resource.HasExtensions())
+            foreach (Extension ext in resource.Extension)
             {
-                value = null;
-                return false;
+                if (ext.Url == ExtensionUrlEmail)
+                {
+                    value = ext.Value.ToString();
+                    return true;
+                }
             }
 
-            value = resource.GetStringExtension(ExtensionUrlEmail);
-            return true;
+            value = null;
+            return false;
         }
 
         /// <summary>A r4.Subscription extension method that backport zulip site try get.</summary>
@@ -135,20 +158,25 @@ namespace argonaut_subscription_server_proxy.Zulip
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool R4ZulipSiteTryGet(this r4.Subscription resource, out string value)
         {
-            if (resource == null)
+            if ((resource == null) ||
+                (resource.Extension == null) ||
+                (!resource.Extension.Any()))
             {
                 value = null;
                 return false;
             }
 
-            if (!resource.HasExtensions())
+            foreach (Extension ext in resource.Extension)
             {
-                value = null;
-                return false;
+                if (ext.Url == ExtensionUrlSite)
+                {
+                    value = ext.Value.ToString();
+                    return true;
+                }
             }
 
-            value = resource.GetStringExtension(ExtensionUrlSite);
-            return true;
+            value = null;
+            return false;
         }
     }
 }
