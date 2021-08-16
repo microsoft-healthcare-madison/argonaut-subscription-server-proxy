@@ -657,6 +657,9 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.End = new DateTimeOffset(maxEnd.ToUniversalTime());
                 }
 
+                // make sure we are requested
+                subscription.Status = Subscription.SubscriptionStatus.Requested;
+
                 _AddOrUpdate(subscription);
 
                 bool shouldSendHandshake = false;
@@ -670,10 +673,10 @@ namespace argonaut_subscription_server_proxy.Managers
                             shouldSendHandshake = true;
                             break;
 
-                        default:
-                            statusCode = HttpStatusCode.BadRequest;
-                            failureContent = $"Invalid channel type requested: {channelType}";
-                            return;
+                        //default:
+                        //    statusCode = HttpStatusCode.BadRequest;
+                        //    failureContent = $"Invalid channel type requested: {channelType}";
+                        //    return;
                     }
                 }
                 else
@@ -1680,13 +1683,11 @@ namespace argonaut_subscription_server_proxy.Managers
                                 subscriptionEventCount);
                         }
 
-                        break;
+                        UpdateErrorState(subscriptionId, notified);
+
+                        // cannot have additional channel types
+                        return true;
                 }
-
-                UpdateErrorState(subscriptionId, notified);
-
-                // cannot have additional channel types
-                return true;
             }
 
             // check for a rest-hook
