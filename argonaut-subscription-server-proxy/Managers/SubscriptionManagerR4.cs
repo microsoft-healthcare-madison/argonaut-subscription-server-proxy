@@ -233,10 +233,6 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = Bundle.BundleType.Searchset,
                 Total = _idSubscriptionDict.Count,
-                Meta = new Hl7.Fhir.Model.Meta()
-                {
-                    LastUpdated = new DateTimeOffset(DateTime.Now.ToUniversalTime()),
-                },
                 Entry = new List<Bundle.EntryComponent>(),
             };
 
@@ -1120,7 +1116,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 EventsSinceSubscriptionStart = eventCount.ToString(),
                 EventsInNotification = eventsInNotification,
-                Status = subscription.Status.ToString(),
+                Status = subscription.Status.ToString().ToLowerInvariant(),
                 Subscription = new fhirCsR4.Models.Reference()
                 {
                     ReferenceField = Program.UrlForR4ResourceId("Subscription", subscription.Id),
@@ -1190,7 +1186,6 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = fhirCsR4.Models.BundleTypeCodes.HISTORY,
                 Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
-                Meta = new fhirCsR4.Models.Meta(),
                 Entry = new List<fhirCsR4.Models.BundleEntry>(),
             };
 
@@ -1530,7 +1525,7 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId].ToString(),
                 EventsInNotification = (int)((high - low) + 1),
-                Status = subscription.Status.ToString(),
+                Status = subscription.Status.ToString().ToLowerInvariant(),
                 Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
                 Subscription = new fhirCsR4.Models.Reference()
                 {
@@ -1545,7 +1540,6 @@ namespace argonaut_subscription_server_proxy.Managers
             {
                 Type = fhirCsR4.Models.BundleTypeCodes.HISTORY,
                 Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
-                Meta = new fhirCsR4.Models.Meta(),
                 Entry = new List<fhirCsR4.Models.BundleEntry>(),
             };
 
@@ -1567,6 +1561,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
+            HashSet<string> addedContents = new HashSet<string>();
+
             for (long i = low; i <= high; i++)
             {
                 if (!_subscriptionEventCache[subscriptionId].ContainsKey(i))
@@ -1584,21 +1580,26 @@ namespace argonaut_subscription_server_proxy.Managers
                     ReferenceField = _subscriptionEventCache[subscriptionId][i].Focus,
                 };
 
-                bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                if (!addedContents.Contains(_subscriptionEventCache[subscriptionId][i].Focus))
                 {
-                    FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
-                    //Extension = new List<fhirCsR4.Models.Extension>()
-                    //{
-                    //    new fhirCsR4.Models.Extension()
-                    //    {
-                    //        Url = BackportedSubscription.ExtensionUrlNotificationFocus,
-                    //        ValueString = i.ToString(),
-                    //    },
-                    //},
-                    Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
-                        ? _subscriptionEventCache[subscriptionId][i].FocusR4
-                        : null,
-                });
+                    addedContents.Add(_subscriptionEventCache[subscriptionId][i].Focus);
+
+                    bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                    {
+                        FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
+                        //Extension = new List<fhirCsR4.Models.Extension>()
+                        //{
+                        //    new fhirCsR4.Models.Extension()
+                        //    {
+                        //        Url = BackportedSubscription.ExtensionUrlNotificationFocus,
+                        //        ValueString = i.ToString(),
+                        //    },
+                        //},
+                        Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
+                            ? _subscriptionEventCache[subscriptionId][i].FocusR4
+                            : null,
+                    });
+                }
 
                 if (_subscriptionEventCache[subscriptionId][i].AdditionalR4.Count > 0)
                 {
@@ -1612,21 +1613,26 @@ namespace argonaut_subscription_server_proxy.Managers
                         ReferenceField = kvp.Key,
                     });
 
-                    bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                    if (!addedContents.Contains(kvp.Key))
                     {
-                        FullUrl = kvp.Key,
-                        //Extension = new List<fhirCsR4.Models.Extension>()
-                        //{
-                        //    new fhirCsR4.Models.Extension()
-                        //    {
-                        //        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
-                        //        ValueString = i.ToString(),
-                        //    },
-                        //},
-                        Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
+                        addedContents.Add(kvp.Key);
+
+                        bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                        {
+                            FullUrl = kvp.Key,
+                            //Extension = new List<fhirCsR4.Models.Extension>()
+                            //{
+                            //    new fhirCsR4.Models.Extension()
+                            //    {
+                            //        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
+                            //        ValueString = i.ToString(),
+                            //    },
+                            //},
+                            Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
                             ? kvp.Value
                             : null,
-                    });
+                        });
+                    }
                 }
 
                 status.NotificationEvent.Add(statusEvent);
