@@ -97,7 +97,8 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if ((ext != null) &&
                     (ext.Value != null) &&
-                    (ext.Value is Coding))
+                    (ext.Value is Coding) &&
+                    (!string.IsNullOrWhiteSpace(((Coding)ext.Value).Code)))
                 {
                     channelType = $"{((Coding)ext.Value).System}#{((Coding)ext.Value).Code}";
                     return true;

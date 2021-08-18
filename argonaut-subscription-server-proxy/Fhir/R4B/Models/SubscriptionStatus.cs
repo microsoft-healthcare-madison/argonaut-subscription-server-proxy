@@ -11,6 +11,180 @@ using fhirCsR4.Serialization;
 namespace fhirCsR4.Models
 {
   /// <summary>
+  /// Detailed information about events relevant to this subscription notification.
+  /// </summary>
+  [JsonConverter(typeof(fhirCsR4.Serialization.JsonStreamComponentConverter<SubscriptionStatusNotificationEvent>))]
+  public class SubscriptionStatusNotificationEvent : BackboneElement,  IFhirJsonSerializable {
+    /// <summary>
+    /// Additional context information for this event. Generally, this will contain references to additional resources included with the event (e.g., the Patient relevant to an Encounter), however it MAY refer to non-FHIR objects.
+    /// </summary>
+    public List<Reference> AdditionalContext { get; set; }
+    /// <summary>
+    /// The sequential number of this event in this subscription context. Note that this value is a 64-bit integer value, encoded as a string.
+    /// </summary>
+    public string EventNumber { get; set; }
+    /// <summary>
+    /// Extension container element for EventNumber
+    /// </summary>
+    public Element _EventNumber { get; set; }
+    /// <summary>
+    /// The focus of this event. While this will usually be a reference to the focus resource of the event, it MAY contain a reference to a non-FHIR object.
+    /// </summary>
+    public Reference Focus { get; set; }
+    /// <summary>
+    /// The actual time this event occured on the server.
+    /// </summary>
+    public string Timestamp { get; set; }
+    /// <summary>
+    /// Extension container element for Timestamp
+    /// </summary>
+    public Element _Timestamp { get; set; }
+    /// <summary>
+    /// Serialize to a JSON object
+    /// </summary>
+    public new void SerializeJson(Utf8JsonWriter writer, JsonSerializerOptions options, bool includeStartObject = true)
+    {
+      if (includeStartObject)
+      {
+        writer.WriteStartObject();
+      }
+      ((fhirCsR4.Models.BackboneElement)this).SerializeJson(writer, options, false);
+
+      if (!string.IsNullOrEmpty(EventNumber))
+      {
+        writer.WriteString("eventNumber", (string)EventNumber!);
+      }
+
+      if (_EventNumber != null)
+      {
+        writer.WritePropertyName("_eventNumber");
+        _EventNumber.SerializeJson(writer, options);
+      }
+
+      if (!string.IsNullOrEmpty(Timestamp))
+      {
+        writer.WriteString("timestamp", (string)Timestamp!);
+      }
+
+      if (_Timestamp != null)
+      {
+        writer.WritePropertyName("_timestamp");
+        _Timestamp.SerializeJson(writer, options);
+      }
+
+      if (Focus != null)
+      {
+        writer.WritePropertyName("focus");
+        Focus.SerializeJson(writer, options);
+      }
+
+      if ((AdditionalContext != null) && (AdditionalContext.Count != 0))
+      {
+        writer.WritePropertyName("additionalContext");
+        writer.WriteStartArray();
+
+        foreach (Reference valAdditionalContext in AdditionalContext)
+        {
+          valAdditionalContext.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
+      }
+
+      if (includeStartObject)
+      {
+        writer.WriteEndObject();
+      }
+    }
+    /// <summary>
+    /// Deserialize a JSON property
+    /// </summary>
+    public new void DeserializeJsonProperty(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+    {
+      switch (propertyName)
+      {
+        case "additionalContext":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          AdditionalContext = new List<Reference>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR4.Models.Reference objAdditionalContext = new fhirCsR4.Models.Reference();
+            objAdditionalContext.DeserializeJson(ref reader, options);
+            AdditionalContext.Add(objAdditionalContext);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (AdditionalContext.Count == 0)
+          {
+            AdditionalContext = null;
+          }
+
+          break;
+
+        case "eventNumber":
+          EventNumber = reader.GetString();
+          break;
+
+        case "_eventNumber":
+          _EventNumber = new fhirCsR4.Models.Element();
+          _EventNumber.DeserializeJson(ref reader, options);
+          break;
+
+        case "focus":
+          Focus = new fhirCsR4.Models.Reference();
+          Focus.DeserializeJson(ref reader, options);
+          break;
+
+        case "timestamp":
+          Timestamp = reader.GetString();
+          break;
+
+        case "_timestamp":
+          _Timestamp = new fhirCsR4.Models.Element();
+          _Timestamp.DeserializeJson(ref reader, options);
+          break;
+
+        default:
+          ((fhirCsR4.Models.BackboneElement)this).DeserializeJsonProperty(ref reader, options, propertyName);
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Deserialize a JSON object
+    /// </summary>
+    public new void DeserializeJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      string propertyName;
+
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonTokenType.EndObject)
+        {
+          return;
+        }
+
+        if (reader.TokenType == JsonTokenType.PropertyName)
+        {
+          propertyName = reader.GetString();
+          reader.Read();
+          this.DeserializeJsonProperty(ref reader, options, propertyName);
+        }
+      }
+
+      throw new JsonException();
+    }
+  }
+  /// <summary>
   /// The SubscriptionStatus resource describes the state of a Subscription during notifications.
   /// </summary>
   [JsonConverter(typeof(fhirCsR4.Serialization.JsonStreamComponentConverter<SubscriptionStatus>))]
@@ -35,6 +209,10 @@ namespace fhirCsR4.Models
     /// Extension container element for EventsSinceSubscriptionStart
     /// </summary>
     public Element _EventsSinceSubscriptionStart { get; set; }
+    /// <summary>
+    /// Detailed information about events relevant to this subscription notification.
+    /// </summary>
+    public List<SubscriptionStatusNotificationEvent> NotificationEvent { get; set; }
     /// <summary>
     /// The status of the subscription, which marks the server state for managing the subscription.
     /// </summary>
@@ -116,6 +294,19 @@ namespace fhirCsR4.Models
       if (EventsInNotification != null)
       {
         writer.WriteNumber("eventsInNotification", (int)EventsInNotification!);
+      }
+
+      if ((NotificationEvent != null) && (NotificationEvent.Count != 0))
+      {
+        writer.WritePropertyName("notificationEvent");
+        writer.WriteStartArray();
+
+        foreach (SubscriptionStatusNotificationEvent valNotificationEvent in NotificationEvent)
+        {
+          valNotificationEvent.SerializeJson(writer, options, true);
+        }
+
+        writer.WriteEndArray();
       }
 
       if (Subscription != null)
@@ -200,6 +391,33 @@ namespace fhirCsR4.Models
           _EventsSinceSubscriptionStart.DeserializeJson(ref reader, options);
           break;
 
+        case "notificationEvent":
+          if ((reader.TokenType != JsonTokenType.StartArray) || (!reader.Read()))
+          {
+            throw new JsonException();
+          }
+
+          NotificationEvent = new List<SubscriptionStatusNotificationEvent>();
+
+          while (reader.TokenType != JsonTokenType.EndArray)
+          {
+            fhirCsR4.Models.SubscriptionStatusNotificationEvent objNotificationEvent = new fhirCsR4.Models.SubscriptionStatusNotificationEvent();
+            objNotificationEvent.DeserializeJson(ref reader, options);
+            NotificationEvent.Add(objNotificationEvent);
+
+            if (!reader.Read())
+            {
+              throw new JsonException();
+            }
+          }
+
+          if (NotificationEvent.Count == 0)
+          {
+            NotificationEvent = null;
+          }
+
+          break;
+
         case "status":
           Status = reader.GetString();
           break;
@@ -280,6 +498,5 @@ namespace fhirCsR4.Models
     public const string HEARTBEAT = "heartbeat";
     public const string EVENT_NOTIFICATION = "event-notification";
     public const string QUERY_STATUS = "query-status";
-    public const string QUERY_EVENT = "query-event";
   }
 }
