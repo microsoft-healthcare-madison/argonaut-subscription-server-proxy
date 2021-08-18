@@ -1191,9 +1191,19 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (TryGetSubscriptionStatus(subscription.Id, out fhirCsR4.Models.SubscriptionStatus status, (content == null) ? 0 : 1, false))
             {
+                string url = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$status";
                 bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                 {
-                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$status",
+                    FullUrl = url,
+                    Request = new fhirCsR4.Models.BundleEntryRequest()
+                    {
+                        Method = "GET",
+                        Url = url,
+                    },
+                    Response = new fhirCsR4.Models.BundleEntryResponse()
+                    {
+                        Status = "200",
+                    },
                 });
             }
 
@@ -1201,6 +1211,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (content != null)
             {
+                string url = Program.UrlForR4ResourceId(content.ResourceType, content.Id);
+
                 switch (subscriptionContent)
                 {
                     case BackportedSubscription.ContentCodeEmpty:
@@ -1209,7 +1221,16 @@ namespace argonaut_subscription_server_proxy.Managers
                         // add the URL, but no resource
                         bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                         {
-                            FullUrl = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
+                            FullUrl = url,
+                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            {
+                                Method = "POST",
+                                Url = url,
+                            },
+                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            {
+                                Status = "204",
+                            },
                             //Extension = new List<fhirCsR4.Models.Extension>()
                             //{
                             //    new fhirCsR4.Models.Extension()
@@ -1237,7 +1258,16 @@ namespace argonaut_subscription_server_proxy.Managers
                         // add the URL and the resource
                         bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                         {
-                            FullUrl = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
+                            FullUrl = url,
+                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            {
+                                Method = "POST",
+                                Url = url,
+                            },
+                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            {
+                                Status = "204",
+                            },
                             Resource = content,
                             //Extension = new List<fhirCsR4.Models.Extension>()
                             //{
@@ -1402,6 +1432,15 @@ namespace argonaut_subscription_server_proxy.Managers
                             bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                             {
                                 FullUrl = fullUrl,
+                                Request = new fhirCsR4.Models.BundleEntryRequest()
+                                {
+                                    Method = "GET",
+                                    Url = fullUrl,
+                                },
+                                Response = new fhirCsR4.Models.BundleEntryResponse()
+                                {
+                                    Status = "200",
+                                },
                                 //Extension = new List<fhirCsR4.Models.Extension>()
                                 //{
                                 //    new fhirCsR4.Models.Extension()
@@ -1418,6 +1457,15 @@ namespace argonaut_subscription_server_proxy.Managers
                             bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                             {
                                 FullUrl = fullUrl,
+                                Request = new fhirCsR4.Models.BundleEntryRequest()
+                                {
+                                    Method = "GET",
+                                    Url = fullUrl,
+                                },
+                                Response = new fhirCsR4.Models.BundleEntryResponse()
+                                {
+                                    Status = "200",
+                                },
                                 Resource = res,
                                 //Extension = new List<fhirCsR4.Models.Extension>()
                                 //{
@@ -1546,6 +1594,15 @@ namespace argonaut_subscription_server_proxy.Managers
             bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
             {
                 FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$events",
+                Request = new fhirCsR4.Models.BundleEntryRequest()
+                {
+                    Method = "GET",
+                    Url = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$events",
+                },
+                Response = new fhirCsR4.Models.BundleEntryResponse()
+                {
+                    Status = "200",
+                },
                 //Resource = status,
             });
 
@@ -1587,6 +1644,15 @@ namespace argonaut_subscription_server_proxy.Managers
                     bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                     {
                         FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
+                        Request = new fhirCsR4.Models.BundleEntryRequest()
+                        {
+                            Method = "POST",
+                            Url = _subscriptionEventCache[subscriptionId][i].Focus,
+                        },
+                        Response = new fhirCsR4.Models.BundleEntryResponse()
+                        {
+                            Status = "204",
+                        },
                         //Extension = new List<fhirCsR4.Models.Extension>()
                         //{
                         //    new fhirCsR4.Models.Extension()
@@ -1620,6 +1686,15 @@ namespace argonaut_subscription_server_proxy.Managers
                         bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
                         {
                             FullUrl = kvp.Key,
+                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            {
+                                Method = "GET",
+                                Url = kvp.Key,
+                            },
+                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            {
+                                Status = "200",
+                            },
                             //Extension = new List<fhirCsR4.Models.Extension>()
                             //{
                             //    new fhirCsR4.Models.Extension()
@@ -1629,8 +1704,8 @@ namespace argonaut_subscription_server_proxy.Managers
                             //    },
                             //},
                             Resource = (contentHint == BackportedSubscription.ContentCodeFullResource)
-                            ? kvp.Value
-                            : null,
+                                ? kvp.Value
+                                : null,
                         });
                     }
                 }

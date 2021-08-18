@@ -163,17 +163,28 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 try
                 {
-                    using (TextReader reader = new StreamReader(context.Request.Body))
+                    string requestContent;
+
+                    // grab the message body to look at
+                    using (System.IO.StreamReader requestReader = new System.IO.StreamReader(context.Request.Body))
                     {
-                        string requestContent = reader.ReadToEndAsync().Result;
+                        requestContent = requestReader.ReadToEndAsync().Result;
+                    }
 
-                        fhirCsR4.Models.Parameters opParams = JsonSerializer.Deserialize<fhirCsR4.Models.Parameters>(requestContent);
+                    fhirCsR4.Models.Parameters opParams = JsonSerializer.Deserialize<fhirCsR4.Models.Parameters>(requestContent);
 
-                        foreach (fhirCsR4.Models.ParametersParameter param in opParams.Parameter)
+                    foreach (fhirCsR4.Models.ParametersParameter param in opParams.Parameter)
+                    {
+                        if (param.Name == "ids")
                         {
-                            if (param.Name == "ids")
+                            if (!string.IsNullOrEmpty(param.ValueString))
                             {
                                 ids.Add(param.ValueString);
+                            }
+
+                            if (!string.IsNullOrEmpty(param.ValueId))
+                            {
+                                ids.Add(param.ValueId);
                             }
                         }
                     }
