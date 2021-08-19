@@ -51,6 +51,10 @@ namespace argonaut_subscription_server_proxy
         /// <param name="args">An array of command-line argument strings.</param>
         public static void Main(string[] args)
         {
+            Console.WriteLine($"Running:" +
+                $" {System.Reflection.Assembly.GetEntryAssembly().GetName()}," +
+                $" version: {System.Reflection.Assembly.GetEntryAssembly().ImageRuntimeVersion}");
+
             // setup our configuration (command line > environment > appsettings.json)
             Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
