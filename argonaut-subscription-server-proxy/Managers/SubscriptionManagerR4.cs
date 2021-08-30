@@ -1569,10 +1569,12 @@ namespace argonaut_subscription_server_proxy.Managers
                 low = temp;
             }
 
+            int eventsIncluded = 0;
+
             fhirCsR4.Models.SubscriptionStatus status = new fhirCsR4.Models.SubscriptionStatus()
             {
                 EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId].ToString(),
-                EventsInNotification = (int)((high - low) + 1),
+                EventsInNotification = 0,
                 Status = subscription.Status.ToString().ToLowerInvariant(),
                 Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
                 Subscription = new fhirCsR4.Models.Reference()
@@ -1626,6 +1628,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     continue;
                 }
+
+                eventsIncluded++;
 
                 fhirCsR4.Models.SubscriptionStatusNotificationEvent statusEvent = new fhirCsR4.Models.SubscriptionStatusNotificationEvent()
                 {
@@ -1712,6 +1716,8 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 status.NotificationEvent.Add(statusEvent);
             }
+
+            status.EventsInNotification = eventsIncluded;
 
             // add the contents of our SubscriptionStatus
             bundle.Entry[0].Resource = status;
