@@ -217,7 +217,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">The topic.</param>
         private void _AddOrUpdate(SubscriptionTopic topic)
         {
-            string localUrl = Program.UrlForR5ResourceId("SubscriptionTopic", topic.Title);
+            string localUrl = Program.UrlForR4ResourceId("SubscriptionTopic", topic.Id);
 
             // check for local url already existing
             if (_localUrlTopicDict.ContainsKey(localUrl))
