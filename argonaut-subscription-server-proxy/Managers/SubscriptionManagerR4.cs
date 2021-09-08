@@ -564,9 +564,24 @@ namespace argonaut_subscription_server_proxy.Managers
             // add subscriptions on this level
             if (node.SubscriptionsR4.Count > 0)
             {
+                List<Subscription> subscriptionsToRemove = new List<Subscription>();
                 foreach (Subscription subscription in node.SubscriptionsR4)
                 {
+                    if (!_idSubscriptionDict.ContainsKey(subscription.Id))
+                    {
+                        subscriptionsToRemove.Add(subscription);
+                        continue;
+                    }
+
                     subscriptions.Add(_idSubscriptionDict[subscription.Id]);
+                }
+
+                if (subscriptionsToRemove.Any())
+                {
+                    foreach (Subscription subscription in subscriptionsToRemove)
+                    {
+                        node.SubscriptionsR4.Remove(subscription);
+                    }
                 }
             }
 

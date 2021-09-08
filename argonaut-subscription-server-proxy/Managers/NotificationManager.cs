@@ -167,7 +167,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     Console.WriteLine($" <<< sent REST" +
                         $" {subscriptionId} ({endpoint})" +
-                        $" notification for: {Program.UrlForR5ResourceId(contentTypeName, contentId)}");
+                        $" notification for: {contentTypeName}/{contentId}");
                 }
             }
             catch (Exception ex)
@@ -545,12 +545,12 @@ namespace argonaut_subscription_server_proxy.Managers
                     endpoint,
                     mimeType.StartsWith("text/html", StringComparison.Ordinal) ? body : string.Empty,
                     mimeType.StartsWith("text/plain", StringComparison.Ordinal) ? body : string.Empty,
-                    $"FHIR Notification - {subscriptionId} - {Program.UrlForR5ResourceId(contentTypeName, contentId)}",
+                    $"FHIR Notification - {subscriptionId} - {contentTypeName}/{contentId}",
                     attachments);
 
                 Console.WriteLine($" <<< sent EMAIL" +
                     $" {subscriptionId} ({endpoint})" +
-                    $" notification for: {Program.UrlForR5ResourceId(contentTypeName, contentId)}");
+                    $" notification for: {contentTypeName}{contentId}");
             }
             catch (Exception ex)
             {

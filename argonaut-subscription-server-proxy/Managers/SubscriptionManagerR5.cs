@@ -560,7 +560,26 @@ namespace argonaut_subscription_server_proxy.Managers
             // add subscriptions on this level
             if (node.SubscriptionsR5.Count > 0)
             {
-                subscriptions.AddRange(node.SubscriptionsR5);
+                List<Subscription> subscriptionsToRemove = new List<Subscription>();
+                foreach (Subscription subscription in node.SubscriptionsR5)
+                {
+                    if (!_idSubscriptionDict.ContainsKey(subscription.Id))
+                    {
+                        subscriptionsToRemove.Add(subscription);
+                        continue;
+                    }
+
+                    subscriptions.Add(_idSubscriptionDict[subscription.Id]);
+                }
+
+                if (subscriptionsToRemove.Any())
+                {
+                    foreach (Subscription subscription in subscriptionsToRemove)
+                    {
+                        node.SubscriptionsR5.Remove(subscription);
+                    }
+                }
+
             }
 
             // check each of our keys
