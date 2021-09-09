@@ -41,5 +41,104 @@ namespace argonaut_subscription_server_proxy.Models
         /// <summary>Gets or sets the exclusions.</summary>
         /// <value>The exclusions.</value>
         public Dictionary<string, SubscriptionFilterNode> Exclusions { get; set; }
+
+        /// <summary>Removes the subscription described by ID.</summary>
+        /// <param name="id">            The identifier.</param>
+        /// <param name="nodeIsNowEmpty">[out] True if node is now empty.</param>
+        public void RemoveSubscription(string id, out bool nodeIsNowEmpty)
+        {
+            List<r4.Subscription> r4ToRemove = new List<r4.Subscription>();
+            foreach (r4.Subscription subscription in SubscriptionsR4)
+            {
+                if (subscription.Id == id)
+                {
+                    r4ToRemove.Add(subscription);
+                }
+            }
+
+            if (r4ToRemove.Count != 0)
+            {
+                foreach (r4.Subscription subscription in r4ToRemove)
+                {
+                    SubscriptionsR4.Remove(subscription);
+                }
+            }
+
+            List<r5.Subscription> r5ToRemove = new List<r5.Subscription>();
+            foreach (r5.Subscription subscription in SubscriptionsR5)
+            {
+                if (subscription.Id == id)
+                {
+                    r5ToRemove.Add(subscription);
+                }
+            }
+
+            if (r5ToRemove.Count != 0)
+            {
+                foreach (r5.Subscription subscription in r5ToRemove)
+                {
+                    SubscriptionsR5.Remove(subscription);
+                }
+            }
+
+            List<string> nodeKeysToRemove = new List<string>();
+
+            foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in Inclusions)
+            {
+                kvp.Value.RemoveSubscription(id, out bool isEmpty);
+
+                if (isEmpty)
+                {
+                    nodeKeysToRemove.Add(kvp.Key);
+                }
+            }
+
+            if (nodeKeysToRemove.Count != 0)
+            {
+                foreach (string key in nodeKeysToRemove)
+                {
+                    Inclusions.Remove(key);
+                }
+
+                nodeKeysToRemove.Clear();
+            }
+
+            foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in Exclusions)
+            {
+                kvp.Value.RemoveSubscription(id, out bool isEmpty);
+
+                if (isEmpty)
+                {
+                    nodeKeysToRemove.Add(kvp.Key);
+                }
+            }
+
+            if (nodeKeysToRemove.Count != 0)
+            {
+                foreach (string key in nodeKeysToRemove)
+                {
+                    Exclusions.Remove(key);
+                }
+
+                nodeKeysToRemove.Clear();
+            }
+
+            nodeIsNowEmpty = IsEmpty();
+        }
+
+        /// <summary>Query if this object is empty.</summary>
+        /// <returns>True if empty, false if not.</returns>
+        public bool IsEmpty()
+        {
+            if ((SubscriptionsR4.Count == 0) &&
+                (SubscriptionsR5.Count == 0) &&
+                (Inclusions.Count == 0) &&
+                (Exclusions.Count == 0))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

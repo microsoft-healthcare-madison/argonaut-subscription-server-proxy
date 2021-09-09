@@ -289,65 +289,6 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        /// <summary>Removes the subscription from node tree.</summary>
-        /// <param name="subscription">The subscription.</param>
-        /// <param name="node">        The node.</param>
-        /// <param name="isEmpty">     [out] True if is empty, false if not.</param>
-        private void RemoveSubscriptionFromNodeTree(
-            Subscription subscription,
-            SubscriptionFilterNode node,
-            out bool isEmpty)
-        {
-            isEmpty = false;
-
-            lock (_resourceSubscriptionDictLock)
-            {
-                if (node.SubscriptionsR5.Contains(subscription))
-                {
-                    node.SubscriptionsR5.Remove(subscription);
-                }
-            }
-
-            string[] inclusionKeys = node.Inclusions.Keys.ToArray<string>();
-            foreach (string key in inclusionKeys)
-            {
-                // recurse
-                RemoveSubscriptionFromNodeTree(subscription, node.Inclusions[key], out bool subIsEmpty);
-
-                if (subIsEmpty)
-                {
-                    // remove this node
-                    lock (_resourceSubscriptionDictLock)
-                    {
-                        node.Inclusions.Remove(key);
-                    }
-                }
-            }
-
-            string[] exclusionKeys = node.Exclusions.Keys.ToArray<string>();
-            foreach (string key in exclusionKeys)
-            {
-                // recurse
-                RemoveSubscriptionFromNodeTree(subscription, node.Exclusions[key], out bool subIsEmpty);
-
-                if (subIsEmpty)
-                {
-                    // remove this node
-                    lock (_resourceSubscriptionDictLock)
-                    {
-                        node.Exclusions.Remove(key);
-                    }
-                }
-            }
-
-            if ((node.SubscriptionsR5.Count == 0) &&
-                (node.Inclusions.Count == 0) &&
-                (node.Exclusions.Count == 0))
-            {
-                isEmpty = true;
-            }
-        }
-
         /// <summary>Removes the subscription specified by ID.</summary>
         /// <param name="id">The identifier.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -358,19 +299,30 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
+            List<string> keysToRemove = new List<string>();
+
             // grab this object
             Subscription subscription = _idSubscriptionDict[id];
 
             // traverse trackings looking for this subscription
-            string[] resourceKeys = _resourceSubscriptionDict.Keys.ToArray<string>();
-            foreach (string key in resourceKeys)
+            foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in _resourceSubscriptionDict)
             {
-                // check this node
-                RemoveSubscriptionFromNodeTree(subscription, _resourceSubscriptionDict[key], out bool isEmpty);
-
-                if (isEmpty)
+                lock (_resourceSubscriptionDictLock)
                 {
-                    lock (_resourceSubscriptionDictLock)
+                    kvp.Value.RemoveSubscription(id, out bool isEmpty);
+
+                    if (isEmpty)
+                    {
+                        keysToRemove.Add(id);
+                    }
+                }
+            }
+
+            if (keysToRemove.Any())
+            {
+                lock (_resourceSubscriptionDictLock)
+                {
+                    foreach (string key in keysToRemove)
                     {
                         _resourceSubscriptionDict.Remove(key);
                     }
@@ -1258,91 +1210,102 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(string subscriptionId, Resource content = null)
         {
-            // sanity checks
-            if (string.IsNullOrEmpty(subscriptionId) ||
-                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            try
             {
-                // fail
-                return false;
-            }
-
-            string contentTypeName = (content == null) ? string.Empty : content.TypeName;
-            string contentId = (content == null) ? string.Empty : content.Id;
-
-            // get the subscription
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
-
-            // get our bundle we want to send
-            BundleForSubscriptionNotification(
-                subscription,
-                content,
-                out Bundle bundle,
-                out long subscriptionEventCount);
-
-            string json = _fhirSerializer.SerializeToString(bundle);
-
-            // check for a rest-hook
-            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
-            {
-                // send via hook
-                bool notified = NotificationManager.TryNotifyRestHook(
-                    subscription.Id,
-                    subscription.Endpoint,
-                    subscription.Header,
-                    json,
-                    contentTypeName,
-                    contentId,
-                    subscriptionEventCount);
-
-                if (notified)
+                // sanity checks
+                if (string.IsNullOrEmpty(subscriptionId) ||
+                    (!_idSubscriptionDict.ContainsKey(subscriptionId)))
                 {
-                    // check to see if we need to clear an error
-                    if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                    // fail
+                    return false;
+                }
+
+                string contentTypeName = (content == null) ? string.Empty : content.TypeName;
+                string contentId = (content == null) ? string.Empty : content.Id;
+
+                // get the subscription
+                Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+                // get our bundle we want to send
+                BundleForSubscriptionNotification(
+                    subscription,
+                    content,
+                    out Bundle bundle,
+                    out long subscriptionEventCount);
+
+                string json = _fhirSerializer.SerializeToString(bundle);
+
+                // check for a rest-hook
+                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
+                {
+                    // send via hook
+                    bool notified = NotificationManager.TryNotifyRestHook(
+                        subscription.Id,
+                        subscription.Endpoint,
+                        subscription.Header,
+                        json,
+                        contentTypeName,
+                        contentId,
+                        subscriptionEventCount);
+
+                    if (notified)
                     {
-                        // _idSubscriptionDict[subscription.Id].Error = null;
-                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                        // check to see if we need to clear an error
+                        if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                        {
+                            // _idSubscriptionDict[subscription.Id].Error = null;
+                            _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                        }
+                    }
+                    else
+                    {
+                        // done
+                        // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
+                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
                     }
                 }
-                else
-                {
-                    // done
-                    // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                }
-            }
 
-            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
-            {
-                // send via email
-                bool notified = NotificationManager.TryNotifyEmail(
-                    subscription.Id,
-                    subscription.Endpoint,
-                    subscription.ContentType,
-                    subscription.Content.ToString(),
-                    json,
-                    contentTypeName,
-                    contentId,
-                    subscriptionEventCount);
-
-                if (notified)
+                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
                 {
-                    // check to see if we need to clear an error
-                    if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                    // send via email
+                    bool notified = NotificationManager.TryNotifyEmail(
+                        subscription.Id,
+                        subscription.Endpoint,
+                        subscription.ContentType,
+                        subscription.Content.ToString(),
+                        json,
+                        contentTypeName,
+                        contentId,
+                        subscriptionEventCount);
+
+                    if (notified)
                     {
-                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                        // check to see if we need to clear an error
+                        if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                        {
+                            _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                        }
+                    }
+                    else
+                    {
+                        // done
+                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
                     }
                 }
-                else
+
+                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Websocket.Code)
                 {
-                    // done
-                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
+                    // send via websocket
+                    WebsocketManager.QueueMessagesForSubscription(subscription, json);
                 }
             }
-
-            if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Websocket.Code)
+            catch (Exception ex)
             {
-                // send via websocket
-                WebsocketManager.QueueMessagesForSubscription(subscription, json);
+                Console.WriteLine($"SubscriptionManagerR5.TryNotifySubscription <<< caught: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($" <<< inner: {ex.InnerException.Message}");
+                }
             }
 
             // done

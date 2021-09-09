@@ -292,57 +292,6 @@ namespace argonaut_subscription_server_proxy.Managers
             return false;
         }
 
-        /// <summary>Removes the subscription from node tree.</summary>
-        /// <param name="subscription">The subscription.</param>
-        /// <param name="node">        The node.</param>
-        /// <param name="isEmpty">     [out] True if is empty, false if not.</param>
-        private void RemoveSubscriptionFromNodeTree(
-            Subscription subscription,
-            SubscriptionFilterNode node,
-            out bool isEmpty)
-        {
-            isEmpty = false;
-
-            string[] inclusionKeys = node.Inclusions.Keys.ToArray<string>();
-            foreach (string key in inclusionKeys)
-            {
-                // recurse
-                RemoveSubscriptionFromNodeTree(subscription, node.Inclusions[key], out bool subIsEmpty);
-
-                if (subIsEmpty)
-                {
-                    // remove this node
-                    lock (_resourceSubscriptionDictLock)
-                    {
-                        node.Inclusions.Remove(key);
-                    }
-                }
-            }
-
-            string[] exclusionKeys = node.Exclusions.Keys.ToArray<string>();
-            foreach (string key in exclusionKeys)
-            {
-                // recurse
-                RemoveSubscriptionFromNodeTree(subscription, node.Exclusions[key], out bool subIsEmpty);
-
-                if (subIsEmpty)
-                {
-                    // remove this node
-                    lock (_resourceSubscriptionDictLock)
-                    {
-                        node.Exclusions.Remove(key);
-                    }
-                }
-            }
-
-            if ((node.SubscriptionsR4.Count == 0) &&
-                (node.Inclusions.Count == 0) &&
-                (node.Exclusions.Count == 0))
-            {
-                isEmpty = true;
-            }
-        }
-
         /// <summary>Removes the subscription specified by ID.</summary>
         /// <param name="id">The identifier.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -353,19 +302,30 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
+            List<string> keysToRemove = new ();
+
             // grab this object
             Subscription subscription = _idSubscriptionDict[id];
 
             // traverse trackings looking for this subscription
-            string[] resourceKeys = _resourceSubscriptionDict.Keys.ToArray<string>();
-            foreach (string key in resourceKeys)
+            foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in _resourceSubscriptionDict)
             {
-                // check this node
-                RemoveSubscriptionFromNodeTree(subscription, _resourceSubscriptionDict[key], out bool isEmpty);
-
-                if (isEmpty)
+                lock (_resourceSubscriptionDictLock)
                 {
-                    lock (_resourceSubscriptionDictLock)
+                    kvp.Value.RemoveSubscription(id, out bool isEmpty);
+
+                    if (isEmpty)
+                    {
+                        keysToRemove.Add(id);
+                    }
+                }
+            }
+
+            if (keysToRemove.Any())
+            {
+                lock (_resourceSubscriptionDictLock)
+                {
+                    foreach (string key in keysToRemove)
                     {
                         _resourceSubscriptionDict.Remove(key);
                     }
@@ -541,7 +501,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // notify all subscriptions
                 foreach (Subscription subscription in subscriptions)
                 {
-                    TryNotifySubscription(subscription.Id, csEncounter);
+                    _ = TryNotifySubscription(subscription.Id, csEncounter);
                 }
             }
             catch (Exception ex)
@@ -564,23 +524,11 @@ namespace argonaut_subscription_server_proxy.Managers
             // add subscriptions on this level
             if (node.SubscriptionsR4.Count > 0)
             {
-                List<Subscription> subscriptionsToRemove = new List<Subscription>();
                 foreach (Subscription subscription in node.SubscriptionsR4)
                 {
-                    if (!_idSubscriptionDict.ContainsKey(subscription.Id))
+                    if (_idSubscriptionDict.ContainsKey(subscription.Id))
                     {
-                        subscriptionsToRemove.Add(subscription);
-                        continue;
-                    }
-
-                    subscriptions.Add(_idSubscriptionDict[subscription.Id]);
-                }
-
-                if (subscriptionsToRemove.Any())
-                {
-                    foreach (Subscription subscription in subscriptionsToRemove)
-                    {
-                        node.SubscriptionsR4.Remove(subscription);
+                        subscriptions.Add(_idSubscriptionDict[subscription.Id]);
                     }
                 }
             }
@@ -1772,141 +1720,152 @@ namespace argonaut_subscription_server_proxy.Managers
             string subscriptionId,
             fhirCsR4.Models.Resource csContent = null)
         {
-            // sanity checks
-            if (string.IsNullOrEmpty(subscriptionId) ||
-                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            try
             {
-                // fail
-                return false;
-            }
-
-            string contentTypeName = (csContent == null) ? string.Empty : csContent.ResourceType;
-            string contentId = (csContent == null) ? string.Empty : csContent.Id;
-
-            // get the subscription
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
-
-            // get our bundle we want to send
-            BundleForSubscriptionNotification(
-                subscription,
-                csContent,
-                out fhirCsR4.Models.Bundle bundle,
-                out long subscriptionEventCount,
-                out CachedNotificationEvent cacheNotification);
-
-            string json = System.Text.Json.JsonSerializer.Serialize(bundle);
-
-            if (cacheNotification != null)
-            {
-                _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
-                if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
+                // sanity checks
+                if (string.IsNullOrEmpty(subscriptionId) ||
+                    (!_idSubscriptionDict.ContainsKey(subscriptionId)))
                 {
-                    _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
+                    // fail
+                    return false;
+                }
+
+                string contentTypeName = (csContent == null) ? string.Empty : csContent.ResourceType;
+                string contentId = (csContent == null) ? string.Empty : csContent.Id;
+
+                // get the subscription
+                Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+                // get our bundle we want to send
+                BundleForSubscriptionNotification(
+                    subscription,
+                    csContent,
+                    out fhirCsR4.Models.Bundle bundle,
+                    out long subscriptionEventCount,
+                    out CachedNotificationEvent cacheNotification);
+
+                string json = System.Text.Json.JsonSerializer.Serialize(bundle);
+
+                if (cacheNotification != null)
+                {
+                    _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
+                    if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
+                    {
+                        _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
+                    }
+                }
+
+                // check for additional channel types
+                if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
+                {
+                    bool notified = false;
+
+                    switch (channelType)
+                    {
+                        case ZulipExtensionsR4.ZulipChannelUrl:
+                            {
+                                bool usePm = subscription.R4ZulipPmUserIdTryGet(out string pmUserId);
+                                bool useStream = subscription.R4ZulipStreamIdTryGet(out string streamId);
+
+                                if ((!usePm) && (!useStream))
+                                {
+                                    UpdateErrorState(subscriptionId, false);
+                                    return false;
+                                }
+
+                                if (!subscription.R4ZulipSiteTryGet(out string site))
+                                {
+                                    site = Program.Configuration["Zulip_Site"];
+                                }
+
+                                if (!subscription.R4ZulipEmailTryGet(out string email))
+                                {
+                                    email = Program.Configuration["Zulip_Email"];
+                                }
+
+                                if (!subscription.R4ZulipKeyTryGet(out string key))
+                                {
+                                    key = Program.Configuration["Zulip_Key"];
+                                }
+
+                                notified = NotificationManager.TryNotifyZulip(
+                                    subscriptionId,
+                                    Program.UrlForR4ResourceId("Subscription", subscriptionId),
+                                    site,
+                                    email,
+                                    key,
+                                    streamId,
+                                    pmUserId,
+                                    subscription.Channel.Payload,
+                                    subscription.BackportContentGet(),
+                                    json,
+                                    contentTypeName,
+                                    contentId,
+                                    Program.UrlForR4ResourceId(contentTypeName, contentId),
+                                    subscriptionEventCount);
+                            }
+
+                            UpdateErrorState(subscriptionId, notified);
+
+                            // cannot have additional channel types
+                            return true;
+                    }
+                }
+
+                // check for a rest-hook
+                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.RestHook)
+                {
+                    // send via hook
+                    bool notified = NotificationManager.TryNotifyRestHook(
+                        subscriptionId,
+                        subscription.Channel.Endpoint,
+                        subscription.Channel.Header,
+                        json,
+                        contentTypeName,
+                        contentId,
+                        subscriptionEventCount);
+
+                    UpdateErrorState(subscriptionId, notified);
+
+                    // cannot have additional channel types
+                    return true;
+                }
+
+                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Email)
+                {
+                    // send via email
+                    bool notified = NotificationManager.TryNotifyEmail(
+                        subscriptionId,
+                        subscription.Channel.Endpoint,
+                        subscription.Channel.Payload,
+                        subscription.BackportContentGet(),
+                        json,
+                        contentTypeName,
+                        contentId,
+                        subscriptionEventCount);
+
+                    UpdateErrorState(subscriptionId, notified);
+
+                    // cannot have additional channel types
+                    return true;
+                }
+
+                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Websocket)
+                {
+                    // send via websocket
+                    WebsocketManager.QueueMessagesForSubscription(subscription, json);
+
+                    // cannot have additional channel types
+                    return true;
                 }
             }
-
-            // check for additional channel types
-            if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
+            catch (Exception ex)
             {
-                bool notified = false;
-
-                switch (channelType)
+                Console.WriteLine($"SubscriptionManagerR4.TryNotifySubscription <<< caught: {ex.Message}");
+                if (ex.InnerException != null)
                 {
-                    case ZulipExtensionsR4.ZulipChannelUrl:
-                        {
-                            bool usePm = subscription.R4ZulipPmUserIdTryGet(out string pmUserId);
-                            bool useStream = subscription.R4ZulipStreamIdTryGet(out string streamId);
-
-                            if ((!usePm) && (!useStream))
-                            {
-                                UpdateErrorState(subscriptionId, false);
-                                return false;
-                            }
-
-                            if (!subscription.R4ZulipSiteTryGet(out string site))
-                            {
-                                site = Program.Configuration["Zulip_Site"];
-                            }
-
-                            if (!subscription.R4ZulipEmailTryGet(out string email))
-                            {
-                                email = Program.Configuration["Zulip_Email"];
-                            }
-
-                            if (!subscription.R4ZulipKeyTryGet(out string key))
-                            {
-                                key = Program.Configuration["Zulip_Key"];
-                            }
-
-                            notified = NotificationManager.TryNotifyZulip(
-                                subscriptionId,
-                                Program.UrlForR4ResourceId("Subscription", subscriptionId),
-                                site,
-                                email,
-                                key,
-                                streamId,
-                                pmUserId,
-                                subscription.Channel.Payload,
-                                subscription.BackportContentGet(),
-                                json,
-                                contentTypeName,
-                                contentId,
-                                Program.UrlForR4ResourceId(contentTypeName, contentId),
-                                subscriptionEventCount);
-                        }
-
-                        UpdateErrorState(subscriptionId, notified);
-
-                        // cannot have additional channel types
-                        return true;
+                    Console.WriteLine($" <<< inner: {ex.InnerException.Message}");
                 }
-            }
-
-            // check for a rest-hook
-            if (subscription.Channel.Type == Subscription.SubscriptionChannelType.RestHook)
-            {
-                // send via hook
-                bool notified = NotificationManager.TryNotifyRestHook(
-                    subscriptionId,
-                    subscription.Channel.Endpoint,
-                    subscription.Channel.Header,
-                    json,
-                    contentTypeName,
-                    contentId,
-                    subscriptionEventCount);
-
-                UpdateErrorState(subscriptionId, notified);
-
-                // cannot have additional channel types
-                return true;
-            }
-
-            if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Email)
-            {
-                // send via email
-                bool notified = NotificationManager.TryNotifyEmail(
-                    subscriptionId,
-                    subscription.Channel.Endpoint,
-                    subscription.Channel.Payload,
-                    subscription.BackportContentGet(),
-                    json,
-                    contentTypeName,
-                    contentId,
-                    subscriptionEventCount);
-
-                UpdateErrorState(subscriptionId, notified);
-
-                // cannot have additional channel types
-                return true;
-            }
-
-            if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Websocket)
-            {
-                // send via websocket
-                WebsocketManager.QueueMessagesForSubscription(subscription, json);
-
-                // cannot have additional channel types
-                return true;
             }
 
             // no notification has been sent
