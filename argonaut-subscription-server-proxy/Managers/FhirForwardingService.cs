@@ -301,18 +301,21 @@ namespace argonaut_subscription_server_proxy.Managers
 
             try
             {
+                string relativePath = incomingRequest.Path;
+
+                if (relativePath[0] == '/')
+                {
+                    relativePath = relativePath.Substring(1);
+                }
+
                 if (incomingRequest.QueryString.HasValue)
                 {
-                    fhirRequest = new HttpRequestMessage(
-                        forwarderResponse.Method,
-                        new Uri(_uriR5, incomingRequest.Path + incomingRequest.QueryString.ToString()));
+                    relativePath += incomingRequest.QueryString.ToString();
                 }
-                else
-                {
-                    fhirRequest = new HttpRequestMessage(
-                        forwarderResponse.Method,
-                        new Uri(_uriR5, incomingRequest.Path));
-                }
+
+                fhirRequest = new HttpRequestMessage(
+                    forwarderResponse.Method,
+                    new Uri(_uriR4, relativePath));
 
                 AddFhirHeaders(incomingRequest, fhirRequest);
                 AddContent(incomingRequest, fhirRequest, ref forwarderResponse);
