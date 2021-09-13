@@ -444,7 +444,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             if (id.ToLowerInvariant() == "subscription")
             {
-                await ProcessorUtils.SerializeR4(context, SubscriptionManagerR4.GetSubscriptionsBundle());
+                await ProcessorUtils.SerializeR4(context, SubscriptionManagerR4.GetSubscriptionsBundle(context.Request.Query));
             }
             else if (SubscriptionManagerR4.TryGetSubscription(id, out fhir4.Hl7.Fhir.Model.Subscription foundSub))
             {

@@ -137,7 +137,7 @@ namespace argonaut_subscription_server_proxy.Backport
 
                 if (delimterIndex != -1)
                 {
-                    resourceName = filterString.Substring(delimterIndex);
+                    resourceName = filterString.Substring(0, delimterIndex);
                     filterString = filterString.Substring(delimterIndex + 1);
                 }
                 else
@@ -376,6 +376,19 @@ namespace argonaut_subscription_server_proxy.Backport
 
             /// <summary>Gets or sets the value.</summary>
             public string Value { get; set; }
+
+            /// <summary>Returns a string that represents the current object.</summary>
+            /// <returns>A string that represents the current object.</returns>
+            public override string ToString()
+            {
+                if ((Modifier == r5.SubscriptionSearchModifier.Equal) ||
+                    (Modifier == r5.SubscriptionSearchModifier.Eq))
+                {
+                    return $"{Resource}?{FilterParameter}={Value}";
+                }
+
+                return $"{Resource}?{FilterParameter}:{Modifier}={Value}";
+            }
         }
     }
 }

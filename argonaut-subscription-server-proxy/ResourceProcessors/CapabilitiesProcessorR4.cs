@@ -222,6 +222,37 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         Definition = "http://hl7.org/fhir/uv/subscriptions-backport/OperationDefinition/backport-subscription-get-ws-binding-token",
                     },
                 },
+                SearchParam = new List<fhirCsR4.Models.CapabilityStatementRestResourceSearchParam>()
+                {
+                    new fhirCsR4.Models.CapabilityStatementRestResourceSearchParam()
+                    {
+                        Name = "_id",
+                        Definition = "http://hl7.org/fhir/SearchParameter/subscription-_id",
+                        Type = "token",
+                        Documentation = "The ID of the resource",
+                    },
+                    new fhirCsR4.Models.CapabilityStatementRestResourceSearchParam()
+                    {
+                        Name = "status",
+                        Definition = "http://hl7.org/fhir/SearchParameter/subscription-status",
+                        Type = "token",
+                        Documentation = "The current status of the subscription",
+                    },
+                    new fhirCsR4.Models.CapabilityStatementRestResourceSearchParam()
+                    {
+                        Name = "url",
+                        Definition = "http://hl7.org/fhir/SearchParameter/subscription-url",
+                        Type = "uri",
+                        Documentation = "The uri that will receive the notifications",
+                    },
+                    new fhirCsR4.Models.CapabilityStatementRestResourceSearchParam()
+                    {
+                        Name = "criteria",
+                        Definition = "http://hl7.org/fhir/SearchParameter/subscription-criteria",
+                        Type = "string",
+                        Documentation = "The search rules used to determine when to send a notification",
+                    },
+                },
             };
         }
 

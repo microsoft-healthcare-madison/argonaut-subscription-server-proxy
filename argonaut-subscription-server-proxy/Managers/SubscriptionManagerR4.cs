@@ -117,10 +117,11 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
+        /// <param name="queryCollection">(Optional) The query collection.</param>
         /// <returns>The subscriptions bundle.</returns>
-        public static Bundle GetSubscriptionsBundle()
+        public static Bundle GetSubscriptionsBundle(IQueryCollection queryCollection = null)
         {
-            return _instance._GetSubscriptionsBundle();
+            return _instance._GetSubscriptionsBundle(queryCollection);
         }
 
         /// <summary>Handles a POST of a Subscription object.</summary>
@@ -226,28 +227,126 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle r 4.</summary>
+        /// <param name="queryCollection">(Optional) The query collection.</param>
         /// <returns>The subscriptions bundle r 4.</returns>
-        private Bundle _GetSubscriptionsBundle()
+        private Bundle _GetSubscriptionsBundle(IQueryCollection queryCollection = null)
         {
             Bundle bundle = new Bundle()
             {
                 Type = Bundle.BundleType.Searchset,
-                Total = _idSubscriptionDict.Count,
                 Entry = new List<Bundle.EntryComponent>(),
             };
 
             foreach (Subscription subscription in _idSubscriptionDict.Values)
             {
-                bundle.Entry.Add(new Bundle.EntryComponent()
+                if ((queryCollection == null) || (queryCollection.Count == 0))
                 {
-                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
-                    Resource = subscription,
-                    Search = new Bundle.SearchComponent()
+                    bundle.Entry.Add(new Bundle.EntryComponent()
                     {
-                        Mode = Bundle.SearchEntryMode.Match,
-                    },
-                });
+                        FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                        Resource = subscription,
+                        Search = new Bundle.SearchComponent()
+                        {
+                            Mode = Bundle.SearchEntryMode.Match,
+                        },
+                    });
+
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> query in queryCollection)
+                {
+                    switch (query.Key)
+                    {
+                        case "_id":
+                            if (query.Value.Contains(subscription.Id, StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                {
+                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    Resource = subscription,
+                                    Search = new Bundle.SearchComponent()
+                                    {
+                                        Mode = Bundle.SearchEntryMode.Match,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "status":
+                            if (query.Value.Contains(subscription.Status.ToString(), StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                {
+                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    Resource = subscription,
+                                    Search = new Bundle.SearchComponent()
+                                    {
+                                        Mode = Bundle.SearchEntryMode.Match,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "url":
+                            if (query.Value.Contains(subscription.Channel.Endpoint, StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                {
+                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    Resource = subscription,
+                                    Search = new Bundle.SearchComponent()
+                                    {
+                                        Mode = Bundle.SearchEntryMode.Match,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "criteria":
+                            if (query.Value.Contains(subscription.Criteria, StringComparer.OrdinalIgnoreCase) ||
+                                query.Value.Contains(subscription.BackportTopicGet(), StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                {
+                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    Resource = subscription,
+                                    Search = new Bundle.SearchComponent()
+                                    {
+                                        Mode = Bundle.SearchEntryMode.Match,
+                                    },
+                                });
+                            }
+                            else
+                            {
+                                List<BackportedSubscription.FilterByComponent> filters = subscription.BackportFiltersGet();
+
+                                foreach (BackportedSubscription.FilterByComponent filter in filters)
+                                {
+                                    if (query.Value.Contains(filter.ToString(), StringComparer.OrdinalIgnoreCase))
+                                    {
+                                        bundle.Entry.Add(new Bundle.EntryComponent()
+                                        {
+                                            FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                            Resource = subscription,
+                                            Search = new Bundle.SearchComponent()
+                                            {
+                                                Mode = Bundle.SearchEntryMode.Match,
+                                            },
+                                        });
+                                    }
+                                }
+                            }
+
+                            break;
+                    }
+                }
             }
+
+            bundle.Total = bundle.Entry.Count;
 
             // return our bundle
             return bundle;
@@ -975,6 +1074,9 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
                     _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Active;
+
+                    // tell the user
+                    Console.WriteLine($" <<< Subscription {subscription.Id} set to active!");
                 }
             }
             else
@@ -983,11 +1085,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
                     _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Error;
+
+                    // tell the user
+                    Console.WriteLine($" <<< Subscription {subscription.Id} set to ERROR!");
                 }
             }
-
-            // tell the user
-            Console.WriteLine($" <<< Subscription {subscription.Id} set to active!");
 
             // done
             return true;
@@ -1808,7 +1910,7 @@ namespace argonaut_subscription_server_proxy.Managers
                             UpdateErrorState(subscriptionId, notified);
 
                             // cannot have additional channel types
-                            return true;
+                            return notified;
                     }
                 }
 
@@ -1828,7 +1930,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     UpdateErrorState(subscriptionId, notified);
 
                     // cannot have additional channel types
-                    return true;
+                    return notified;
                 }
 
                 if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Email)
@@ -1847,7 +1949,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     UpdateErrorState(subscriptionId, notified);
 
                     // cannot have additional channel types
-                    return true;
+                    return notified;
                 }
 
                 if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Websocket)
@@ -1855,7 +1957,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     // send via websocket
                     WebsocketManager.QueueMessagesForSubscription(subscription, json);
 
-                    // cannot have additional channel types
+                    // assume anything via websockets works, since we don't have a good detection story
                     return true;
                 }
             }
