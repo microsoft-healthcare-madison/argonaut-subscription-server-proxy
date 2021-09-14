@@ -1876,6 +1876,11 @@ namespace argonaut_subscription_server_proxy.Managers
                     out long subscriptionEventCount,
                     out CachedNotificationEvent cacheNotification);
 
+                Console.WriteLine($"SubscriptionManagerR4.TryNotifySubscription <<<" +
+                    $" attempting to send {subscriptionId}" +
+                    $" event {_idEventCountDict[subscriptionId]}" +
+                    $" via {subscription.Channel.Type}...");
+
                 string json = System.Text.Json.JsonSerializer.Serialize(bundle);
 
                 if (cacheNotification != null)
@@ -1883,7 +1888,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
                     if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
                     {
-                        _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.First());
+                        _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.Min());
                     }
                 }
 

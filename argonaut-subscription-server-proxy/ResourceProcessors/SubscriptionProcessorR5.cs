@@ -234,7 +234,10 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 Type = fhir5.Hl7.Fhir.Model.Bundle.BundleType.Searchset,
                 Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Hl7.Fhir.Model.Meta(),
+                Meta = new Hl7.Fhir.Model.Meta()
+                {
+                    LastUpdated = new DateTimeOffset(DateTime.Now),
+                },
                 Entry = new List<fhir5.Hl7.Fhir.Model.Bundle.EntryComponent>(),
             };
 

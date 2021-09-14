@@ -267,7 +267,10 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 Type = fhirCsR4.Models.BundleTypeCodes.SEARCHSET,
                 Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
-                Meta = new fhirCsR4.Models.Meta(),
+                Meta = new fhirCsR4.Models.Meta()
+                {
+                    LastUpdated = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                },
                 Entry = new List<fhirCsR4.Models.BundleEntry>(),
             };
 

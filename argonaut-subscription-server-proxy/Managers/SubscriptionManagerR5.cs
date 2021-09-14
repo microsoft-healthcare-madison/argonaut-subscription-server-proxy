@@ -1181,7 +1181,10 @@ namespace argonaut_subscription_server_proxy.Managers
                 // Identifier = new Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
                 Type = Bundle.BundleType.SubscriptionNotification,  // History
                 Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Meta(),
+                Meta = new Meta()
+                {
+                    LastUpdated = new DateTimeOffset(DateTime.Now),
+                },
                 Entry = new List<Bundle.EntryComponent>(),
             };
 
