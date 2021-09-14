@@ -1390,7 +1390,9 @@ namespace argonaut_subscription_server_proxy.Managers
                         ref bundle,
                         out cachedNotification))
                 {
-                    if ((cachedNotification != null) &&
+                    if ((status.NotificationEvent != null) &&
+                        status.NotificationEvent.Any() &&
+                        (cachedNotification != null) &&
                         (cachedNotification.AdditionalR4 != null) &&
                         cachedNotification.AdditionalR4.Any())
                     {
