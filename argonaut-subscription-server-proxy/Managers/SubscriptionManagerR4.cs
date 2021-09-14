@@ -46,6 +46,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Dictionary of identifier status.</summary>
         private Dictionary<string, long> _idEventCountDict;
 
+        /// <summary>Dictionary of identifier last event ticks.</summary>
+        private Dictionary<string, long> _idLastEventTicksDict;
+
         /// <summary>Dictionary of identifier locks.</summary>
         private Dictionary<string, object> _idLockDict;
 
@@ -76,6 +79,7 @@ namespace argonaut_subscription_server_proxy.Managers
             _idSubscriptionDict = new Dictionary<string, Subscription>();
             _subscriptionEventCache = new Dictionary<string, Dictionary<long, CachedNotificationEvent>>();
             _idEventCountDict = new Dictionary<string, long>();
+            _idLastEventTicksDict = new Dictionary<string, long>();
             _idLockDict = new Dictionary<string, object>();
             _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
             _resourceSubscriptionDictLock = new object();
@@ -100,6 +104,9 @@ namespace argonaut_subscription_server_proxy.Managers
             _fhirSerializer = new FhirJsonSerializer();
             _fhirParser = new FhirJsonParser();
         }
+
+        /// <summary>Gets the current.</summary>
+        public static SubscriptionManagerR4 Current => _instance;
 
         /// <summary>Initializes this object.</summary>
         public static void Init()
@@ -439,6 +446,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // remove from status
             _idEventCountDict.Remove(id);
+            _idLastEventTicksDict.Remove(id);
 
             // remove from the lock dictionary
             if (_idLockDict.ContainsKey(id))
@@ -814,6 +822,11 @@ namespace argonaut_subscription_server_proxy.Managers
                 _idEventCountDict.Remove(subscription.Id);
             }
 
+            if (_idLastEventTicksDict.ContainsKey(subscription.Id))
+            {
+                _idLastEventTicksDict.Remove(subscription.Id);
+            }
+
             // create a lock object for this subscription
             if (!_idLockDict.ContainsKey(subscription.Id))
             {
@@ -824,6 +837,7 @@ namespace argonaut_subscription_server_proxy.Managers
             _idSubscriptionDict.Add(subscription.Id, subscription);
             _subscriptionEventCache.Add(subscription.Id, new Dictionary<long, CachedNotificationEvent>());
             _idEventCountDict.Add(subscription.Id, 0);
+            _idLastEventTicksDict.Add(subscription.Id, DateTime.Now.Ticks);
 
             if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
             {
@@ -1065,7 +1079,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             Subscription subscription = _idSubscriptionDict[subscriptionId];
 
-            bool notified = TryNotifySubscription(subscriptionId, null);
+            bool notified = TryNotifySubscription(subscriptionId, null, true);
 
             // attempt to send the notification
             if (notified)
@@ -1156,12 +1170,14 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="status">              [out] The status.</param>
         /// <param name="eventsInNotification">The events in notification.</param>
         /// <param name="isForQuery">          True if is for query, false if not.</param>
+        /// <param name="isHandshake">         True if is handshake, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscriptionStatus(
             string id,
             out fhirCsR4.Models.SubscriptionStatus status,
             int eventsInNotification,
-            bool isForQuery)
+            bool isForQuery,
+            bool isHandshake)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -1195,7 +1211,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
             else if (eventsInNotification == 0)
             {
-                if (eventCount == 0)
+                if (isHandshake)
                 {
                     status.Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralHandshake;
                 }
@@ -1216,12 +1232,14 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
         /// <param name="subscription">          The subscription.</param>
         /// <param name="content">               The content.</param>
+        /// <param name="isHandshake">           True if is handshake, false if not.</param>
         /// <param name="bundle">                [out] The bundle.</param>
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
         /// <param name="cachedNotification">    [out] The cached notification.</param>
         public static void BundleForSubscriptionNotification(
             Subscription subscription,
             fhirCsR4.Models.Resource content,
+            bool isHandshake,
             out fhirCsR4.Models.Bundle bundle,
             out long subscriptionEventCount,
             out CachedNotificationEvent cachedNotification)
@@ -1254,7 +1272,12 @@ namespace argonaut_subscription_server_proxy.Managers
                 Entry = new List<fhirCsR4.Models.BundleEntry>(),
             };
 
-            if (TryGetSubscriptionStatus(subscription.Id, out fhirCsR4.Models.SubscriptionStatus status, (content == null) ? 0 : 1, false))
+            if (TryGetSubscriptionStatus(
+                    subscription.Id,
+                    out fhirCsR4.Models.SubscriptionStatus status,
+                    (content == null) ? 0 : 1,
+                    false,
+                    isHandshake))
             {
                 string url = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$status";
                 bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
@@ -1817,10 +1840,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="csContent">     (Optional) The fhirC# typed content.</param>
+        /// <param name="isHandshake">   (Optional) True if is handshake, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(
             string subscriptionId,
-            fhirCsR4.Models.Resource csContent = null)
+            fhirCsR4.Models.Resource csContent = null,
+            bool isHandshake = false)
         {
             try
             {
@@ -1832,6 +1857,8 @@ namespace argonaut_subscription_server_proxy.Managers
                     return false;
                 }
 
+                _idLastEventTicksDict[subscriptionId] = DateTime.Now.Ticks;
+
                 string contentTypeName = (csContent == null) ? string.Empty : csContent.ResourceType;
                 string contentId = (csContent == null) ? string.Empty : csContent.Id;
 
@@ -1842,6 +1869,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 BundleForSubscriptionNotification(
                     subscription,
                     csContent,
+                    isHandshake,
                     out fhirCsR4.Models.Bundle bundle,
                     out long subscriptionEventCount,
                     out CachedNotificationEvent cacheNotification);
@@ -2009,6 +2037,51 @@ namespace argonaut_subscription_server_proxy.Managers
                         // just log for now
                         Console.WriteLine($"SubscriptionManager.CleanUpThreadFunc <<<" +
                             $"id: {id} raised exception: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        /// <summary>Process the heartbeats described by currentTicks.</summary>
+        /// <param name="currentTicks">The current ticks.</param>
+        public void ProcessHeartbeats(long currentTicks)
+        {
+            // don't use the subscription dict enumerator since we don't want to keep it locked so much
+            List<string> subscriptionIds = _idSubscriptionDict.Keys.ToList();
+
+            // traverse the dictionary looking for clients we need to send messages to
+            foreach (string subscriptionId in subscriptionIds)
+            {
+                if (!_idSubscriptionDict.ContainsKey(subscriptionId))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+                    int heartbeatTimeout = subscription.BackportChannelHeartbeatGet();
+
+                    if (heartbeatTimeout <= 0)
+                    {
+                        continue;
+                    }
+
+                    long thresholdTicks = currentTicks - TimeSpan.FromSeconds(heartbeatTimeout).Ticks;
+
+                    // check timeout
+                    if (_idLastEventTicksDict[subscriptionId] < thresholdTicks)
+                    {
+                        TryNotifySubscription(subscriptionId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SubscriptionManagerR4.ProcessHeartbeats <<< caught: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($" <<< inner: {ex.InnerException.Message}");
                     }
                 }
             }

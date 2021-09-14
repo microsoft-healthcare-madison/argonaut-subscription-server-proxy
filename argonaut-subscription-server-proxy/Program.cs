@@ -111,6 +111,7 @@ namespace argonaut_subscription_server_proxy
                 .ConfigureServices(services =>
                 {
                     services.AddHostedService<WebsocketHeartbeatService>();
+                    services.AddHostedService<SubscriptionHeartbeatService>();
                 });
 
         /// <summary>Creates web host builder.</summary>

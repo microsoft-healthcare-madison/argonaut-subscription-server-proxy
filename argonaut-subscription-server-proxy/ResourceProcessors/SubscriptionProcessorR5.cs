@@ -240,7 +240,12 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             foreach (string id in ids)
             {
-                if (SubscriptionManagerR5.TryGetSubscriptionStatus(id, out fhir5.Hl7.Fhir.Model.SubscriptionStatus status, 0, true))
+                if (SubscriptionManagerR5.TryGetSubscriptionStatus(
+                        id,
+                        out fhir5.Hl7.Fhir.Model.SubscriptionStatus status,
+                        0,
+                        true,
+                        false))
                 {
                     bundle.Entry.Add(new fhir5.Hl7.Fhir.Model.Bundle.EntryComponent()
                     {
