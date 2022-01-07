@@ -124,22 +124,6 @@ namespace argonaut_subscription_server_proxy.Managers
                     return HttpMethod.Trace;
             }
 
-            //switch (context.Request.Method.ToUpperInvariant())
-            //{
-            //    case "DELETE":
-            //        break;
-            //    case "GET":
-            //        break;
-            //    case "HEAD":
-            //        break;
-            //    case "POST":
-            //        break;
-            //    case "PUT":
-            //        break;
-            //    case "TRACE":
-            //        break;
-            //}
-
             throw new BadHttpRequestException($"Invalid HTTP Method: {method}");
         }
 
@@ -315,7 +299,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 fhirRequest = new HttpRequestMessage(
                     forwarderResponse.Method,
-                    new Uri(_uriR4, relativePath));
+                    new Uri(_uriR5, relativePath));
 
                 AddFhirHeaders(incomingRequest, fhirRequest);
                 AddContent(incomingRequest, fhirRequest, ref forwarderResponse);

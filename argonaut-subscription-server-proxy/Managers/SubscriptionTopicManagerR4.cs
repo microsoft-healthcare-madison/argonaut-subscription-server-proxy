@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using fhirCsR4.Models;
-using fhirCsR4.Serialization;
+using fhirCsR4B.Models;
+using fhirCsValueSets4B = fhirCsR4B.ValueSets;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
@@ -345,8 +345,8 @@ namespace argonaut_subscription_server_proxy.Managers
                         // FilterParameter = "http://hl7.org/fhir/build/SearchParameter/Encounter-patient",
                         Modifier = new List<string>()
                         {
-                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralEqual,
-                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralIn,
+                            fhirCsValueSets4B.SubscriptionSearchModifierCodes.LiteralEqual,
+                            fhirCsValueSets4B.SubscriptionSearchModifierCodes.LiteralIn,
                         },
                     },
                 },

@@ -3,20 +3,17 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir5;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
 using argonaut_subscription_server_proxy.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using fhirCsModels5 = fhirCsR5.Models;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -50,11 +47,11 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     // ask the subscription manager to deal with this
                     if (SubscriptionManagerR5.HandleDelete(context.Request))
                     {
-                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NoContent;
+                        context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                     }
                     else
                     {
-                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotFound;
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     }
 
                     break;
@@ -62,7 +59,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 case "PUT":
                 default:
                     // tell client this isn't supported
-                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                    context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
                     break;
             }
         }
@@ -91,7 +88,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "DELETE":
                     default:
                         // tell client this isn't supported
-                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                        context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
                         break;
                 }
 
@@ -112,7 +109,29 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     case "DELETE":
                     default:
                         // tell client this isn't supported
-                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+                        context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
+                        break;
+                }
+
+                return;
+            }
+
+            if (operationName == "$events")
+            {
+                // act on the method
+                switch (context.Request.Method.ToUpperInvariant())
+                {
+                    case "POST":
+                    case "GET":
+                        await ProcessOperationEvents(context, previousComponent);
+
+                        break;
+
+                    case "PUT":
+                    case "DELETE":
+                    default:
+                        // tell client this isn't supported
+                        context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
                         break;
                 }
 
@@ -120,7 +139,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             }
 
             // tell client this isn't supported
-            context.Response.StatusCode = (int)System.Net.HttpStatusCode.NotImplemented;
+            context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
         }
 
         /// <summary>Process the operation get ws binding token described by response.</summary>
@@ -131,7 +150,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             HttpContext context,
             string previousComponent)
         {
-            List<string> ids = new List<string>();
+            List<string> ids = new ();
 
             if (previousComponent != "Subscription")
             {
@@ -141,17 +160,27 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 try
                 {
-                    using (TextReader reader = new StreamReader(context.Request.Body))
+                    string requestContent;
+
+                    using (StreamReader reader = new StreamReader(context.Request.Body))
                     {
-                        string requestContent = reader.ReadToEndAsync().Result;
+                        requestContent = reader.ReadToEndAsync().Result;
+                    }
 
-                        fhirCsR5.Models.Parameters opParams = JsonSerializer.Deserialize<fhirCsR5.Models.Parameters>(requestContent);
+                    fhirCsModels5.Parameters opParams = JsonSerializer.Deserialize<fhirCsModels5.Parameters>(requestContent);
 
-                        foreach (fhirCsR5.Models.ParametersParameter param in opParams.Parameter)
+                    foreach (fhirCsModels5.ParametersParameter param in opParams.Parameter)
+                    {
+                        if (param.Name == "ids")
                         {
-                            if (param.Name == "ids")
+                            if (!string.IsNullOrEmpty(param.ValueString))
                             {
                                 ids.Add(param.ValueString);
+                            }
+
+                            if (!string.IsNullOrEmpty(param.ValueId))
+                            {
+                                ids.Add(param.ValueId);
                             }
                         }
                     }
@@ -180,24 +209,29 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             WebsocketManager.RegisterToken(token);
 
-            fhirCsR5.Models.Parameters parameters = new fhirCsR5.Models.Parameters();
+            fhirCsModels5.Parameters parameters = new ();
 
-            parameters.Parameter = new List<fhirCsR5.Models.ParametersParameter>()
+            parameters.Parameter = new ()
             {
-                new fhirCsR5.Models.ParametersParameter()
+                new ()
                 {
                     Name = "token",
                     ValueString = token.Token.ToString(),
                 },
-                new fhirCsR5.Models.ParametersParameter()
+                new ()
                 {
                     Name = "expiration",
                     ValueDateTime = token.ExpiresAt.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
                 },
-                new fhirCsR5.Models.ParametersParameter()
+                new ()
                 {
                     Name = "subscriptions",
                     ValueString = string.Join(',', ids),
+                },
+                new ()
+                {
+                    Name = "websocket-url",
+                    ValueString = Program.WebsocketUri.AbsoluteUri,
                 },
             };
 
@@ -212,7 +246,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             HttpContext context,
             string previousComponent)
         {
-            List<string> ids = new List<string>();
+            List<string> ids = new ();
 
             if (previousComponent != "Subscription")
             {
@@ -229,40 +263,109 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 }
             }
 
-            // create a bundle for this message message
-            fhir5.Hl7.Fhir.Model.Bundle bundle = new fhir5.Hl7.Fhir.Model.Bundle()
+            // create a bundle for this response
+            fhirCsModels5.Bundle bundle = new ()
             {
-                Type = fhir5.Hl7.Fhir.Model.Bundle.BundleType.Searchset,
-                Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Hl7.Fhir.Model.Meta()
+                Type = fhirCsModels5.BundleTypeCodes.SEARCHSET,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Meta = new ()
                 {
-                    LastUpdated = new DateTimeOffset(DateTime.Now),
+                    LastUpdated = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
                 },
-                Entry = new List<fhir5.Hl7.Fhir.Model.Bundle.EntryComponent>(),
+                Entry = new (),
             };
 
             foreach (string id in ids)
             {
                 if (SubscriptionManagerR5.TryGetSubscriptionStatus(
                         id,
-                        out fhir5.Hl7.Fhir.Model.SubscriptionStatus status,
+                        out fhirCsModels5.SubscriptionStatus status,
                         0,
                         true,
                         false))
                 {
-                    bundle.Entry.Add(new fhir5.Hl7.Fhir.Model.Bundle.EntryComponent()
+                    bundle.Entry.Add(new fhirCsModels5.BundleEntry()
                     {
-                        FullUrl = Program.UrlForR5ResourceId(status.TypeName, status.Id),
+                        FullUrl = Program.UrlForR5ResourceId("Subscription", id) + "/$status",
                         Resource = status,
-                        Search = new fhir5.Hl7.Fhir.Model.Bundle.SearchComponent()
+                        Search = new fhirCsModels5.BundleEntrySearch()
                         {
-                            Mode = fhir5.Hl7.Fhir.Model.Bundle.SearchEntryMode.Match,
+                            Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
                         },
                     });
                 }
             }
 
             await ProcessorUtils.SerializeR5(context, bundle);
+        }
+
+        /// <summary>Process the operation events R5.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="previousComponent">The previous component.</param>
+        /// <returns>An asynchronous result.</returns>
+        internal static async Task ProcessOperationEvents(
+            HttpContext context,
+            string previousComponent)
+        {
+            string subscriptionId;
+
+            if (previousComponent != "Subscription")
+            {
+                subscriptionId = previousComponent;
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return;
+            }
+
+            long eventLow = -1;
+            long eventHigh = -1;
+            string contentHint = string.Empty;
+
+            foreach (KeyValuePair<string, StringValues> query in context.Request.Query)
+            {
+                switch (query.Key)
+                {
+                    case "eventsSinceNumber":
+                        if (!long.TryParse(query.Value[0], out eventLow))
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            return;
+                        }
+
+                        break;
+
+                    case "eventsUntilNumber":
+                        if (!long.TryParse(query.Value[0], out eventHigh))
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            return;
+                        }
+
+                        break;
+
+                    case "content":
+                        contentHint = query.Value[0];
+                        break;
+                }
+            }
+
+            if (SubscriptionManagerR5.TryGetBundleForEvents(
+                    subscriptionId,
+                    eventLow,
+                    eventHigh,
+                    contentHint,
+                    out fhirCsModels5.Bundle bundle))
+            {
+                // serialize and write back to the caller
+                await ProcessorUtils.SerializeR5(context, bundle);
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return;
+            }
         }
 
         /// <summary>Process an HTTP POST for FHIR R5.</summary>
@@ -307,7 +410,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             // check to see if the manager does anything with this text
             SubscriptionManagerR5.HandlePost(
                 requestContent,
-                out fhir5.Hl7.Fhir.Model.Subscription subscription,
+                out fhirCsModels5.Subscription subscription,
                 out HttpStatusCode statusCode,
                 out string failureContent);
 
@@ -351,7 +454,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             {
                 await ProcessorUtils.SerializeR5(context, SubscriptionManagerR5.GetSubscriptionsBundle());
             }
-            else if (SubscriptionManagerR5.TryGetSubscription(id, out fhir5.Hl7.Fhir.Model.Subscription foundSub))
+            else if (SubscriptionManagerR5.TryGetSubscription(id, out fhirCsModels5.Subscription foundSub))
             {
                 await ProcessorUtils.SerializeR5(context, foundSub);
             }
