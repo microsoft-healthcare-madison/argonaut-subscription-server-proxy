@@ -9,4 +9,4 @@ RUN dotnet publish argonaut-subscription-server-proxy/argonaut-subscription-serv
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build-env /app/out .
-ENTRYPOINT ["argonaut-subscription-server-proxy.exe"]
+ENTRYPOINT ["dotnet", "argonaut-subscription-server-proxy.dll"]
