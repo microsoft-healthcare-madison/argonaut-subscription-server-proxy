@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using argonaut_subscription_server_proxy.Backport;
 using argonaut_subscription_server_proxy.Models;
@@ -23,8 +24,9 @@ using fhir4.Hl7.Fhir.Rest;
 using fhir4.Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using fhirCsModels4B = fhirCsR4B.Models;
+using fhirCsModels5 = fhirCsR5.Models;
+using fhirCsValueSets4B = fhirCsR4B.ValueSets;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
@@ -38,7 +40,7 @@ namespace argonaut_subscription_server_proxy.Managers
         private static SubscriptionManagerR4 _instance;
 
         /// <summary>Dictionary of subscriptions, by ID.</summary>
-        private Dictionary<string, Subscription> _idSubscriptionDict;
+        private Dictionary<string, fhirCsModels4B.Subscription> _idSubscriptionDict;
 
         /// <summary>The subscription event cache.</summary>
         private Dictionary<string, Dictionary<long, CachedNotificationEvent>> _subscriptionEventCache;
@@ -65,7 +67,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private Thread _cleanUpThread;
 
-        private CamelCasePropertyNamesContractResolver _contractResolver;
+        private Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver _contractResolver;
 
         private FhirJsonSerializer _fhirSerializer;
         private FhirJsonParser _fhirParser;
@@ -76,23 +78,23 @@ namespace argonaut_subscription_server_proxy.Managers
         private SubscriptionManagerR4()
         {
             // create our index objects
-            _idSubscriptionDict = new Dictionary<string, Subscription>();
-            _subscriptionEventCache = new Dictionary<string, Dictionary<long, CachedNotificationEvent>>();
-            _idEventCountDict = new Dictionary<string, long>();
-            _idLastEventTicksDict = new Dictionary<string, long>();
-            _idLockDict = new Dictionary<string, object>();
-            _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
-            _resourceSubscriptionDictLock = new object();
-            _rand = new Random();
-            _supportedChannelTypes = new HashSet<string>()
+            _idSubscriptionDict = new ();
+            _subscriptionEventCache = new ();
+            _idEventCountDict = new ();
+            _idLastEventTicksDict = new ();
+            _idLockDict = new ();
+            _resourceSubscriptionDict = new ();
+            _resourceSubscriptionDictLock = new ();
+            _rand = new ();
+            _supportedChannelTypes = new ()
             {
                 "rest-hook",
                 "websocket",
                 "email",
             };
 
-            _clientQ = new Queue<FhirClient>();
-            _clientQLock = new object();
+            _clientQ = new ();
+            _clientQLock = new ();
 
             // create our clean-up thread
             _cleanUpThread = new Thread(new ThreadStart(CleanUpThreadFunc));
@@ -100,9 +102,9 @@ namespace argonaut_subscription_server_proxy.Managers
             _cleanUpThread.Start();
 
             // serialization related
-            _contractResolver = new CamelCasePropertyNamesContractResolver();
-            _fhirSerializer = new FhirJsonSerializer();
-            _fhirParser = new FhirJsonParser();
+            _contractResolver = new ();
+            _fhirSerializer = new ();
+            _fhirParser = new ();
         }
 
         /// <summary>Gets the current.</summary>
@@ -117,16 +119,16 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Gets a list of all currently known Subscriptions.</summary>
         /// <returns>The Subscription list.</returns>
-        public static List<Subscription> GetSubscriptionList()
+        public static List<fhirCsModels4B.Subscription> GetSubscriptionList()
         {
             // return our list of known subscriptions
-            return _instance._idSubscriptionDict.Values.ToList<Subscription>();
+            return _instance._idSubscriptionDict.Values.ToList<fhirCsModels4B.Subscription>();
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
         /// <param name="queryCollection">(Optional) The query collection.</param>
         /// <returns>The subscriptions bundle.</returns>
-        public static Bundle GetSubscriptionsBundle(IQueryCollection queryCollection = null)
+        public static fhirCsModels4B.Bundle GetSubscriptionsBundle(IQueryCollection queryCollection = null)
         {
             return _instance._GetSubscriptionsBundle(queryCollection);
         }
@@ -137,10 +139,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
         public static void HandlePost(
-                                        string content,
-                                        out Subscription subscription,
-                                        out HttpStatusCode statusCode,
-                                        out string failureContent)
+            string content,
+            out fhirCsModels4B.Subscription subscription,
+            out HttpStatusCode statusCode,
+            out string failureContent)
         {
             _instance._HandlePost(
                 content,
@@ -185,7 +187,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="subscription">  [out] The subscription.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetSubscription(string subscriptionId, out Subscription subscription)
+        public static bool TryGetSubscription(string subscriptionId, out fhirCsModels4B.Subscription subscription)
         {
             if (_instance._idSubscriptionDict.ContainsKey(subscriptionId))
             {
@@ -203,9 +205,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string subscriptionId, out string serialized)
         {
-            if (TryGetSubscription(subscriptionId, out Subscription subscription))
+            if (TryGetSubscription(subscriptionId, out fhirCsModels4B.Subscription subscription))
             {
-                serialized = _instance._fhirSerializer.SerializeToString(subscription);
+                serialized = JsonSerializer.Serialize(subscription);
 
                 return true;
             }
@@ -236,25 +238,33 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Gets subscriptions bundle r 4.</summary>
         /// <param name="queryCollection">(Optional) The query collection.</param>
         /// <returns>The subscriptions bundle r 4.</returns>
-        private Bundle _GetSubscriptionsBundle(IQueryCollection queryCollection = null)
+        private fhirCsModels4B.Bundle _GetSubscriptionsBundle(IQueryCollection queryCollection = null)
         {
-            Bundle bundle = new Bundle()
+            fhirCsModels4B.Bundle bundle = new ()
             {
-                Type = Bundle.BundleType.Searchset,
-                Entry = new List<Bundle.EntryComponent>(),
+                Type = fhirCsModels4B.BundleTypeCodes.SEARCHSET,
+                Total = (uint)_idSubscriptionDict.Count,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Meta = new ()
+                {
+                    LastUpdated = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                },
+                Entry = new (),
             };
 
-            foreach (Subscription subscription in _idSubscriptionDict.Values)
+            foreach (fhirCsModels4B.Subscription subscription in _idSubscriptionDict.Values)
             {
+                string subscriptionUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id);
+
                 if ((queryCollection == null) || (queryCollection.Count == 0))
                 {
-                    bundle.Entry.Add(new Bundle.EntryComponent()
+                    bundle.Entry.Add(new ()
                     {
-                        FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                        FullUrl = subscriptionUrl,
                         Resource = subscription,
-                        Search = new Bundle.SearchComponent()
+                        Search = new ()
                         {
-                            Mode = Bundle.SearchEntryMode.Match,
+                            Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                         },
                     });
 
@@ -268,13 +278,13 @@ namespace argonaut_subscription_server_proxy.Managers
                         case "_id":
                             if (query.Value.Contains(subscription.Id, StringComparer.OrdinalIgnoreCase))
                             {
-                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                bundle.Entry.Add(new ()
                                 {
-                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    FullUrl = subscriptionUrl,
                                     Resource = subscription,
-                                    Search = new Bundle.SearchComponent()
+                                    Search = new ()
                                     {
-                                        Mode = Bundle.SearchEntryMode.Match,
+                                        Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                                     },
                                 });
                             }
@@ -284,13 +294,13 @@ namespace argonaut_subscription_server_proxy.Managers
                         case "status":
                             if (query.Value.Contains(subscription.Status.ToString(), StringComparer.OrdinalIgnoreCase))
                             {
-                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                bundle.Entry.Add(new ()
                                 {
-                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    FullUrl = subscriptionUrl,
                                     Resource = subscription,
-                                    Search = new Bundle.SearchComponent()
+                                    Search = new ()
                                     {
-                                        Mode = Bundle.SearchEntryMode.Match,
+                                        Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                                     },
                                 });
                             }
@@ -300,13 +310,13 @@ namespace argonaut_subscription_server_proxy.Managers
                         case "url":
                             if (query.Value.Contains(subscription.Channel.Endpoint, StringComparer.OrdinalIgnoreCase))
                             {
-                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                bundle.Entry.Add(new ()
                                 {
-                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    FullUrl = subscriptionUrl,
                                     Resource = subscription,
-                                    Search = new Bundle.SearchComponent()
+                                    Search = new ()
                                     {
-                                        Mode = Bundle.SearchEntryMode.Match,
+                                        Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                                     },
                                 });
                             }
@@ -317,31 +327,31 @@ namespace argonaut_subscription_server_proxy.Managers
                             if (query.Value.Contains(subscription.Criteria, StringComparer.OrdinalIgnoreCase) ||
                                 query.Value.Contains(subscription.BackportTopicGet(), StringComparer.OrdinalIgnoreCase))
                             {
-                                bundle.Entry.Add(new Bundle.EntryComponent()
+                                bundle.Entry.Add(new ()
                                 {
-                                    FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                    FullUrl = subscriptionUrl,
                                     Resource = subscription,
-                                    Search = new Bundle.SearchComponent()
+                                    Search = new ()
                                     {
-                                        Mode = Bundle.SearchEntryMode.Match,
+                                        Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                                     },
                                 });
                             }
                             else
                             {
-                                List<BackportedSubscription.FilterByComponent> filters = subscription.BackportFiltersGet();
+                                List<BackportedSubscriptionCs.FilterByComponent> filters = subscription.BackportFiltersGet();
 
-                                foreach (BackportedSubscription.FilterByComponent filter in filters)
+                                foreach (BackportedSubscriptionCs.FilterByComponent filter in filters)
                                 {
                                     if (query.Value.Contains(filter.ToString(), StringComparer.OrdinalIgnoreCase))
                                     {
-                                        bundle.Entry.Add(new Bundle.EntryComponent()
+                                        bundle.Entry.Add(new ()
                                         {
-                                            FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id),
+                                            FullUrl = subscriptionUrl,
                                             Resource = subscription,
-                                            Search = new Bundle.SearchComponent()
+                                            Search = new ()
                                             {
-                                                Mode = Bundle.SearchEntryMode.Match,
+                                                Mode = fhirCsModels4B.BundleEntrySearchModeCodes.MATCH,
                                             },
                                         });
                                     }
@@ -353,7 +363,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
-            bundle.Total = bundle.Entry.Count;
+            bundle.Total = (uint)bundle.Entry.Count;
 
             // return our bundle
             return bundle;
@@ -409,9 +419,6 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             List<string> keysToRemove = new ();
-
-            // grab this object
-            Subscription subscription = _idSubscriptionDict[id];
 
             // traverse trackings looking for this subscription
             foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in _resourceSubscriptionDict)
@@ -513,9 +520,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="location">The location.</param>
         private void _ProcessEncounter(string content, string location)
         {
-            List<Subscription> subscriptions = new List<Subscription>();
+            List<fhirCsModels4B.Subscription> subscriptions = new ();
 
-            fhirCsR4.Models.Encounter csEncounter = null;
+            fhirCsModels4B.Encounter csEncounter = null;
             Encounter sdkEncounter = null;
 
             // check to see if this resource is tracked (any subscriptions)
@@ -531,7 +538,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 if ((!string.IsNullOrEmpty(content)) && (content.Length > 20))
                 {
                     // attempt to parse this encounter
-                    csEncounter = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Encounter>(content);
+                    csEncounter = System.Text.Json.JsonSerializer.Deserialize<fhirCsModels4B.Encounter>(content);
                     sdkEncounter = _fhirParser.Parse<Encounter>(content);
                 }
             }
@@ -560,7 +567,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     sdkEncounter = client.Read<Encounter>(location);
 
                     // convert to local object (needed for notifications)
-                    csEncounter = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Encounter>(
+                    csEncounter = JsonSerializer.Deserialize<fhirCsModels4B.Encounter>(
                         _fhirSerializer.SerializeToString(sdkEncounter));
                 }
                 finally
@@ -606,7 +613,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     ref subscriptions);
 
                 // notify all subscriptions
-                foreach (Subscription subscription in subscriptions)
+                foreach (fhirCsModels4B.Subscription subscription in subscriptions)
                 {
                     _ = TryNotifySubscription(subscription.Id, csEncounter);
                 }
@@ -626,12 +633,12 @@ namespace argonaut_subscription_server_proxy.Managers
             SubscriptionFilterNode node,
             List<string> matchKeys,
             HashSet<string> matchHashSet,
-            ref List<Subscription> subscriptions)
+            ref List<fhirCsModels4B.Subscription> subscriptions)
         {
             // add subscriptions on this level
             if (node.SubscriptionsR4.Count > 0)
             {
-                foreach (Subscription subscription in node.SubscriptionsR4)
+                foreach (fhirCsModels4B.Subscription subscription in node.SubscriptionsR4)
                 {
                     if (_idSubscriptionDict.ContainsKey(subscription.Id))
                     {
@@ -670,7 +677,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="failureContent">[out] The failure content.</param>
         private void _HandlePost(
             string content,
-            out Subscription subscription,
+            out fhirCsModels4B.Subscription subscription,
             out HttpStatusCode statusCode,
             out string failureContent)
         {
@@ -681,7 +688,7 @@ namespace argonaut_subscription_server_proxy.Managers
             // attempt to parse our content into a subscription request
             try
             {
-                subscription = _fhirParser.Parse<Subscription>(content);
+                subscription = JsonSerializer.Deserialize<fhirCsModels4B.Subscription>(content);
                 if (subscription == null)
                 {
                     throw new ArgumentException("Invalid subscription content", nameof(content));
@@ -717,14 +724,15 @@ namespace argonaut_subscription_server_proxy.Managers
                 DateTime maxEnd = DateTime.Now.AddDays(1.0);
 
                 if ((subscription.End == null) ||
-                    (subscription.End.Value.DateTime > maxEnd))
+                    (!DateTime.TryParse(subscription.End, out DateTime end)) ||
+                    (end > maxEnd))
                 {
                     // force our end
-                    subscription.End = new DateTimeOffset(maxEnd.ToUniversalTime());
+                    subscription.End = maxEnd.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK");
                 }
 
                 // make sure we are requested
-                subscription.Status = Subscription.SubscriptionStatus.Requested;
+                subscription.Status = fhirCsModels4B.SubscriptionStatusCodes.REQUESTED;
 
                 _AddOrUpdate(subscription);
 
@@ -735,7 +743,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     Console.WriteLine($" <<< extended channel: {channelType}");
                     switch (channelType)
                     {
-                        case ZulipExtensionsR4.ZulipChannelUrl:
+                        case ZulipExtensions.ZulipChannelUrl:
                             shouldSendHandshake = true;
                             break;
 
@@ -749,7 +757,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     switch (subscription.Channel.Type)
                     {
-                        case Subscription.SubscriptionChannelType.RestHook:
+                        case fhirCsModels4B.SubscriptionChannelTypeCodes.REST_HOOK:
                             if (string.IsNullOrEmpty(subscription.Channel.Endpoint) ||
                                 (!Uri.TryCreate(subscription.Channel.Endpoint, UriKind.Absolute, out _)))
                             {
@@ -762,12 +770,12 @@ namespace argonaut_subscription_server_proxy.Managers
                             shouldSendHandshake = true;
                             break;
 
-                        case Subscription.SubscriptionChannelType.Email:
+                        case fhirCsModels4B.SubscriptionChannelTypeCodes.EMAIL:
                             // email sends handshake
                             shouldSendHandshake = true;
                             break;
 
-                        case Subscription.SubscriptionChannelType.Websocket:
+                        case fhirCsModels4B.SubscriptionChannelTypeCodes.WEBSOCKET:
                             // websocket does NOT send handshake
                             shouldSendHandshake = false;
                             break;
@@ -789,7 +797,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 else
                 {
                     // if there's no handshake, just mark the subscription active
-                    _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Active;
+                    _idSubscriptionDict[subscription.Id].Status = fhirCsModels4B.SubscriptionStatusCodes.ACTIVE;
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -803,7 +811,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Adds or updates a Topic.</summary>
         /// <param name="subscription">The subscription.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool _AddOrUpdate(Subscription subscription)
+        private bool _AddOrUpdate(fhirCsModels4B.Subscription subscription)
         {
             // check for an existing subscription (may need to remove URL for cleanup)
             if (_idSubscriptionDict.ContainsKey(subscription.Id))
@@ -835,7 +843,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // add to the main dictionaries
             _idSubscriptionDict.Add(subscription.Id, subscription);
-            _subscriptionEventCache.Add(subscription.Id, new Dictionary<long, CachedNotificationEvent>());
+            _subscriptionEventCache.Add(subscription.Id, new ());
             _idEventCountDict.Add(subscription.Id, 0);
             _idLastEventTicksDict.Add(subscription.Id, DateTime.Now.Ticks);
 
@@ -855,7 +863,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // get the topic for this subscription
-            fhirCsR4.Models.SubscriptionTopic topic = SubscriptionTopicManagerR4.GetTopic(subscription.BackportTopicGet());
+            fhirCsModels4B.SubscriptionTopic topic = SubscriptionTopicManagerR4.GetTopic(subscription.BackportTopicGet());
 
             // check for unknown topic
             if (topic == null)
@@ -897,10 +905,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">       The topic.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TrackSubscription(
-            Subscription subscription,
-            fhirCsR4.Models.SubscriptionTopic topic)
+            fhirCsModels4B.Subscription subscription,
+            fhirCsModels4B.SubscriptionTopic topic)
         {
-            List<BackportedSubscription.FilterByComponent> filters = subscription.BackportFiltersGet();
+            List<BackportedSubscriptionCs.FilterByComponent> filters = subscription.BackportFiltersGet();
 
             // check for unfiltered subscriptions
             if ((filters == null) || (!filters.Any()))
@@ -915,7 +923,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 else
                 {
                     // loop over resource types
-                    foreach (fhirCsR4.Models.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
+                    foreach (fhirCsModels4B.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
                     {
                         if (string.IsNullOrEmpty(resourceTrigger.Resource))
                         {
@@ -935,7 +943,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // for now, reject any subscription that starts with an exclusion
-            if (filters[0].Modifier == fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.NotIn)
+            if (filters[0].Modifier == fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NOT_IN)
             {
                 Console.WriteLine($"SubscriptionManager.TrackSubscription <<< first match cannot be {filters[0].Modifier}");
                 return false;
@@ -948,7 +956,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $"{b.FilterParameter}{b.Modifier}{b.Value}"));
 
             // loop over resources in the topic
-            foreach (fhirCsR4.Models.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
+            foreach (fhirCsModels4B.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
             {
                 if (string.IsNullOrEmpty(resourceTrigger.Resource))
                 {
@@ -975,9 +983,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="filters">     The filters.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TrackFilterNode(
-            Subscription subscription,
+            fhirCsModels4B.Subscription subscription,
             SubscriptionFilterNode node,
-            List<BackportedSubscription.FilterByComponent> filters)
+            List<BackportedSubscriptionCs.FilterByComponent> filters)
         {
             // check for no filters (done)
             if (filters.Count == 0)
@@ -990,7 +998,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // grab the first filter (sorted)
-            BackportedSubscription.FilterByComponent filter = filters[0];
+            BackportedSubscriptionCs.FilterByComponent filter = filters[0];
             filters.RemoveAt(0);
 
             // check for no value
@@ -1015,8 +1023,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 // add to the correct type
                 switch (filter.Modifier)
                 {
-                    case fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.NotIn:
-                    case fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.Ne:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NOT_IN:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NE:
                         // make sure this field is in exclusions
                         lock (_resourceSubscriptionDictLock)
                         {
@@ -1034,9 +1042,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
                         break;
 
-                    case fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.In:
-                    case fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.Equal:
-                    case fhir5.Hl7.Fhir.Model.SubscriptionSearchModifier.Eq:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.VAL_IN:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQUALS:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQ:
                         // make sure this field is in the inclusions
                         lock (_resourceSubscriptionDictLock)
                         {
@@ -1077,7 +1085,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
+            fhirCsModels4B.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
             bool notified = TryNotifySubscription(subscriptionId, null, true);
 
@@ -1087,7 +1095,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // update in the manager (if it hasn't been removed)
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
-                    _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Active;
+                    _idSubscriptionDict[subscription.Id].Status = fhirCsModels4B.SubscriptionStatusCodes.ACTIVE;
 
                     // tell the user
                     Console.WriteLine($" <<< Subscription {subscription.Id} set to active!");
@@ -1098,7 +1106,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // update to error in the manager (if it hasn't been removed)
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
-                    _idSubscriptionDict[subscription.Id].Status = Subscription.SubscriptionStatus.Error;
+                    _idSubscriptionDict[subscription.Id].Status = fhirCsModels4B.SubscriptionStatusCodes.ERROR;
 
                     // tell the user
                     Console.WriteLine($" <<< Subscription {subscription.Id} set to ERROR!");
@@ -1174,7 +1182,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscriptionStatus(
             string id,
-            out fhirCsR4.Models.SubscriptionStatus status,
+            out fhirCsModels4B.SubscriptionStatus status,
             int eventsInNotification,
             bool isForQuery,
             bool isHandshake)
@@ -1185,7 +1193,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            if (!TryGetSubscription(id, out Subscription subscription))
+            if (!TryGetSubscription(id, out fhirCsModels4B.Subscription subscription))
             {
                 status = null;
                 return false;
@@ -1193,12 +1201,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
             long eventCount = _instance._idEventCountDict[subscription.Id];
 
-            status = new fhirCsR4.Models.SubscriptionStatus()
+            status = new fhirCsModels4B.SubscriptionStatus()
             {
                 EventsSinceSubscriptionStart = eventCount.ToString(),
                 EventsInNotification = eventsInNotification,
                 Status = subscription.Status.ToString().ToLowerInvariant(),
-                Subscription = new fhirCsR4.Models.Reference()
+                Subscription = new fhirCsModels4B.Reference()
                 {
                     ReferenceField = Program.UrlForR4ResourceId("Subscription", subscription.Id),
                 },
@@ -1207,22 +1215,22 @@ namespace argonaut_subscription_server_proxy.Managers
 
             if (isForQuery)
             {
-                status.Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralQueryStatus;
+                status.Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralQueryStatus;
             }
             else if (eventsInNotification == 0)
             {
                 if (isHandshake)
                 {
-                    status.Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralHandshake;
+                    status.Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralHandshake;
                 }
                 else
                 {
-                    status.Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralHeartbeat;
+                    status.Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralHeartbeat;
                 }
             }
             else
             {
-                status.Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralEventNotification;
+                status.Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralEventNotification;
             }
 
             return true;
@@ -1237,10 +1245,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscriptionEventCount">[out] Number of events.</param>
         /// <param name="cachedNotification">    [out] The cached notification.</param>
         public static void BundleForSubscriptionNotification(
-            Subscription subscription,
-            fhirCsR4.Models.Resource content,
+            fhirCsModels4B.Subscription subscription,
+            fhirCsModels4B.Resource content,
             bool isHandshake,
-            out fhirCsR4.Models.Bundle bundle,
+            out fhirCsModels4B.Bundle bundle,
             out long subscriptionEventCount,
             out CachedNotificationEvent cachedNotification)
         {
@@ -1265,30 +1273,30 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // create a bundle for this message message
-            bundle = new fhirCsR4.Models.Bundle()
+            bundle = new fhirCsModels4B.Bundle()
             {
-                Type = fhirCsR4.Models.BundleTypeCodes.HISTORY,
+                Type = fhirCsModels4B.BundleTypeCodes.HISTORY,
                 Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
-                Entry = new List<fhirCsR4.Models.BundleEntry>(),
+                Entry = new List<fhirCsModels4B.BundleEntry>(),
             };
 
             if (TryGetSubscriptionStatus(
                     subscription.Id,
-                    out fhirCsR4.Models.SubscriptionStatus status,
+                    out fhirCsModels4B.SubscriptionStatus status,
                     (content == null) ? 0 : 1,
                     false,
                     isHandshake))
             {
                 string url = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$status";
-                bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                bundle.Entry.Add(new fhirCsModels4B.BundleEntry()
                 {
                     FullUrl = url,
-                    Request = new fhirCsR4.Models.BundleEntryRequest()
+                    Request = new fhirCsModels4B.BundleEntryRequest()
                     {
                         Method = "GET",
                         Url = url,
                     },
-                    Response = new fhirCsR4.Models.BundleEntryResponse()
+                    Response = new fhirCsModels4B.BundleEntryResponse()
                     {
                         Status = "200",
                     },
@@ -1307,21 +1315,21 @@ namespace argonaut_subscription_server_proxy.Managers
                         break;
                     case BackportedSubscription.ContentCodeIdOnly:
                         // add the URL, but no resource
-                        bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                        bundle.Entry.Add(new fhirCsModels4B.BundleEntry()
                         {
                             FullUrl = url,
-                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            Request = new fhirCsModels4B.BundleEntryRequest()
                             {
                                 Method = "POST",
                                 Url = url,
                             },
-                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            Response = new fhirCsModels4B.BundleEntryResponse()
                             {
                                 Status = "204",
                             },
-                            //Extension = new List<fhirCsR4.Models.Extension>()
+                            //Extension = new List<fhirCsModels4B.Extension>()
                             //{
-                            //    new fhirCsR4.Models.Extension()
+                            //    new fhirCsModels4B.Extension()
                             //    {
                             //        Url = BackportedSubscription.ExtensionUrlNotificationFocus,
                             //        ValueString = subscriptionEventCount.ToString(),
@@ -1329,12 +1337,12 @@ namespace argonaut_subscription_server_proxy.Managers
                             //},
                         });
 
-                        status.NotificationEvent = new List<fhirCsR4.Models.SubscriptionStatusNotificationEvent>()
+                        status.NotificationEvent = new List<fhirCsModels4B.SubscriptionStatusNotificationEvent>()
                         {
-                            new fhirCsR4.Models.SubscriptionStatusNotificationEvent()
+                            new fhirCsModels4B.SubscriptionStatusNotificationEvent()
                             {
                                 EventNumber = subscriptionEventCount.ToString(),
-                                Focus = new fhirCsR4.Models.Reference()
+                                Focus = new fhirCsModels4B.Reference()
                                 {
                                     ReferenceField = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
                                 },
@@ -1344,22 +1352,22 @@ namespace argonaut_subscription_server_proxy.Managers
                         break;
                     case BackportedSubscription.ContentCodeFullResource:
                         // add the URL and the resource
-                        bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                        bundle.Entry.Add(new fhirCsModels4B.BundleEntry()
                         {
                             FullUrl = url,
-                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            Request = new fhirCsModels4B.BundleEntryRequest()
                             {
                                 Method = "POST",
                                 Url = url,
                             },
-                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            Response = new fhirCsModels4B.BundleEntryResponse()
                             {
                                 Status = "204",
                             },
                             Resource = content,
-                            //Extension = new List<fhirCsR4.Models.Extension>()
+                            //Extension = new List<fhirCsModels4B.Extension>()
                             //{
-                            //    new fhirCsR4.Models.Extension()
+                            //    new fhirCsModels4B.Extension()
                             //    {
                             //        Url = BackportedSubscription.ExtensionUrlNotificationFocus,
                             //        ValueString = subscriptionEventCount.ToString(),
@@ -1367,12 +1375,12 @@ namespace argonaut_subscription_server_proxy.Managers
                             //},
                         });
 
-                        status.NotificationEvent = new List<fhirCsR4.Models.SubscriptionStatusNotificationEvent>()
+                        status.NotificationEvent = new List<fhirCsModels4B.SubscriptionStatusNotificationEvent>()
                         {
-                            new fhirCsR4.Models.SubscriptionStatusNotificationEvent()
+                            new fhirCsModels4B.SubscriptionStatusNotificationEvent()
                             {
                                 EventNumber = subscriptionEventCount.ToString(),
-                                Focus = new fhirCsR4.Models.Reference()
+                                Focus = new fhirCsModels4B.Reference()
                                 {
                                     ReferenceField = Program.UrlForR4ResourceId(content.ResourceType, content.Id),
                                 },
@@ -1396,11 +1404,11 @@ namespace argonaut_subscription_server_proxy.Managers
                         (cachedNotification.AdditionalR4 != null) &&
                         cachedNotification.AdditionalR4.Any())
                     {
-                        status.NotificationEvent[0].AdditionalContext = new List<fhirCsR4.Models.Reference>();
+                        status.NotificationEvent[0].AdditionalContext = new List<fhirCsModels4B.Reference>();
 
                         foreach (string additional in cachedNotification.AdditionalR4.Keys)
                         {
-                            status.NotificationEvent[0].AdditionalContext.Add(new fhirCsR4.Models.Reference()
+                            status.NotificationEvent[0].AdditionalContext.Add(new fhirCsModels4B.Reference()
                             {
                                 ReferenceField = additional,
                             });
@@ -1420,10 +1428,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="cachedNotification">[out] The cached notification.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private static bool TryGetRelatedResources(
-            Subscription subscription,
-            fhirCsR4.Models.Resource content,
+            fhirCsModels4B.Subscription subscription,
+            fhirCsModels4B.Resource content,
             long eventNumber,
-            ref fhirCsR4.Models.Bundle bundle,
+            ref fhirCsModels4B.Bundle bundle,
             out CachedNotificationEvent cachedNotification)
         {
             if (content == null)
@@ -1453,14 +1461,14 @@ namespace argonaut_subscription_server_proxy.Managers
 
             List<string> includeDirectives = new List<string>();
 
-            SubscriptionTopicManagerR4.TryGetTopic(topicUrl, out fhirCsR4.Models.SubscriptionTopic topic);
+            SubscriptionTopicManagerR4.TryGetTopic(topicUrl, out fhirCsModels4B.SubscriptionTopic topic);
 
             if ((topic.NotificationShape == null) || (!topic.NotificationShape.Any()))
             {
                 return true;
             }
 
-            foreach (fhirCsR4.Models.SubscriptionTopicNotificationShape shape in topic.NotificationShape)
+            foreach (fhirCsModels4B.SubscriptionTopicNotificationShape shape in topic.NotificationShape)
             {
                 if (shape.Resource != content.ResourceType)
                 {
@@ -1508,7 +1516,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     }
 
                     string json = _instance._fhirSerializer.SerializeToString(entry.Resource);
-                    fhirCsR4.Models.Resource res = System.Text.Json.JsonSerializer.Deserialize<fhirCsR4.Models.Resource>(json);
+                    fhirCsModels4B.Resource res = System.Text.Json.JsonSerializer.Deserialize<fhirCsModels4B.Resource>(json);
 
                     string fullUrl = Program.UrlForR4ResourceId(entry.Resource.TypeName, entry.Resource.Id);
                     cachedNotification.AdditionalR4.Add(fullUrl, res);
@@ -1519,21 +1527,21 @@ namespace argonaut_subscription_server_proxy.Managers
                             break;
 
                         case BackportedSubscription.ContentCodeIdOnly:
-                            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                            bundle.Entry.Add(new fhirCsModels4B.BundleEntry()
                             {
                                 FullUrl = fullUrl,
-                                Request = new fhirCsR4.Models.BundleEntryRequest()
+                                Request = new fhirCsModels4B.BundleEntryRequest()
                                 {
                                     Method = "GET",
                                     Url = fullUrl,
                                 },
-                                Response = new fhirCsR4.Models.BundleEntryResponse()
+                                Response = new fhirCsModels4B.BundleEntryResponse()
                                 {
                                     Status = "200",
                                 },
-                                //Extension = new List<fhirCsR4.Models.Extension>()
+                                //Extension = new List<fhirCsModels4B.Extension>()
                                 //{
-                                //    new fhirCsR4.Models.Extension()
+                                //    new fhirCsModels4B.Extension()
                                 //    {
                                 //        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
                                 //        ValueString = eventNumber.ToString(),
@@ -1544,22 +1552,22 @@ namespace argonaut_subscription_server_proxy.Managers
                             break;
 
                         case BackportedSubscription.ContentCodeFullResource:
-                            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                            bundle.Entry.Add(new fhirCsModels4B.BundleEntry()
                             {
                                 FullUrl = fullUrl,
-                                Request = new fhirCsR4.Models.BundleEntryRequest()
+                                Request = new fhirCsModels4B.BundleEntryRequest()
                                 {
                                     Method = "GET",
                                     Url = fullUrl,
                                 },
-                                Response = new fhirCsR4.Models.BundleEntryResponse()
+                                Response = new fhirCsModels4B.BundleEntryResponse()
                                 {
                                     Status = "200",
                                 },
                                 Resource = res,
-                                //Extension = new List<fhirCsR4.Models.Extension>()
+                                //Extension = new List<fhirCsModels4B.Extension>()
                                 //{
-                                //    new fhirCsR4.Models.Extension()
+                                //    new fhirCsModels4B.Extension()
                                 //    {
                                 //        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
                                 //        ValueString = eventNumber.ToString(),
@@ -1572,7 +1580,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ProcessEncounter <<< failed to get groups, ignoring: {ex.Message}");
+                Console.WriteLine($"TryGetRelatedResources <<< caught exception: {ex.Message}");
             }
             finally
             {
@@ -1613,7 +1621,7 @@ namespace argonaut_subscription_server_proxy.Managers
             long eventNumberLow,
             long eventNumberHigh,
             string contentHint,
-            out fhirCsR4.Models.Bundle bundle)
+            out fhirCsModels4B.Bundle bundle)
         {
             return _instance._TryGetBundleForEvents(
                 subscriptionId,
@@ -1635,7 +1643,7 @@ namespace argonaut_subscription_server_proxy.Managers
             long eventNumberLow,
             long eventNumberHigh,
             string contentHint,
-            out fhirCsR4.Models.Bundle bundle)
+            out fhirCsModels4B.Bundle bundle)
         {
             // sanity checks
             if (string.IsNullOrEmpty(subscriptionId) ||
@@ -1645,7 +1653,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
+            fhirCsModels4B.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
             long low = (eventNumberLow < 1) ? 1 : eventNumberLow;
             long high = ((eventNumberHigh < 0) || (eventNumberHigh > _idEventCountDict[subscriptionId]))
@@ -1661,37 +1669,37 @@ namespace argonaut_subscription_server_proxy.Managers
 
             int eventsIncluded = 0;
 
-            fhirCsR4.Models.SubscriptionStatus status = new fhirCsR4.Models.SubscriptionStatus()
+            fhirCsModels4B.SubscriptionStatus status = new ()
             {
                 EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId].ToString(),
                 EventsInNotification = 0,
                 Status = subscription.Status.ToString().ToLowerInvariant(),
-                Type = fhirCsR4.ValueSets.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
-                Subscription = new fhirCsR4.Models.Reference()
+                Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
+                Subscription = new ()
                 {
                     ReferenceField = Program.UrlForR4ResourceId("Subscription", subscription.Id),
                 },
                 Topic = subscription.BackportTopicGet(),
-                NotificationEvent = new List<fhirCsR4.Models.SubscriptionStatusNotificationEvent>(),
+                NotificationEvent = new (),
             };
 
             // create a bundle for this message message
-            bundle = new fhirCsR4.Models.Bundle()
+            bundle = new ()
             {
-                Type = fhirCsR4.Models.BundleTypeCodes.HISTORY,
+                Type = fhirCsModels4B.BundleTypeCodes.HISTORY,
                 Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
-                Entry = new List<fhirCsR4.Models.BundleEntry>(),
+                Entry = new (),
             };
 
-            bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+            bundle.Entry.Add(new ()
             {
                 FullUrl = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$events",
-                Request = new fhirCsR4.Models.BundleEntryRequest()
+                Request = new ()
                 {
                     Method = "GET",
                     Url = Program.UrlForR4ResourceId("Subscription", subscription.Id) + "/$events",
                 },
-                Response = new fhirCsR4.Models.BundleEntryResponse()
+                Response = new ()
                 {
                     Status = "200",
                 },
@@ -1710,7 +1718,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 }
             }
 
-            HashSet<string> addedContents = new HashSet<string>();
+            HashSet<string> addedContents = new ();
 
             for (long i = low; i <= high; i++)
             {
@@ -1721,12 +1729,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 eventsIncluded++;
 
-                fhirCsR4.Models.SubscriptionStatusNotificationEvent statusEvent = new fhirCsR4.Models.SubscriptionStatusNotificationEvent()
+                fhirCsModels4B.SubscriptionStatusNotificationEvent statusEvent = new ()
                 {
                     EventNumber = i.ToString(),
                 };
 
-                statusEvent.Focus = new fhirCsR4.Models.Reference()
+                statusEvent.Focus = new ()
                 {
                     ReferenceField = _subscriptionEventCache[subscriptionId][i].Focus,
                 };
@@ -1735,21 +1743,21 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     addedContents.Add(_subscriptionEventCache[subscriptionId][i].Focus);
 
-                    bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                    bundle.Entry.Add(new ()
                     {
                         FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
-                        Request = new fhirCsR4.Models.BundleEntryRequest()
+                        Request = new ()
                         {
                             Method = "POST",
                             Url = _subscriptionEventCache[subscriptionId][i].Focus,
                         },
-                        Response = new fhirCsR4.Models.BundleEntryResponse()
+                        Response = new ()
                         {
                             Status = "204",
                         },
-                        //Extension = new List<fhirCsR4.Models.Extension>()
+                        //Extension = new List<fhirCsModels4B.Extension>()
                         //{
-                        //    new fhirCsR4.Models.Extension()
+                        //    new fhirCsModels4B.Extension()
                         //    {
                         //        Url = BackportedSubscription.ExtensionUrlNotificationFocus,
                         //        ValueString = i.ToString(),
@@ -1763,12 +1771,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (_subscriptionEventCache[subscriptionId][i].AdditionalR4.Count > 0)
                 {
-                    statusEvent.AdditionalContext = new List<fhirCsR4.Models.Reference>();
+                    statusEvent.AdditionalContext = new ();
                 }
 
-                foreach (KeyValuePair<string, fhirCsR4.Models.Resource> kvp in _subscriptionEventCache[subscriptionId][i].AdditionalR4)
+                foreach (KeyValuePair<string, fhirCsModels4B.Resource> kvp in _subscriptionEventCache[subscriptionId][i].AdditionalR4)
                 {
-                    statusEvent.AdditionalContext.Add(new fhirCsR4.Models.Reference()
+                    statusEvent.AdditionalContext.Add(new ()
                     {
                         ReferenceField = kvp.Key,
                     });
@@ -1777,21 +1785,21 @@ namespace argonaut_subscription_server_proxy.Managers
                     {
                         addedContents.Add(kvp.Key);
 
-                        bundle.Entry.Add(new fhirCsR4.Models.BundleEntry()
+                        bundle.Entry.Add(new ()
                         {
                             FullUrl = kvp.Key,
-                            Request = new fhirCsR4.Models.BundleEntryRequest()
+                            Request = new ()
                             {
                                 Method = "GET",
                                 Url = kvp.Key,
                             },
-                            Response = new fhirCsR4.Models.BundleEntryResponse()
+                            Response = new ()
                             {
                                 Status = "200",
                             },
-                            //Extension = new List<fhirCsR4.Models.Extension>()
+                            //Extension = new List<fhirCsModels4B.Extension>()
                             //{
-                            //    new fhirCsR4.Models.Extension()
+                            //    new fhirCsModels4B.Extension()
                             //    {
                             //        Url = BackportedSubscription.ExtensionUrlNotificationIncluded,
                             //        ValueString = i.ToString(),
@@ -1825,17 +1833,17 @@ namespace argonaut_subscription_server_proxy.Managers
             if (notified)
             {
                 // check to see if we need to clear an error
-                if (_idSubscriptionDict[subscriptionId].Status == Subscription.SubscriptionStatus.Error)
+                if (_idSubscriptionDict[subscriptionId].Status == fhirCsModels4B.SubscriptionStatusCodes.ERROR)
                 {
                     // _idSubscriptionDict[subscription.Id].Error = null;
-                    _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Active;
+                    _idSubscriptionDict[subscriptionId].Status = fhirCsModels4B.SubscriptionStatusCodes.ACTIVE;
                 }
             }
             else
             {
                 // done
                 // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-                _idSubscriptionDict[subscriptionId].Status = Subscription.SubscriptionStatus.Error;
+                _idSubscriptionDict[subscriptionId].Status = fhirCsModels4B.SubscriptionStatusCodes.ERROR;
             }
         }
 
@@ -1846,7 +1854,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(
             string subscriptionId,
-            fhirCsR4.Models.Resource csContent = null,
+            fhirCsModels4B.Resource csContent = null,
             bool isHandshake = false)
         {
             try
@@ -1865,14 +1873,14 @@ namespace argonaut_subscription_server_proxy.Managers
                 string contentId = (csContent == null) ? string.Empty : csContent.Id;
 
                 // get the subscription
-                Subscription subscription = _idSubscriptionDict[subscriptionId];
+                fhirCsModels4B.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
                 // get our bundle we want to send
                 BundleForSubscriptionNotification(
                     subscription,
                     csContent,
                     isHandshake,
-                    out fhirCsR4.Models.Bundle bundle,
+                    out fhirCsModels4B.Bundle bundle,
                     out long subscriptionEventCount,
                     out CachedNotificationEvent cacheNotification);
 
@@ -1881,7 +1889,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     $" event {_idEventCountDict[subscriptionId]}" +
                     $" via {subscription.Channel.Type}...");
 
-                string json = System.Text.Json.JsonSerializer.Serialize(bundle);
+                string json = JsonSerializer.Serialize(bundle);
 
                 if (cacheNotification != null)
                 {
@@ -1892,17 +1900,17 @@ namespace argonaut_subscription_server_proxy.Managers
                     }
                 }
 
-                // check for additional channel types
-                if (subscription.BackportAdditionalChannelTypeTryGet(out string channelType))
-                {
-                    bool notified = false;
+                bool notified = false;
 
-                    switch (channelType)
+                // check for additional channel types
+                if (subscription.BackportAdditionalChannelTypeTryGet(out string extendedChannelType))
+                {
+                    switch (extendedChannelType)
                     {
-                        case ZulipExtensionsR4.ZulipChannelUrl:
+                        case ZulipExtensions.ZulipChannelUrl:
                             {
-                                bool usePm = subscription.R4ZulipPmUserIdTryGet(out string pmUserId);
-                                bool useStream = subscription.R4ZulipStreamIdTryGet(out string streamId);
+                                bool usePm = subscription.ZulipPmUserIdTryGet(out string pmUserId);
+                                bool useStream = subscription.ZulipStreamIdTryGet(out string streamId);
 
                                 if ((!usePm) && (!useStream))
                                 {
@@ -1910,17 +1918,17 @@ namespace argonaut_subscription_server_proxy.Managers
                                     return false;
                                 }
 
-                                if (!subscription.R4ZulipSiteTryGet(out string site))
+                                if (!subscription.ZulipSiteTryGet(out string site))
                                 {
                                     site = Program.Configuration["Zulip_Site"];
                                 }
 
-                                if (!subscription.R4ZulipEmailTryGet(out string email))
+                                if (!subscription.ZulipEmailTryGet(out string email))
                                 {
                                     email = Program.Configuration["Zulip_Email"];
                                 }
 
-                                if (!subscription.R4ZulipKeyTryGet(out string key))
+                                if (!subscription.ZulipKeyTryGet(out string key))
                                 {
                                     key = Program.Configuration["Zulip_Key"];
                                 }
@@ -1949,52 +1957,42 @@ namespace argonaut_subscription_server_proxy.Managers
                     }
                 }
 
-                // check for a rest-hook
-                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.RestHook)
+                switch (subscription.Channel.Type)
                 {
-                    // send via hook
-                    bool notified = NotificationManager.TryNotifyRestHook(
-                        subscriptionId,
-                        subscription.Channel.Endpoint,
-                        subscription.Channel.Header,
-                        json,
-                        contentTypeName,
-                        contentId,
-                        subscriptionEventCount);
+                    case fhirCsModels4B.SubscriptionChannelTypeCodes.REST_HOOK:
+                        // send via hook
+                        notified = NotificationManager.TryNotifyRestHook(
+                            subscriptionId,
+                            subscription.Channel.Endpoint,
+                            subscription.Channel.Header,
+                            json,
+                            contentTypeName,
+                            contentId,
+                            subscriptionEventCount);
+                        break;
 
-                    UpdateErrorState(subscriptionId, notified);
+                    case fhirCsModels4B.SubscriptionChannelTypeCodes.EMAIL:
+                        notified = NotificationManager.TryNotifyEmail(
+                                                subscriptionId,
+                                                subscription.Channel.Endpoint,
+                                                subscription.Channel.Payload,
+                                                subscription.BackportContentGet(),
+                                                json,
+                                                contentTypeName,
+                                                contentId,
+                                                subscriptionEventCount);
+                        break;
 
-                    // cannot have additional channel types
-                    return notified;
+                    case fhirCsModels4B.SubscriptionChannelTypeCodes.WEBSOCKET:
+                        WebsocketManager.QueueMessagesForSubscription(subscription, json);
+
+                        // assume anything via websockets works, since we don't have a good detection story
+                        notified = true;
+                        break;
                 }
 
-                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Email)
-                {
-                    // send via email
-                    bool notified = NotificationManager.TryNotifyEmail(
-                        subscriptionId,
-                        subscription.Channel.Endpoint,
-                        subscription.Channel.Payload,
-                        subscription.BackportContentGet(),
-                        json,
-                        contentTypeName,
-                        contentId,
-                        subscriptionEventCount);
-
-                    UpdateErrorState(subscriptionId, notified);
-
-                    // cannot have additional channel types
-                    return notified;
-                }
-
-                if (subscription.Channel.Type == Subscription.SubscriptionChannelType.Websocket)
-                {
-                    // send via websocket
-                    WebsocketManager.QueueMessagesForSubscription(subscription, json);
-
-                    // assume anything via websockets works, since we don't have a good detection story
-                    return true;
-                }
+                UpdateErrorState(subscriptionId, notified);
+                return notified;
             }
             catch (Exception ex)
             {
@@ -2027,15 +2025,13 @@ namespace argonaut_subscription_server_proxy.Managers
                     try
                     {
                         // check this subscription
-                        Subscription subscription = _idSubscriptionDict[id];
+                        fhirCsModels4B.Subscription subscription = _idSubscriptionDict[id];
 
                         if ((subscription.End == null) ||
-                            (subscription.End.Value.DateTime < DateTime.Now))
+                            (!DateTime.TryParse(subscription.End, out DateTime end)) ||
+                            (end < DateTime.Now))
                         {
-                            // tell the user what's going on
                             Console.WriteLine($" <<< Removing subscription {id} due to expiration! - {DateTime.Now}");
-
-                            // remove this subscription
                             Remove(id);
                         }
                     }
@@ -2066,7 +2062,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 try
                 {
-                    Subscription subscription = _idSubscriptionDict[subscriptionId];
+                    fhirCsModels4B.Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+                    if (subscription.Status != fhirCsModels4B.SubscriptionStatusCodes.ACTIVE)
+                    {
+                        continue;
+                    }
 
                     int heartbeatTimeout = subscription.BackportChannelHeartbeatGet();
 

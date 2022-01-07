@@ -4,17 +4,15 @@
 // </copyright>
 
 extern alias fhir4;
-extern alias fhir5;
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using argonaut_subscription_server_proxy.Models;
-using r4 = fhir4.Hl7.Fhir.Model;
-using r4s = fhir4.Hl7.Fhir.Serialization;
-using r5 = fhir5.Hl7.Fhir.Model;
-using r5s = fhir5.Hl7.Fhir.Serialization;
+using fhirCsModels4B = fhirCsR4B.Models;
+using fhirCsModels5 = fhirCsR5.Models;
+using fhirCsValueSets5 = fhirCsR5.ValueSets;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
@@ -45,10 +43,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// </summary>
         private WebsocketManager()
         {
-            _guidInfoDict = new Dictionary<Guid, WebsocketClientInformation>();
-            _subscriptionInfosDict = new Dictionary<string, List<WebsocketClientInformation>>();
-            _guidTokenDict = new Dictionary<Guid, SubscriptionWsBindingToken>();
-            _clientsAndTimeouts = new ConcurrentDictionary<Guid, long>();
+            _guidInfoDict = new ();
+            _subscriptionInfosDict = new ();
+            _guidTokenDict = new ();
+            _clientsAndTimeouts = new ();
         }
 
         /// <summary>Initializes this object.</summary>
@@ -349,7 +347,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         /// <param name="json">        The resource.</param>
         public static void QueueMessagesForSubscription(
-            r5.Subscription subscription,
+            fhirCsModels5.Subscription subscription,
             string json)
         {
             if (subscription == null)
@@ -373,7 +371,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscription">The subscription.</param>
         /// <param name="json">        The resource.</param>
         public static void QueueMessagesForSubscription(
-            r4.Subscription subscription,
+            fhirCsModels4B.Subscription subscription,
             string json)
         {
             if (subscription == null)

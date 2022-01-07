@@ -3,15 +3,13 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
-extern alias fhir5;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using fhirCsR5.Models;
-using fhirCsR5.Serialization;
+using fhirCsValueSets5 = fhirCsR5.ValueSets;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
@@ -345,8 +343,8 @@ namespace argonaut_subscription_server_proxy.Managers
                         // FilterParameter = "http://hl7.org/fhir/build/SearchParameter/Encounter-patient",
                         Modifier = new List<string>()
                         {
-                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralEqual,
-                            fhirCsR4.ValueSets.SubscriptionSearchModifierCodes.LiteralIn,
+                            fhirCsValueSets5.SubscriptionSearchModifierCodes.LiteralEqual,
+                            fhirCsValueSets5.SubscriptionSearchModifierCodes.LiteralIn,
                         },
                     },
                 },

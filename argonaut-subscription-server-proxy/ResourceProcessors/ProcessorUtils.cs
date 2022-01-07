@@ -12,6 +12,10 @@ using System.Net.Http;
 using System.Text;
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
+using fhirCsModels4B = fhirCsR4B.Models;
+using fhirCsModels5 = fhirCsR5.Models;
+using fhirCsValueSets4B = fhirCsR4B.ValueSets;
+using fhirCsValueSets5 = fhirCsR5.ValueSets;
 using r4 = fhir4.Hl7.Fhir.Model;
 using r4s = fhir4.Hl7.Fhir.Serialization;
 using r5 = fhir5.Hl7.Fhir.Model;
@@ -67,7 +71,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <returns>A System.Threading.Tasks.Task.</returns>
         internal static async System.Threading.Tasks.Task SerializeR4(
             HttpContext context,
-            fhirCsR4.Models.Resource resource,
+            fhirCsModels4B.Resource resource,
             int statusCode = 200,
             string location = "",
             ReturnPref preferredResponse = ReturnPref.Representation,
@@ -107,15 +111,15 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     break;
 
                 case ReturnPref.OperationOutcome:
-                    fhirCsR4.Models.OperationOutcome outcome = new fhirCsR4.Models.OperationOutcome()
+                    fhirCsModels4B.OperationOutcome outcome = new fhirCsModels4B.OperationOutcome()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        Issue = new List<fhirCsR4.Models.OperationOutcomeIssue>()
+                        Issue = new List<fhirCsModels4B.OperationOutcomeIssue>()
                         {
-                            new fhirCsR4.Models.OperationOutcomeIssue()
+                            new fhirCsModels4B.OperationOutcomeIssue()
                             {
-                                Severity = fhirCsR4.Models.OperationOutcomeIssueSeverityCodes.ERROR,
-                                Code = fhirCsR4.ValueSets.IssueTypeCodes.LiteralProcessingFailure,
+                                Severity = fhirCsModels4B.OperationOutcomeIssueSeverityCodes.ERROR,
+                                Code = fhirCsValueSets4B.IssueTypeCodes.LiteralProcessingFailure,
                                 Diagnostics = failureContent,
                             },
                         },
@@ -139,7 +143,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <param name="context"> The context.</param>
         /// <param name="resource">The resource.</param>
         /// <returns>A System.Threading.Tasks.Task.</returns>
-        internal static async System.Threading.Tasks.Task SerializeR5(HttpContext context, fhirCsR5.Models.Resource resource)
+        internal static async System.Threading.Tasks.Task SerializeR5(HttpContext context, fhirCsModels5.Resource resource)
         {
             switch (resource.ResourceType)
             {
@@ -240,7 +244,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             _ = context.Response.CompleteAsync();
         }
 
-        /// <summary>Serialize an R4 C# Basic resource.</summary>
+        /// <summary>Serialize an R5 C# Firely resource.</summary>
         /// <param name="context">          The context.</param>
         /// <param name="resource">         The resource.</param>
         /// <param name="statusCode">       (Optional) The status code.</param>
@@ -318,10 +322,88 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
             }
         }
 
+        /// <summary>Serialize an R5 C# Basic resource.</summary>
+        /// <param name="context">          The context.</param>
+        /// <param name="resource">         The resource.</param>
+        /// <param name="statusCode">       (Optional) The status code.</param>
+        /// <param name="location">         (Optional) The location.</param>
+        /// <param name="preferredResponse">(Optional) The preferred return.</param>
+        /// <param name="failureContent">   (Optional) The failure content.</param>
+        /// <returns>A System.Threading.Tasks.Task.</returns>
+        internal static async System.Threading.Tasks.Task SerializeR5(
+            HttpContext context,
+            fhirCsModels5.Resource resource,
+            int statusCode = 200,
+            string location = "",
+            ReturnPref preferredResponse = ReturnPref.Representation,
+            string failureContent = "")
+        {
+            switch (resource.ResourceType)
+            {
+                case "OperationOutcome":
+                case "Bundle":
+                case "Parameters":
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+
+                default:
+                    if (string.IsNullOrEmpty(location))
+                    {
+                        context.Response.Headers.Add("Location", Program.UrlForR5ResourceId(resource.ResourceType, resource.Id));
+                    }
+                    else
+                    {
+                        context.Response.Headers.Add("Location", location);
+                    }
+
+                    break;
+            }
+
+            context.Response.Headers.Add("Access-Control-Expose-Headers", "Location,ETag");
+
+            switch (preferredResponse)
+            {
+                case ReturnPref.Minimal:
+                    context.Response.ContentType = "text/plain";
+                    break;
+
+                case ReturnPref.OperationOutcome:
+                    fhirCsModels5.OperationOutcome outcome = new fhirCsModels5.OperationOutcome()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Issue = new List<fhirCsModels5.OperationOutcomeIssue>()
+                        {
+                            new fhirCsModels5.OperationOutcomeIssue()
+                            {
+                                Severity = fhirCsModels5.OperationOutcomeIssueSeverityCodes.ERROR,
+                                Code = fhirCsValueSets5.IssueTypeCodes.LiteralProcessingFailure,
+                                Diagnostics = failureContent,
+                            },
+                        },
+                    };
+
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(outcome));
+                    break;
+
+                case ReturnPref.Representation:
+                default:
+                    context.Response.ContentType = "application/fhir+json";
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(resource));
+                    break;
+            }
+        }
+
         /// <summary>Serialize an R4 C# Basic resource.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
-        internal static void SerializeR4(ref HttpResponseMessage response, fhirCsR4.Models.Resource resource)
+        internal static void SerializeR4(ref HttpResponseMessage response, fhirCsModels4B.Resource resource)
         {
             response.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");
@@ -341,7 +423,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <summary>Serialize an R5 C# Basic resource.</summary>
         /// <param name="response">[in,out] The response.</param>
         /// <param name="resource">The resource.</param>
-        internal static void SerializeR5(ref HttpResponseMessage response, fhirCsR5.Models.Resource resource)
+        internal static void SerializeR5(ref HttpResponseMessage response, fhirCsModels5.Resource resource)
         {
             response.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(resource));
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/fhir+json");

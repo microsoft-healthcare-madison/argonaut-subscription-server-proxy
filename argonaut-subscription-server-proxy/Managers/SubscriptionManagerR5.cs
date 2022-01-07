@@ -6,35 +6,41 @@
 extern alias fhir5;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading;
 using argonaut_subscription_server_proxy.Backport;
 using argonaut_subscription_server_proxy.Models;
+using argonaut_subscription_server_proxy.Zulip;
 using fhir5.Hl7.Fhir.Model;
 using fhir5.Hl7.Fhir.Rest;
 using fhir5.Hl7.Fhir.Serialization;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using fhirCsModels5 = fhirCsR5.Models;
+using fhirCsValueSets5 = fhirCsR5.ValueSets;
 
 namespace argonaut_subscription_server_proxy.Managers
 {
     /// <summary>Manager for subscriptions.</summary>
     public class SubscriptionManagerR5
     {
+        /// <summary>The maximum cached events.</summary>
+        private const int MaxCachedEvents = 10;
+
         /// <summary>The instance for singleton pattern.</summary>
         private static SubscriptionManagerR5 _instance;
 
         /// <summary>Dictionary of subscriptions, by ID.</summary>
-        private Dictionary<string, Subscription> _idSubscriptionDict;
+        private Dictionary<string, fhirCsModels5.Subscription> _idSubscriptionDict;
+
+        /// <summary>The subscription event cache.</summary>
+        private Dictionary<string, Dictionary<long, CachedNotificationEvent>> _subscriptionEventCache;
 
         /// <summary>Dictionary of identifier status.</summary>
         private Dictionary<string, long> _idEventCountDict;
@@ -58,7 +64,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
         private Thread _cleanUpThread;
 
-        private CamelCasePropertyNamesContractResolver _contractResolver;
+        private Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver _contractResolver;
 
         private FhirJsonSerializer _fhirSerializer;
         private FhirJsonParser _fhirParser;
@@ -70,22 +76,23 @@ namespace argonaut_subscription_server_proxy.Managers
         private SubscriptionManagerR5()
         {
             // create our index objects
-            _idSubscriptionDict = new Dictionary<string, Subscription>();
-            _idEventCountDict = new Dictionary<string, long>();
-            _idLastEventTicksDict = new Dictionary<string, long>();
-            _idLockDict = new Dictionary<string, object>();
-            _resourceSubscriptionDict = new Dictionary<string, SubscriptionFilterNode>();
-            _resourceSubscriptionDictLock = new object();
-            _rand = new Random();
-            _supportedChannelTypes = new HashSet<string>()
+            _idSubscriptionDict = new ();
+            _subscriptionEventCache = new ();
+            _idEventCountDict = new ();
+            _idLastEventTicksDict = new ();
+            _idLockDict = new ();
+            _resourceSubscriptionDict = new ();
+            _resourceSubscriptionDictLock = new ();
+            _rand = new ();
+            _supportedChannelTypes = new ()
             {
                 "rest-hook",
                 "websocket",
                 "email",
             };
 
-            _clientQ = new Queue<FhirClient>();
-            _clientQLock = new object();
+            _clientQ = new ();
+            _clientQLock = new ();
 
             // create our clean-up thread
             _cleanUpThread = new Thread(new ThreadStart(CleanUpThreadFunc));
@@ -93,9 +100,9 @@ namespace argonaut_subscription_server_proxy.Managers
             _cleanUpThread.Start();
 
             // serialization related
-            _contractResolver = new CamelCasePropertyNamesContractResolver();
-            _fhirSerializer = new FhirJsonSerializer();
-            _fhirParser = new FhirJsonParser();
+            _contractResolver = new ();
+            _fhirSerializer = new ();
+            _fhirParser = new ();
         }
 
         /// <summary>Gets the current.</summary>
@@ -110,15 +117,15 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Gets a list of all currently known Subscriptions.</summary>
         /// <returns>The Subscription list.</returns>
-        public static List<Subscription> GetSubscriptionList()
+        public static List<fhirCsModels5.Subscription> GetSubscriptionList()
         {
             // return our list of known subscriptions
-            return _instance._idSubscriptionDict.Values.ToList<Subscription>();
+            return _instance._idSubscriptionDict.Values.ToList<fhirCsModels5.Subscription>();
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
         /// <returns>The subscriptions bundle.</returns>
-        public static Bundle GetSubscriptionsBundle()
+        public static fhirCsModels5.Bundle GetSubscriptionsBundle()
         {
             return _instance._GetSubscriptionsBundle();
         }
@@ -130,7 +137,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="failureContent">[out] The failure content.</param>
         public static void HandlePost(
             string content,
-            out Subscription subscription,
+            out fhirCsModels5.Subscription subscription,
             out HttpStatusCode statusCode,
             out string failureContent)
         {
@@ -177,7 +184,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="subscription">  [out] The subscription.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        public static bool TryGetSubscription(string subscriptionId, out Subscription subscription)
+        public static bool TryGetSubscription(string subscriptionId, out fhirCsModels5.Subscription subscription)
         {
             if (_instance._idSubscriptionDict.ContainsKey(subscriptionId))
             {
@@ -195,10 +202,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSerialized(string subscriptionId, out string serialized)
         {
-            if (TryGetSubscription(subscriptionId, out Subscription subscription))
+            if (TryGetSubscription(subscriptionId, out fhirCsModels5.Subscription subscription))
             {
-                serialized = _instance._fhirSerializer.SerializeToString(subscription);
-
+                serialized = JsonSerializer.Serialize(subscription);
                 return true;
             }
 
@@ -226,32 +232,158 @@ namespace argonaut_subscription_server_proxy.Managers
         }
 
         /// <summary>Gets subscriptions bundle.</summary>
+        /// <param name="queryCollection">(Optional) Collection of queries.</param>
         /// <returns>The subscriptions bundle.</returns>
-        private Bundle _GetSubscriptionsBundle()
+        private fhirCsModels5.Bundle _GetSubscriptionsBundle(IQueryCollection queryCollection = null)
         {
-            Bundle bundle = new Bundle()
+            fhirCsModels5.Bundle bundle = new ()
             {
-                Type = Bundle.BundleType.Searchset,
-                Total = _idSubscriptionDict.Count,
-                Meta = new Meta()
+                Type = fhirCsModels5.BundleTypeCodes.SEARCHSET,
+                Total = (uint)_idSubscriptionDict.Count,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Meta = new ()
                 {
-                    LastUpdated = new DateTimeOffset(DateTime.Now.ToUniversalTime()),
+                    LastUpdated = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
                 },
-                Entry = new List<Bundle.EntryComponent>(),
+                Entry = new (),
             };
 
-            foreach (Subscription subscription in _idSubscriptionDict.Values)
+            foreach (fhirCsModels5.Subscription subscription in _idSubscriptionDict.Values)
             {
-                bundle.Entry.Add(new Bundle.EntryComponent()
+                string subscriptionUrl = Program.UrlForR5ResourceId("Subscription", subscription.Id);
+
+                if ((queryCollection == null) || (queryCollection.Count == 0))
                 {
-                    FullUrl = Program.UrlForR5ResourceId("Subscription", subscription.Id),
-                    Resource = (Resource)subscription,
-                    Search = new Bundle.SearchComponent()
+                    bundle.Entry.Add(new ()
                     {
-                        Mode = Bundle.SearchEntryMode.Match,
-                    },
-                });
+                        FullUrl = subscriptionUrl,
+                        Resource = (fhirCsModels5.Resource)subscription,
+                        Search = new ()
+                        {
+                            Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                        },
+                    });
+
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> query in queryCollection)
+                {
+                    switch (query.Key)
+                    {
+                        case "_id":
+                            if (query.Value.Contains(subscription.Id, StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new ()
+                                {
+                                    FullUrl = subscriptionUrl,
+                                    Resource = subscription,
+                                    Search = new ()
+                                    {
+                                        Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "status":
+                            if (query.Value.Contains(subscription.Status.ToString(), StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new ()
+                                {
+                                    FullUrl = subscriptionUrl,
+                                    Resource = subscription,
+                                    Search = new ()
+                                    {
+                                        Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "url":
+                            if (query.Value.Contains(subscription.Endpoint, StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new ()
+                                {
+                                    FullUrl = subscriptionUrl,
+                                    Resource = subscription,
+                                    Search = new ()
+                                    {
+                                        Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                                    },
+                                });
+                            }
+
+                            break;
+
+                        case "criteria":
+
+                            if (query.Value.Contains(subscription.Topic, StringComparer.OrdinalIgnoreCase))
+                            {
+                                bundle.Entry.Add(new ()
+                                {
+                                    FullUrl = subscriptionUrl,
+                                    Resource = subscription,
+                                    Search = new ()
+                                    {
+                                        Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                                    },
+                                });
+                            }
+                            else
+                            {
+                                foreach (fhirCsModels5.SubscriptionFilterBy filter in subscription.FilterBy)
+                                {
+                                    string serialized = string.IsNullOrEmpty(filter.ResourceType)
+                                        ? string.Empty
+                                        : filter.ResourceType + "?";
+
+                                    if (string.IsNullOrEmpty(filter.SearchModifier) ||
+                                        (filter.SearchModifier == fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQUALS) ||
+                                        (filter.SearchModifier == fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQ))
+                                    {
+                                        serialized += $"{filter.SearchParamName}={filter.Value}";
+                                    }
+                                    else
+                                    {
+                                        serialized += $"{filter.SearchParamName}:{filter.SearchModifier}={filter.Value}";
+                                    }
+
+                                    string criteria = filter.SearchParamName;
+
+                                    if (!string.IsNullOrEmpty(filter.SearchModifier))
+                                    {
+                                        criteria += ":" + filter.SearchModifier;
+                                    }
+
+                                    criteria += filter.Value;
+
+                                    if (query.Value.Contains(criteria, StringComparer.OrdinalIgnoreCase))
+                                    {
+                                        bundle.Entry.Add(new ()
+                                        {
+                                            FullUrl = subscriptionUrl,
+                                            Resource = subscription,
+                                            Search = new ()
+                                            {
+                                                Mode = fhirCsModels5.BundleEntrySearchModeCodes.MATCH,
+                                            },
+                                        });
+
+                                        break;
+                                    }
+                                }
+                            }
+
+                            break;
+                    }
+                }
             }
+
+            bundle.Total = (uint)bundle.Entry.Count;
 
             // return our bundle
             return bundle;
@@ -308,9 +440,6 @@ namespace argonaut_subscription_server_proxy.Managers
 
             List<string> keysToRemove = new List<string>();
 
-            // grab this object
-            Subscription subscription = _idSubscriptionDict[id];
-
             // traverse trackings looking for this subscription
             foreach (KeyValuePair<string, SubscriptionFilterNode> kvp in _resourceSubscriptionDict)
             {
@@ -338,6 +467,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // remove from the main dictionary
             _idSubscriptionDict.Remove(id);
+
+            // remove from event cache
+            _subscriptionEventCache.Remove(id);
 
             // remove from status
             _idEventCountDict.Remove(id);
@@ -408,9 +540,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="location">The location.</param>
         private void _ProcessEncounter(string content, string location)
         {
-            List<Subscription> subscriptions = new List<Subscription>();
+            List<fhirCsModels5.Subscription> subscriptions = new ();
 
-            Encounter e5 = null;
+            fhirCsModels5.Encounter csEncounter = null;
+            Encounter sdkEncounter = null;
 
             // check to see if this resource is tracked (any subscriptions)
             if (!_resourceSubscriptionDict.ContainsKey("Encounter"))
@@ -425,7 +558,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 if ((!string.IsNullOrEmpty(content)) && (content.Length > 20))
                 {
                     // attempt to parse this encounter
-                    e5 = _fhirParser.Parse<Encounter>(content);
+                    csEncounter = JsonSerializer.Deserialize<fhirCsModels5.Encounter>(content);
+                    sdkEncounter = _fhirParser.Parse<Encounter>(content);
                 }
             }
             catch (Exception)
@@ -434,7 +568,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // check for not having an encounter
-            if (e5 == null)
+            if (csEncounter == null)
             {
                 FhirClient client = null;
 
@@ -450,7 +584,11 @@ namespace argonaut_subscription_server_proxy.Managers
                     }
 
                     // read the specified resource
-                    e5 = client.Read<Encounter>(location);
+                    sdkEncounter = client.Read<Encounter>(location);
+
+                    // convert to local object (needed for notifications)
+                    csEncounter = System.Text.Json.JsonSerializer.Deserialize<fhirCsModels5.Encounter>(
+                        _fhirSerializer.SerializeToString(sdkEncounter));
                 }
                 finally
                 {
@@ -460,7 +598,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // check for no resource
-            if (e5 == null)
+            if (csEncounter == null)
             {
                 Console.WriteLine("Could not get Encounter resource!");
                 return;
@@ -470,13 +608,13 @@ namespace argonaut_subscription_server_proxy.Managers
             try
             {
                 // build a list of all our keys
-                List<string> searchKeys = new List<string>();
+                List<string> searchKeys = new ();
 
                 // add our patient match key
-                searchKeys.Add($"patient:{e5.Subject.Reference}");
+                searchKeys.Add($"patient:{sdkEncounter.Subject.Reference}");
 
                 // get the groups this patient belongs to
-                GetEncounterPatientGroupKeys(e5, out List<string> patientGroupKeys);
+                GetEncounterPatientGroupKeys(sdkEncounter, out List<string> patientGroupKeys);
 
                 // add our patient group keys
                 searchKeys.AddRange(patientGroupKeys);
@@ -495,9 +633,9 @@ namespace argonaut_subscription_server_proxy.Managers
                     ref subscriptions);
 
                 // notify all subscriptions
-                foreach (Subscription subscription in subscriptions)
+                foreach (fhirCsModels5.Subscription subscription in subscriptions)
                 {
-                    TryNotifySubscription(subscription.Id, e5);
+                    _ = TryNotifySubscription(subscription.Id, csEncounter);
                 }
             }
             catch (Exception ex)
@@ -515,13 +653,13 @@ namespace argonaut_subscription_server_proxy.Managers
             SubscriptionFilterNode node,
             List<string> matchKeys,
             HashSet<string> matchHashSet,
-            ref List<Subscription> subscriptions)
+            ref List<fhirCsModels5.Subscription> subscriptions)
         {
             // add subscriptions on this level
             if (node.SubscriptionsR5.Count > 0)
             {
-                List<Subscription> subscriptionsToRemove = new List<Subscription>();
-                foreach (Subscription subscription in node.SubscriptionsR5)
+                List<fhirCsModels5.Subscription> subscriptionsToRemove = new ();
+                foreach (fhirCsModels5.Subscription subscription in node.SubscriptionsR5)
                 {
                     if (!_idSubscriptionDict.ContainsKey(subscription.Id))
                     {
@@ -534,7 +672,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 if (subscriptionsToRemove.Any())
                 {
-                    foreach (Subscription subscription in subscriptionsToRemove)
+                    foreach (fhirCsModels5.Subscription subscription in subscriptionsToRemove)
                     {
                         node.SubscriptionsR5.Remove(subscription);
                     }
@@ -571,10 +709,10 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="statusCode">    [out] The status code.</param>
         /// <param name="failureContent">[out] The failure content.</param>
         private void _HandlePost(
-                                    string content,
-                                    out Subscription subscription,
-                                    out HttpStatusCode statusCode,
-                                    out string failureContent)
+            string content,
+            out fhirCsModels5.Subscription subscription,
+            out HttpStatusCode statusCode,
+            out string failureContent)
         {
             subscription = null;
             statusCode = System.Net.HttpStatusCode.Created;
@@ -583,7 +721,7 @@ namespace argonaut_subscription_server_proxy.Managers
             // attempt to parse our content into a subscription request
             try
             {
-                subscription = _fhirParser.Parse<Subscription>(content);
+                subscription = JsonSerializer.Deserialize<fhirCsModels5.Subscription>(content);
 
                 // check for no parsed object
                 if (subscription == null)
@@ -629,20 +767,46 @@ namespace argonaut_subscription_server_proxy.Managers
                 DateTime maxEnd = DateTime.Now.AddDays(1.0);
 
                 if ((subscription.End == null) ||
-                    (subscription.End.Value.DateTime > maxEnd))
+                    (!DateTime.TryParse(subscription.End, out DateTime end)) ||
+                    (end > maxEnd))
                 {
                     // force our end
-                    subscription.End = new DateTimeOffset(maxEnd.ToUniversalTime());
+                    subscription.End = maxEnd.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK");
                 }
+
+                // make sure we are requested
+                subscription.Status = fhirCsModels5.SubscriptionStatusCodes.REQUESTED;
 
                 _AddOrUpdate(subscription);
 
                 bool shouldSendHandshake = false;
 
+                string expandedChannelType = string.Empty;
+
                 if (subscription.ChannelType != null)
                 {
-                    if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
-                    {
+                    expandedChannelType = string.IsNullOrEmpty(subscription.ChannelType.System)
+                        ? subscription.ChannelType.Code
+                        : subscription.ChannelType.System + "#" + subscription.ChannelType.Code;
+                }
+
+                if (string.IsNullOrEmpty(expandedChannelType))
+                {
+                    Console.WriteLine($"HandlePost <<< Invalid subscription channel type!");
+                    statusCode = HttpStatusCode.BadRequest;
+                    failureContent = $"Channel Type is required for subscriptions!";
+                    return;
+                }
+
+                switch (expandedChannelType)
+                {
+                    case ZulipExtensions.ZulipChannelUrl:
+                        shouldSendHandshake = true;
+                        break;
+
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralRestHook:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeRestHook:
+
                         if (string.IsNullOrEmpty(subscription.Endpoint) ||
                             (!Uri.TryCreate(subscription.Endpoint, UriKind.Absolute, out _)))
                         {
@@ -653,20 +817,24 @@ namespace argonaut_subscription_server_proxy.Managers
 
                         // rest-hook sends handshake
                         shouldSendHandshake = true;
-                    }
+                        break;
 
-                    if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
-                    {
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralEmail:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeEmail:
                         // email sends handshake
                         shouldSendHandshake = true;
-                    }
+                        break;
 
-                    if (!_supportedChannelTypes.Contains(subscription.ChannelType.Code))
-                    {
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralWebsocket:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeWebsocket:
+                        // websocket does NOT send handshake
+                        shouldSendHandshake = false;
+                        break;
+
+                    default:
                         statusCode = HttpStatusCode.BadRequest;
-                        failureContent = $"Invalid channel type requested: {subscription.ChannelType.Code}";
+                        failureContent = $"Invalid subscription channel type requested: {subscription.ChannelType.System}#{subscription.ChannelType.Code}";
                         return;
-                    }
                 }
 
                 if (shouldSendHandshake)
@@ -679,7 +847,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 else
                 {
                     // if there's no handshake, just mark the subscription active
-                    _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                    _idSubscriptionDict[subscription.Id].Status = fhirCsModels5.SubscriptionStatusCodes.ACTIVE;
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -693,13 +861,18 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Adds or updates a Topic.</summary>
         /// <param name="subscription">The subscription.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
-        private bool _AddOrUpdate(Subscription subscription)
+        private bool _AddOrUpdate(fhirCsModels5.Subscription subscription)
         {
             // check for an existing subscription (may need to remove URL for cleanup)
             if (_idSubscriptionDict.ContainsKey(subscription.Id))
             {
                 // remove from the main dict
                 _idSubscriptionDict.Remove(subscription.Id);
+            }
+
+            if (_subscriptionEventCache.ContainsKey(subscription.Id))
+            {
+                _subscriptionEventCache.Remove(subscription.Id);
             }
 
             if (_idEventCountDict.ContainsKey(subscription.Id))
@@ -720,6 +893,7 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // add to the main dictionaries
             _idSubscriptionDict.Add(subscription.Id, subscription);
+            _subscriptionEventCache.Add(subscription.Id, new ());
             _idEventCountDict.Add(subscription.Id, 0);
             _idLastEventTicksDict.Add(subscription.Id, DateTime.Now.Ticks);
 
@@ -765,9 +939,9 @@ namespace argonaut_subscription_server_proxy.Managers
                 {
                     _resourceSubscriptionDict.Add(resourceName, new SubscriptionFilterNode()
                     {
-                        SubscriptionsR5 = new List<Subscription>(),
-                        Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
-                        Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                        SubscriptionsR5 = new (),
+                        Inclusions = new (),
+                        Exclusions = new (),
                     })
                     ;
                 }
@@ -779,7 +953,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="topic">       The topic.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TrackSubscription(
-            Subscription subscription,
+            fhirCsModels5.Subscription subscription,
             fhirCsR5.Models.SubscriptionTopic topic)
         {
             // check for unfiltered subscriptions
@@ -815,20 +989,20 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // for now, reject any subscription that starts with an exclusion
-            if (subscription.FilterBy[0].SearchModifier == SubscriptionSearchModifier.NotIn)
+            if (subscription.FilterBy[0].SearchModifier == fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NOT_IN)
             {
                 Console.WriteLine($"SubscriptionManager.TrackSubscription <<< first match cannot be {subscription.FilterBy[0].SearchModifier}");
                 return false;
             }
 
             // get our list of filters
-            List<Subscription.FilterByComponent> filters = subscription.FilterBy.ToList();
+            List<fhirCsModels5.SubscriptionFilterBy> filters = subscription.FilterBy.ToList();
 
             // sort by field, match, value
             filters.Sort(
                 (a, b) => string.CompareOrdinal(
-                    $"{a.SearchParamName}{a.SearchModifier.ToString()}{a.Value}",
-                    $"{b.SearchParamName}{b.SearchModifier.ToString()}{b.Value}"));
+                    $"{a.SearchParamName}{a.SearchModifier}{a.Value}",
+                    $"{b.SearchParamName}{b.SearchModifier}{b.Value}"));
 
             // loop over resources in the topic
             foreach (fhirCsR5.Models.SubscriptionTopicResourceTrigger resourceTrigger in topic.ResourceTrigger)
@@ -858,9 +1032,9 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="filters">     The filters.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TrackFilterNode(
-            Subscription subscription,
+            fhirCsModels5.Subscription subscription,
             SubscriptionFilterNode node,
-            List<Subscription.FilterByComponent> filters)
+            List<fhirCsModels5.SubscriptionFilterBy> filters)
         {
             // check for no filters (done)
             if (filters.Count == 0)
@@ -873,7 +1047,7 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // grab the first filter (sorted)
-            Subscription.FilterByComponent filter = filters[0];
+            fhirCsModels5.SubscriptionFilterBy filter = filters[0];
             filters.RemoveAt(0);
 
             // check for no value
@@ -898,8 +1072,8 @@ namespace argonaut_subscription_server_proxy.Managers
                 // add to the correct type
                 switch (filter.SearchModifier)
                 {
-                    case SubscriptionSearchModifier.NotIn:
-                    case SubscriptionSearchModifier.Ne:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NOT_IN:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.NE:
                         // make sure this field is in exclusions
                         lock (_resourceSubscriptionDictLock)
                         {
@@ -907,9 +1081,9 @@ namespace argonaut_subscription_server_proxy.Managers
                             {
                                 node.Exclusions.Add(filterKey, new SubscriptionFilterNode()
                                 {
-                                    SubscriptionsR5 = new List<Subscription>(),
-                                    Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
-                                    Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                                    SubscriptionsR5 = new (),
+                                    Inclusions = new (),
+                                    Exclusions = new (),
                                 });
                             }
                         }
@@ -922,9 +1096,9 @@ namespace argonaut_subscription_server_proxy.Managers
 
                         break;
 
-                    case SubscriptionSearchModifier.In:
-                    case SubscriptionSearchModifier.Equal:
-                    case SubscriptionSearchModifier.Eq:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.VAL_IN:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQUALS:
+                    case fhirCsModels5.SubscriptionFilterBySearchModifierCodes.EQ:
                         // make sure this field is in the inclusions
                         lock (_resourceSubscriptionDictLock)
                         {
@@ -932,9 +1106,9 @@ namespace argonaut_subscription_server_proxy.Managers
                             {
                                 node.Inclusions.Add(filterKey, new SubscriptionFilterNode()
                                 {
-                                    SubscriptionsR5 = new List<Subscription>(),
-                                    Inclusions = new Dictionary<string, SubscriptionFilterNode>(),
-                                    Exclusions = new Dictionary<string, SubscriptionFilterNode>(),
+                                    SubscriptionsR5 = new (),
+                                    Inclusions = new (),
+                                    Exclusions = new (),
                                 });
                             }
                         }
@@ -990,12 +1164,12 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            Subscription subscription = _idSubscriptionDict[subscriptionId];
+            fhirCsModels5.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
             if (string.IsNullOrEmpty(subscription.Endpoint))
             {
                 // nothing to do
-                _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
+                _idSubscriptionDict[subscription.Id].Status = fhirCsModels5.SubscriptionStatusCodes.ERROR;
 
                 return false;
             }
@@ -1008,7 +1182,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // update in the manager (if it hasn't been removed)
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
-                    _idSubscriptionDict[subscriptionId].Status = SubscriptionState.Active;
+                    _idSubscriptionDict[subscriptionId].Status = fhirCsModels5.SubscriptionStatusCodes.ACTIVE;
                 }
             }
             else
@@ -1016,7 +1190,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 // update to error in the manager (if it hasn't been removed)
                 if (_idSubscriptionDict.ContainsKey(subscriptionId))
                 {
-                    _idSubscriptionDict[subscriptionId].Status = SubscriptionState.Error;
+                    _idSubscriptionDict[subscriptionId].Status = fhirCsModels5.SubscriptionStatusCodes.ERROR;
                 }
             }
 
@@ -1092,7 +1266,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         public static bool TryGetSubscriptionStatus(
             string id,
-            out SubscriptionStatus status,
+            out fhirCsModels5.SubscriptionStatus status,
             int eventsInNotification,
             bool isForQuery,
             bool isHandshake)
@@ -1103,7 +1277,7 @@ namespace argonaut_subscription_server_proxy.Managers
                 return false;
             }
 
-            if (!TryGetSubscription(id, out Subscription subscription))
+            if (!TryGetSubscription(id, out fhirCsModels5.Subscription subscription))
             {
                 status = null;
                 return false;
@@ -1111,33 +1285,36 @@ namespace argonaut_subscription_server_proxy.Managers
 
             long eventCount = _instance._idEventCountDict[subscription.Id];
 
-            status = new SubscriptionStatus()
+            status = new fhirCsModels5.SubscriptionStatus()
             {
                 EventsSinceSubscriptionStart = eventCount,
                 EventsInNotification = eventsInNotification,
-                Status = subscription.Status,
-                Subscription = new ResourceReference(Program.UrlForR5ResourceId("Subscription", subscription.Id)),
-                Topic = new Canonical(subscription.Topic),
+                Status = subscription.Status.ToString().ToLowerInvariant(),
+                Subscription = new fhirCsModels5.Reference()
+                {
+                    ReferenceField = Program.UrlForR5ResourceId("Subscription", subscription.Id),
+                },
+                Topic = subscription.Topic,
             };
 
             if (isForQuery)
             {
-                status.Type = SubscriptionStatus.SubscriptionNotificationType.QueryStatus;
+                status.Type = fhirCsValueSets5.SubscriptionNotificationTypeCodes.LiteralQueryStatus;
             }
             else if (eventsInNotification == 0)
             {
                 if (isHandshake)
                 {
-                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Handshake;
+                    status.Type = fhirCsValueSets5.SubscriptionNotificationTypeCodes.LiteralHandshake;
                 }
                 else
                 {
-                    status.Type = SubscriptionStatus.SubscriptionNotificationType.Heartbeat;
+                    status.Type = fhirCsValueSets5.SubscriptionNotificationTypeCodes.LiteralHeartbeat;
                 }
             }
             else
             {
-                status.Type = SubscriptionStatus.SubscriptionNotificationType.EventNotification;
+                status.Type = fhirCsValueSets5.SubscriptionNotificationTypeCodes.LiteralEventNotification;
             }
 
             return true;
@@ -1145,22 +1322,26 @@ namespace argonaut_subscription_server_proxy.Managers
 
         /// <summary>Bundle for subscription notification.</summary>
         /// <exception cref="ArgumentNullException">Thrown when one or more required arguments are null.</exception>
-        /// <param name="subscription">          The subscription.</param>
+        /// <param name="subscription">          [out] The subscription.</param>
         /// <param name="content">               The content.</param>
         /// <param name="isHandshake">           True if is handshake, false if not.</param>
         /// <param name="bundle">                [out] The bundle.</param>
-        /// <param name="subscriptionEventCount">[out] Number of events.</param>
+        /// <param name="subscriptionEventCount">[out] Number of subscription events.</param>
+        /// <param name="cachedNotification">    [out] The cached notification.</param>
         public static void BundleForSubscriptionNotification(
-            Subscription subscription,
-            Resource content,
+            fhirCsModels5.Subscription subscription,
+            fhirCsModels5.Resource content,
             bool isHandshake,
-            out Bundle bundle,
-            out long subscriptionEventCount)
+            out fhirCsModels5.Bundle bundle,
+            out long subscriptionEventCount,
+            out CachedNotificationEvent cachedNotification)
         {
             if (subscription == null)
             {
                 throw new ArgumentNullException(nameof(subscription));
             }
+
+            cachedNotification = null;
 
             // check our event count
             lock (_instance._idLockDict[subscription.Id])
@@ -1176,43 +1357,290 @@ namespace argonaut_subscription_server_proxy.Managers
             }
 
             // create a bundle for this message message
-            bundle = new Bundle()
+            bundle = new fhirCsModels5.Bundle()
             {
-                // Identifier = new Identifier("http://terminology.hl7.org/CodeSystem/ietf-uuid", Guid.NewGuid().ToString()),
-                Type = Bundle.BundleType.SubscriptionNotification,  // History
-                Timestamp = new DateTimeOffset(DateTime.Now),
-                Meta = new Meta()
-                {
-                    LastUpdated = new DateTimeOffset(DateTime.Now),
-                },
-                Entry = new List<Bundle.EntryComponent>(),
+                Type = fhirCsModels5.BundleTypeCodes.SUBSCRIPTION_NOTIFICATION,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Entry = new List<fhirCsModels5.BundleEntry>(),
             };
 
             if (TryGetSubscriptionStatus(
                     subscription.Id,
-                    out SubscriptionStatus status,
+                    out fhirCsModels5.SubscriptionStatus status,
                     (content == null) ? 0 : 1,
                     false,
                     isHandshake))
             {
-                bundle.AddResourceEntry(status, Program.UrlForR5ResourceId(status.TypeName, status.Id));
+                string url = Program.UrlForR5ResourceId("Subscription", subscription.Id) + "/$status";
+                bundle.Entry.Add(new fhirCsModels5.BundleEntry()
+                {
+                    FullUrl = url,
+                    Request = new fhirCsModels5.BundleEntryRequest()
+                    {
+                        Method = "GET",
+                        Url = url,
+                    },
+                    Response = new fhirCsModels5.BundleEntryResponse()
+                    {
+                        Status = "200",
+                    },
+                });
             }
 
             // check if we are adding contents
-            if ((content != null) && (subscription.Content != Subscription.SubscriptionPayloadContent.Empty))
+            if ((content != null) && (subscription.Content != fhirCsModels5.SubscriptionContentCodes.EMPTY))
             {
-                // add depending on type
-                if (subscription.Content == Subscription.SubscriptionPayloadContent.IdOnly)
+                string url = Program.UrlForR5ResourceId(content.ResourceType, content.Id);
+
+                switch (subscription.Content)
                 {
-                    // add the URL, but no resource
-                    bundle.AddResourceEntry(null, Program.UrlForR5ResourceId(content.TypeName, content.Id));
+                    case fhirCsModels5.SubscriptionContentCodes.EMPTY:
+                        break;
+
+                    case fhirCsModels5.SubscriptionContentCodes.ID_ONLY:
+                        // add the URL, but no resource
+                        bundle.Entry.Add(new fhirCsModels5.BundleEntry()
+                        {
+                            FullUrl = url,
+                            Request = new fhirCsModels5.BundleEntryRequest()
+                            {
+                                Method = "POST",
+                                Url = url,
+                            },
+                            Response = new fhirCsModels5.BundleEntryResponse()
+                            {
+                                Status = "204",
+                            },
+                        });
+
+                        status.NotificationEvent = new List<fhirCsModels5.SubscriptionStatusNotificationEvent>()
+                        {
+                            new fhirCsModels5.SubscriptionStatusNotificationEvent()
+                            {
+                                EventNumber = subscriptionEventCount,
+                                Focus = new fhirCsModels5.Reference()
+                                {
+                                    ReferenceField = url,
+                                },
+                            },
+                        };
+                        break;
+
+                    case fhirCsModels5.SubscriptionContentCodes.FULL_RESOURCE:
+                        // add the URL and the resource
+                        bundle.Entry.Add(new fhirCsModels5.BundleEntry()
+                        {
+                            FullUrl = url,
+                            Request = new fhirCsModels5.BundleEntryRequest()
+                            {
+                                Method = "POST",
+                                Url = url,
+                            },
+                            Response = new fhirCsModels5.BundleEntryResponse()
+                            {
+                                Status = "204",
+                            },
+                            Resource = content,
+                        });
+
+                        status.NotificationEvent = new List<fhirCsModels5.SubscriptionStatusNotificationEvent>()
+                        {
+                            new fhirCsModels5.SubscriptionStatusNotificationEvent()
+                            {
+                                EventNumber = subscriptionEventCount,
+                                Focus = new fhirCsModels5.Reference()
+                                {
+                                    ReferenceField = url,
+                                },
+                            },
+                        };
+                        break;
                 }
-                else
+
+                // check for related resources and add them
+                if (TryGetRelatedResources(
+                        subscription,
+                        content,
+                        subscriptionEventCount,
+                        ref bundle,
+                        out cachedNotification))
                 {
-                    // add the URL and the resource
-                    bundle.AddResourceEntry(content, Program.UrlForR5ResourceId(content.TypeName, content.Id));
+                    if ((status.NotificationEvent != null) &&
+                        status.NotificationEvent.Any() &&
+                        (cachedNotification != null) &&
+                        (cachedNotification.AdditionalR5 != null) &&
+                        cachedNotification.AdditionalR5.Any())
+                    {
+                        status.NotificationEvent[0].AdditionalContext = new List<fhirCsModels5.Reference>();
+
+                        foreach (string additional in cachedNotification.AdditionalR5.Keys)
+                        {
+                            status.NotificationEvent[0].AdditionalContext.Add(new fhirCsModels5.Reference()
+                            {
+                                ReferenceField = additional,
+                            });
+                        }
+                    }
                 }
             }
+
+            bundle.Entry[0].Resource = status;
+        }
+
+        /// <summary>Attempts to get related resources.</summary>
+        /// <param name="subscription">      [out] The subscription.</param>
+        /// <param name="content">           The content.</param>
+        /// <param name="eventNumber">       The event number.</param>
+        /// <param name="bundle">            [out] The bundle.</param>
+        /// <param name="cachedNotification">[out] The cached notification.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        private static bool TryGetRelatedResources(
+            fhirCsModels5.Subscription subscription,
+            fhirCsModels5.Resource content,
+            long eventNumber,
+            ref fhirCsModels5.Bundle bundle,
+            out CachedNotificationEvent cachedNotification)
+        {
+            if (content == null)
+            {
+                cachedNotification = null;
+                return true;
+            }
+
+            FhirClient client = null;
+
+            // get the topic
+            string topicUrl = subscription.Topic;
+
+            if (string.IsNullOrEmpty(topicUrl))
+            {
+                cachedNotification = null;
+                return false;
+            }
+
+            cachedNotification = new CachedNotificationEvent()
+            {
+                Focus = Program.UrlForR5ResourceId(content.ResourceType, content.Id),
+                FocusR5 = content,
+            };
+
+            List<string> includeDirectives = new List<string>();
+
+            SubscriptionTopicManagerR5.TryGetTopic(topicUrl, out fhirCsModels5.SubscriptionTopic topic);
+
+            if ((topic.NotificationShape == null) || (!topic.NotificationShape.Any()))
+            {
+                return true;
+            }
+
+            foreach (fhirCsModels5.SubscriptionTopicNotificationShape shape in topic.NotificationShape)
+            {
+                if (shape.Resource != content.ResourceType)
+                {
+                    continue;
+                }
+
+                includeDirectives.AddRange(shape.Include);
+            }
+
+            if (!includeDirectives.Any())
+            {
+                return true;
+            }
+
+            // attempt to get additional data
+            try
+            {
+                // get a FHIR client
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                if (!_instance.TryGetFhirClient(out client))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                {
+                    return false;
+                }
+
+                // ask for the resource, plus our includes
+                Bundle results = client.Search(
+                    content.ResourceType,
+                    new string[] { $"_id={content.Id}" },
+                    includeDirectives.ToArray());
+
+                if ((results == null) ||
+                    (results.Entry == null) ||
+                    (results.Entry.Count == 0))
+                {
+                    return true;
+                }
+
+                foreach (Bundle.EntryComponent entry in results.Entry)
+                {
+                    if ((entry.Resource.TypeName == content.ResourceType) &&
+                        (entry.Resource.Id == content.Id))
+                    {
+                        continue;
+                    }
+
+                    string json = _instance._fhirSerializer.SerializeToString(entry.Resource);
+                    fhirCsModels5.Resource res = JsonSerializer.Deserialize<fhirCsModels5.Resource>(json);
+
+                    string fullUrl = Program.UrlForR5ResourceId(entry.Resource.TypeName, entry.Resource.Id);
+                    cachedNotification.AdditionalR5.Add(fullUrl, res);
+
+                    switch (subscription.Content)
+                    {
+                        case BackportedSubscription.ContentCodeEmpty:
+                            break;
+
+                        case BackportedSubscription.ContentCodeIdOnly:
+                            bundle.Entry.Add(new fhirCsModels5.BundleEntry()
+                            {
+                                FullUrl = fullUrl,
+                                Request = new fhirCsModels5.BundleEntryRequest()
+                                {
+                                    Method = "GET",
+                                    Url = fullUrl,
+                                },
+                                Response = new fhirCsModels5.BundleEntryResponse()
+                                {
+                                    Status = "200",
+                                },
+                            });
+
+                            break;
+
+                        case BackportedSubscription.ContentCodeFullResource:
+                            bundle.Entry.Add(new fhirCsModels5.BundleEntry()
+                            {
+                                FullUrl = fullUrl,
+                                Request = new fhirCsModels5.BundleEntryRequest()
+                                {
+                                    Method = "GET",
+                                    Url = fullUrl,
+                                },
+                                Response = new fhirCsModels5.BundleEntryResponse()
+                                {
+                                    Status = "200",
+                                },
+                                Resource = res,
+                            });
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TryGetRelatedResources <<< caught exception: {ex.Message}");
+            }
+            finally
+            {
+                if (client != null)
+                {
+                    // return to our queue
+                    _instance.ReturnFhirClientToQ(ref client);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>Error concept for string.</summary>
@@ -1230,6 +1658,203 @@ namespace argonaut_subscription_server_proxy.Managers
             };
         }
 
+        /// <summary>Attempts to get bundle for events.</summary>
+        /// <param name="subscriptionId"> The subscription id.</param>
+        /// <param name="eventNumberLow"> The event number low.</param>
+        /// <param name="eventNumberHigh">The event number high.</param>
+        /// <param name="contentHint">    The content hint.</param>
+        /// <param name="bundle">         [out] The bundle.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        public static bool TryGetBundleForEvents(
+            string subscriptionId,
+            long eventNumberLow,
+            long eventNumberHigh,
+            string contentHint,
+            out fhirCsModels5.Bundle bundle)
+        {
+            return _instance._TryGetBundleForEvents(
+                subscriptionId,
+                eventNumberLow,
+                eventNumberHigh,
+                contentHint,
+                out bundle);
+        }
+
+        /// <summary>Attempts to get bundle for events.</summary>
+        /// <param name="subscriptionId"> The subscription id.</param>
+        /// <param name="eventNumberLow"> The event number low.</param>
+        /// <param name="eventNumberHigh">The event number high.</param>
+        /// <param name="contentHint">    The content hint.</param>
+        /// <param name="bundle">         [out] The bundle.</param>
+        /// <returns>True if it succeeds, false if it fails.</returns>
+        private bool _TryGetBundleForEvents(
+            string subscriptionId,
+            long eventNumberLow,
+            long eventNumberHigh,
+            string contentHint,
+            out fhirCsModels5.Bundle bundle)
+        {
+            // sanity checks
+            if (string.IsNullOrEmpty(subscriptionId) ||
+                (!_idSubscriptionDict.ContainsKey(subscriptionId)))
+            {
+                bundle = null;
+                return false;
+            }
+
+            fhirCsModels5.Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+            long low = (eventNumberLow < 1) ? 1 : eventNumberLow;
+            long high = ((eventNumberHigh < 0) || (eventNumberHigh > _idEventCountDict[subscriptionId]))
+                ? _idEventCountDict[subscriptionId]
+                : eventNumberHigh;
+
+            if (low > high)
+            {
+                long temp = high;
+                high = low;
+                low = temp;
+            }
+
+            int eventsIncluded = 0;
+
+            fhirCsModels5.SubscriptionStatus status = new ()
+            {
+                EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId],
+                EventsInNotification = 0,
+                Status = subscription.Status.ToString().ToLowerInvariant(),
+                Type = fhirCsValueSets5.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
+                Subscription = new ()
+                {
+                    ReferenceField = Program.UrlForR5ResourceId("Subscription", subscription.Id),
+                },
+                Topic = subscription.Topic,
+                NotificationEvent = new (),
+            };
+
+            // create a bundle for this message message
+            bundle = new ()
+            {
+                Type = fhirCsModels5.BundleTypeCodes.SUBSCRIPTION_NOTIFICATION,
+                Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                Entry = new (),
+            };
+
+            bundle.Entry.Add(new ()
+            {
+                FullUrl = Program.UrlForR5ResourceId("Subscription", subscription.Id) + "/$events",
+                Request = new ()
+                {
+                    Method = "GET",
+                    Url = Program.UrlForR5ResourceId("Subscription", subscription.Id) + "/$events",
+                },
+                Response = new ()
+                {
+                    Status = "200",
+                },
+            });
+
+            // if there's no content hint, use the subscription style
+            if (string.IsNullOrEmpty(contentHint))
+            {
+                contentHint = subscription.Content;
+
+                // if we still don't have a content type, use id-only
+                if (string.IsNullOrEmpty(contentHint))
+                {
+                    contentHint = fhirCsModels5.SubscriptionContentCodes.ID_ONLY;
+                }
+            }
+
+            HashSet<string> addedContents = new ();
+
+            for (long i = low; i <= high; i++)
+            {
+                if (!_subscriptionEventCache[subscriptionId].ContainsKey(i))
+                {
+                    continue;
+                }
+
+                eventsIncluded++;
+
+                fhirCsModels5.SubscriptionStatusNotificationEvent statusEvent = new ()
+                {
+                    EventNumber = i,
+                };
+
+                statusEvent.Focus = new ()
+                {
+                    ReferenceField = _subscriptionEventCache[subscriptionId][i].Focus,
+                };
+
+                if (!addedContents.Contains(_subscriptionEventCache[subscriptionId][i].Focus))
+                {
+                    addedContents.Add(_subscriptionEventCache[subscriptionId][i].Focus);
+
+                    bundle.Entry.Add(new ()
+                    {
+                        FullUrl = _subscriptionEventCache[subscriptionId][i].Focus,
+                        Request = new ()
+                        {
+                            Method = "POST",
+                            Url = _subscriptionEventCache[subscriptionId][i].Focus,
+                        },
+                        Response = new ()
+                        {
+                            Status = "204",
+                        },
+                        Resource = (contentHint == fhirCsModels5.SubscriptionContentCodes.FULL_RESOURCE)
+                            ? _subscriptionEventCache[subscriptionId][i].FocusR5
+                            : null,
+                    });
+                }
+
+                if (_subscriptionEventCache[subscriptionId][i].AdditionalR5.Count > 0)
+                {
+                    statusEvent.AdditionalContext = new ();
+                }
+
+                foreach (KeyValuePair<string, fhirCsModels5.Resource> kvp in _subscriptionEventCache[subscriptionId][i].AdditionalR5)
+                {
+                    statusEvent.AdditionalContext.Add(new fhirCsModels5.Reference()
+                    {
+                        ReferenceField = kvp.Key,
+                    });
+
+                    if (!addedContents.Contains(kvp.Key))
+                    {
+                        addedContents.Add(kvp.Key);
+
+                        bundle.Entry.Add(new ()
+                        {
+                            FullUrl = kvp.Key,
+                            Request = new ()
+                            {
+                                Method = "GET",
+                                Url = kvp.Key,
+                            },
+                            Response = new ()
+                            {
+                                Status = "200",
+                            },
+                            Resource = (contentHint == fhirCsModels5.SubscriptionContentCodes.FULL_RESOURCE)
+                                ? kvp.Value
+                                : null,
+                        });
+                    }
+                }
+
+                status.NotificationEvent.Add(statusEvent);
+            }
+
+            status.EventsInNotification = eventsIncluded;
+
+            // add the contents of our SubscriptionStatus
+            bundle.Entry[0].Resource = status;
+
+            return true;
+        }
+
         /// <summary>Attempts to notify subscription a Resource from the given string.</summary>
         /// <param name="subscriptionId">The subscription id.</param>
         /// <param name="content">       (Optional) The content.</param>
@@ -1237,7 +1862,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <returns>True if it succeeds, false if it fails.</returns>
         private bool TryNotifySubscription(
             string subscriptionId,
-            Resource content = null,
+            fhirCsModels5.Resource content = null,
             bool isHandshake = false)
         {
             try
@@ -1250,85 +1875,136 @@ namespace argonaut_subscription_server_proxy.Managers
                     return false;
                 }
 
-                string contentTypeName = (content == null) ? string.Empty : content.TypeName;
+                _idLastEventTicksDict[subscriptionId] = DateTime.Now.Ticks;
+
+                string contentTypeName = (content == null) ? string.Empty : content.ResourceType;
                 string contentId = (content == null) ? string.Empty : content.Id;
 
                 // get the subscription
-                Subscription subscription = _idSubscriptionDict[subscriptionId];
+                fhirCsModels5.Subscription subscription = _idSubscriptionDict[subscriptionId];
 
                 // get our bundle we want to send
                 BundleForSubscriptionNotification(
                     subscription,
                     content,
                     isHandshake,
-                    out Bundle bundle,
-                    out long subscriptionEventCount);
+                    out fhirCsModels5.Bundle bundle,
+                    out long subscriptionEventCount,
+                    out CachedNotificationEvent cacheNotification);
 
-                string json = _fhirSerializer.SerializeToString(bundle);
+                Console.WriteLine($"SubscriptionManagerR5.TryNotifySubscription <<<" +
+                    $" attempting to send {subscriptionId}" +
+                    $" event {_idEventCountDict[subscriptionId]}" +
+                    $" via {subscription.ChannelType.System}#{subscription.ChannelType.Code}...");
 
-                // check for a rest-hook
-                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.RestHook.Code)
+                string json = JsonSerializer.Serialize(bundle);
+
+                if (cacheNotification != null)
                 {
-                    // send via hook
-                    bool notified = NotificationManager.TryNotifyRestHook(
-                        subscription.Id,
-                        subscription.Endpoint,
-                        subscription.Header,
-                        json,
-                        contentTypeName,
-                        contentId,
-                        subscriptionEventCount);
-
-                    if (notified)
+                    _subscriptionEventCache[subscriptionId].Add(subscriptionEventCount, cacheNotification);
+                    if (_subscriptionEventCache[subscriptionId].Count > MaxCachedEvents)
                     {
-                        // check to see if we need to clear an error
-                        if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
+                        _subscriptionEventCache[subscriptionId].Remove(_subscriptionEventCache[subscriptionId].Keys.Min());
+                    }
+                }
+
+                string expandedChannelType = string.Empty;
+
+                if (subscription.ChannelType != null)
+                {
+                    expandedChannelType = string.IsNullOrEmpty(subscription.ChannelType.System)
+                        ? subscription.ChannelType.Code
+                        : subscription.ChannelType.System + "#" + subscription.ChannelType.Code;
+                }
+
+                if (string.IsNullOrEmpty(expandedChannelType))
+                {
+                    Console.WriteLine($"TryNotifySubscription <<< Missing subscription channel type!");
+                    return false;
+                }
+
+                bool notified = false;
+
+                switch (expandedChannelType)
+                {
+                    case ZulipExtensions.ZulipChannelUrl:
                         {
-                            // _idSubscriptionDict[subscription.Id].Error = null;
-                            _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
+                            bool usePm = subscription.ZulipPmUserIdTryGet(out string pmUserId);
+                            bool useStream = subscription.ZulipStreamIdTryGet(out string streamId);
+
+                            if ((!usePm) && (!useStream))
+                            {
+                                UpdateErrorState(subscriptionId, false);
+                                return false;
+                            }
+
+                            if (!subscription.ZulipSiteTryGet(out string site))
+                            {
+                                site = Program.Configuration["Zulip_Site"];
+                            }
+
+                            if (!subscription.ZulipEmailTryGet(out string email))
+                            {
+                                email = Program.Configuration["Zulip_Email"];
+                            }
+
+                            if (!subscription.ZulipKeyTryGet(out string key))
+                            {
+                                key = Program.Configuration["Zulip_Key"];
+                            }
+
+                            notified = NotificationManager.TryNotifyZulip(
+                                subscriptionId,
+                                Program.UrlForR5ResourceId("Subscription", subscriptionId),
+                                site,
+                                email,
+                                key,
+                                streamId,
+                                pmUserId,
+                                subscription.ContentType,
+                                subscription.Content,
+                                json,
+                                contentTypeName,
+                                contentId,
+                                Program.UrlForR5ResourceId(contentTypeName, contentId),
+                                subscriptionEventCount);
                         }
-                    }
-                    else
-                    {
-                        // done
-                        // _idSubscriptionDict[subscription.Id].Error = ErrorConceptForString($"Endpoint returned: {response.ReasonPhrase}", (int)response.StatusCode);
-                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                    }
+
+                        break;
+
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralRestHook:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeRestHook:
+                        notified = NotificationManager.TryNotifyRestHook(
+                                                subscription.Id,
+                                                subscription.Endpoint,
+                                                subscription.Header,
+                                                json,
+                                                contentTypeName,
+                                                contentId,
+                                                subscriptionEventCount);
+                        break;
+
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralEmail:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeEmail:
+                        notified = NotificationManager.TryNotifyEmail(
+                                                subscription.Id,
+                                                subscription.Endpoint,
+                                                subscription.ContentType,
+                                                subscription.Content.ToString(),
+                                                json,
+                                                contentTypeName,
+                                                contentId,
+                                                subscriptionEventCount);
+                        break;
+
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralWebsocket:
+                    case fhirCsValueSets5.SubscriptionChannelTypeCodes.LiteralSubscriptionChannelTypeWebsocket:
+                        WebsocketManager.QueueMessagesForSubscription(subscription, json);
+                        break;
                 }
 
-                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Email.Code)
-                {
-                    // send via email
-                    bool notified = NotificationManager.TryNotifyEmail(
-                        subscription.Id,
-                        subscription.Endpoint,
-                        subscription.ContentType,
-                        subscription.Content.ToString(),
-                        json,
-                        contentTypeName,
-                        contentId,
-                        subscriptionEventCount);
-
-                    if (notified)
-                    {
-                        // check to see if we need to clear an error
-                        if (_idSubscriptionDict[subscription.Id].Status == SubscriptionState.Error)
-                        {
-                            _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Active;
-                        }
-                    }
-                    else
-                    {
-                        // done
-                        _idSubscriptionDict[subscription.Id].Status = SubscriptionState.Error;
-                    }
-                }
-
-                if (subscription.ChannelType.Code == fhirCsR5.ValueSets.SubscriptionChannelTypeCodes.Websocket.Code)
-                {
-                    // send via websocket
-                    WebsocketManager.QueueMessagesForSubscription(subscription, json);
-                }
+                UpdateErrorState(subscriptionId, notified);
+                return notified;
             }
             catch (Exception ex)
             {
@@ -1341,6 +2017,28 @@ namespace argonaut_subscription_server_proxy.Managers
 
             // done
             return true;
+        }
+
+        /// <summary>Updates the error state.</summary>
+        /// <param name="subscriptionId">The subscription id.</param>
+        /// <param name="notified">      True if notified.</param>
+        private void UpdateErrorState(
+            string subscriptionId,
+            bool notified)
+        {
+            if (notified)
+            {
+                // check to see if we need to clear an error
+                if (_idSubscriptionDict[subscriptionId].Status == fhirCsModels5.SubscriptionStatusCodes.ERROR)
+                {
+                    _idSubscriptionDict[subscriptionId].Status = fhirCsModels5.SubscriptionStatusCodes.ACTIVE;
+                }
+            }
+            else
+            {
+                // done
+                _idSubscriptionDict[subscriptionId].Status = fhirCsModels5.SubscriptionStatusCodes.ERROR;
+            }
         }
 
         /// <summary>Clean up thread function.</summary>
@@ -1361,15 +2059,13 @@ namespace argonaut_subscription_server_proxy.Managers
                     try
                     {
                         // check this subscription
-                        Subscription subscription = _idSubscriptionDict[id];
+                        fhirCsModels5.Subscription subscription = _idSubscriptionDict[id];
 
                         if ((subscription.End == null) ||
-                            (subscription.End.Value.DateTime < DateTime.Now))
+                            (!DateTime.TryParse(subscription.End, out DateTime end)) ||
+                            (end < DateTime.Now))
                         {
-                            // tell the user what's going on
                             Console.WriteLine($" <<< Removing subscription {id} due to expiration! - {DateTime.Now}");
-
-                            // remove this subscription
                             Remove(id);
                         }
                     }
@@ -1400,7 +2096,12 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 try
                 {
-                    Subscription subscription = _idSubscriptionDict[subscriptionId];
+                    fhirCsModels5.Subscription subscription = _idSubscriptionDict[subscriptionId];
+
+                    if (subscription.Status != fhirCsModels5.SubscriptionStatusCodes.ACTIVE)
+                    {
+                        continue;
+                    }
 
                     if ((subscription.HeartbeatPeriod == null) || (subscription.HeartbeatPeriod <= 0))
                     {
