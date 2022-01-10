@@ -179,7 +179,7 @@ namespace argonaut_subscription_server_proxy.Backport
             string searchParam = components[0];
             string searchValue = components[1];
             string modifier = string.Empty;
-            string searchModifier = string.Empty;
+            string searchModifier = "=";        // default to equality
 
             if (searchParam.Contains(':', StringComparison.Ordinal))
             {
