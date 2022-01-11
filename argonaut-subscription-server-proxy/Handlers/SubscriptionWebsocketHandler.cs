@@ -377,72 +377,85 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                     // check for a bind request
                     string message = Encoding.UTF8.GetString(buffer).Substring(0, messageLength);
-
-                    if (message.StartsWith("bind ", StringComparison.Ordinal))
+                    if (string.IsNullOrEmpty(message))
                     {
-                        // grab the rest of the content
-                        message = message.Replace("bind ", string.Empty, StringComparison.Ordinal);
+                        continue;
+                    }
 
-                        string[] ids = message.Split(',');
+                    string[] words = message.Split(' ');
+                    string[] ids;
 
-                        // traverse the requested ids
-                        foreach (string id in ids)
-                        {
-                            string subscriptionId = id.StartsWith("Subscription/", StringComparison.Ordinal)
-                                ? id.Replace("Subscription/", string.Empty, StringComparison.Ordinal)
-                                : id;
+                    switch (words[0])
+                    {
+                        case "bind":
+                            // grab the rest of the content
+                            message = message.Replace("bind ", string.Empty, StringComparison.Ordinal);
 
-                            // make sure this subscription exists
-                            if ((!SubscriptionManagerR4.Exists(subscriptionId)) &&
-                                (!SubscriptionManagerR5.Exists(subscriptionId)))
+                            ids = message.Split(',');
+
+                            // traverse the requested ids
+                            foreach (string id in ids)
                             {
-                                Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< attempt to bind to unknown subscription: {subscriptionId}");
+                                string subscriptionId = id.StartsWith("Subscription/", StringComparison.Ordinal)
+                                    ? id.Replace("Subscription/", string.Empty, StringComparison.Ordinal)
+                                    : id;
+
+                                // make sure this subscription exists
+                                if ((!SubscriptionManagerR4.Exists(subscriptionId)) &&
+                                    (!SubscriptionManagerR5.Exists(subscriptionId)))
+                                {
+                                    Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< attempt to bind to unknown subscription: {subscriptionId}");
+                                    continue;
+                                }
+
+                                Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound to {subscriptionId}");
+
+                                // register this subscription to this client
+                                WebsocketManager.AddSubscriptionToClient(subscriptionId, clientGuid);
+                            }
+
+                            break;
+
+                        case "bind-with-token":
+                            // grab the rest of the content
+                            message = message.Replace("bind-with-token ", string.Empty, StringComparison.Ordinal);
+
+                            if (!Guid.TryParse(message, out Guid tokenGuid))
+                            {
+                                Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} attempting to bind with invalid token: {message}");
                                 continue;
                             }
 
-                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound to {subscriptionId}");
+                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound with token {tokenGuid}");
 
-                            // register this subscription to this client
-                            WebsocketManager.AddSubscriptionToClient(subscriptionId, clientGuid);
-                        }
-                    }
+                            // register this token to this client
+                            WebsocketManager.BindClientWithToken(tokenGuid, clientGuid);
+                            break;
 
-                    if (message.StartsWith("bind-with-token ", StringComparison.Ordinal))
-                    {
-                        // grab the rest of the content
-                        message = message.Replace("bind-with-token ", string.Empty, StringComparison.Ordinal);
+                        case "unbind":
+                            // grab the rest of the content
+                            message = message.Replace("unbind ", string.Empty, StringComparison.Ordinal);
 
-                        if (!Guid.TryParse(message, out Guid tokenGuid))
-                        {
-                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} attempting to bind with invalid token: {message}");
-                            continue;
-                        }
+                            ids = message.Split(',');
 
-                        Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound with token {tokenGuid}");
+                            // traverse the requested ids
+                            foreach (string id in ids)
+                            {
+                                string subscriptionId = id.StartsWith("Subscription/", StringComparison.Ordinal)
+                                    ? id.Replace("Subscription/", string.Empty, StringComparison.Ordinal)
+                                    : id;
 
-                        // register this token to this client
-                        WebsocketManager.BindClientWithToken(tokenGuid, clientGuid);
-                    }
+                                Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} unbound from subscription {subscriptionId}");
 
-                    if (message.StartsWith("unbind ", StringComparison.Ordinal))
-                    {
-                        // grab the rest of the content
-                        message = message.Replace("unbind ", string.Empty, StringComparison.Ordinal);
+                                // remove this subscription from this client
+                                WebsocketManager.RemoveSubscriptionFromClient(subscriptionId, clientGuid);
+                            }
 
-                        string[] ids = message.Split(',');
+                            break;
 
-                        // traverse the requested ids
-                        foreach (string id in ids)
-                        {
-                            string subscriptionId = id.StartsWith("Subscription/", StringComparison.Ordinal)
-                                ? id.Replace("Subscription/", string.Empty, StringComparison.Ordinal)
-                                : id;
-
-                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} unbound from subscription {subscriptionId}");
-
-                            // remove this subscription from this client
-                            WebsocketManager.RemoveSubscriptionFromClient(subscriptionId, clientGuid);
-                        }
+                        default:
+                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< unknown message: >>>{message}<<<");
+                            break;
                     }
                 }
                 catch (Exception ex)
