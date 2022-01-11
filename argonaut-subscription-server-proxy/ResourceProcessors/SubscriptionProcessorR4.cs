@@ -210,6 +210,8 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
 
             SubscriptionWsBindingToken token = SubscriptionWsBindingToken.GetTokenR4(ids);
 
+            Console.WriteLine($"SubscriptionProcessorR4 <<< generated ws token {token.Token} for subscriptions: {string.Join(',', ids)}");
+
             WebsocketManager.RegisterToken(token);
 
             fhirCsModels4B.Parameters parameters = new ();

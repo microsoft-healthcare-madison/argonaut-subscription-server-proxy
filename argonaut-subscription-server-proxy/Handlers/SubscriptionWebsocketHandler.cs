@@ -396,8 +396,11 @@ namespace argonaut_subscription_server_proxy.Handlers
                             if ((!SubscriptionManagerR4.Exists(subscriptionId)) &&
                                 (!SubscriptionManagerR5.Exists(subscriptionId)))
                             {
+                                Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< attempt to bind to unknown subscription: {subscriptionId}");
                                 continue;
                             }
+
+                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound to {subscriptionId}");
 
                             // register this subscription to this client
                             WebsocketManager.AddSubscriptionToClient(subscriptionId, clientGuid);
@@ -411,8 +414,11 @@ namespace argonaut_subscription_server_proxy.Handlers
 
                         if (!Guid.TryParse(message, out Guid tokenGuid))
                         {
+                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} attempting to bind with invalid token: {message}");
                             continue;
                         }
+
+                        Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} bound with token {tokenGuid}");
 
                         // register this token to this client
                         WebsocketManager.BindClientWithToken(tokenGuid, clientGuid);
@@ -431,6 +437,8 @@ namespace argonaut_subscription_server_proxy.Handlers
                             string subscriptionId = id.StartsWith("Subscription/", StringComparison.Ordinal)
                                 ? id.Replace("Subscription/", string.Empty, StringComparison.Ordinal)
                                 : id;
+
+                            Console.WriteLine($"WebsocketHandler.ReadClientMessages <<< client {clientGuid} unbound from subscription {subscriptionId}");
 
                             // remove this subscription from this client
                             WebsocketManager.RemoveSubscriptionFromClient(subscriptionId, clientGuid);
