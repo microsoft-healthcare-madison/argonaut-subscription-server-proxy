@@ -1884,10 +1884,20 @@ namespace argonaut_subscription_server_proxy.Managers
                     out long subscriptionEventCount,
                     out CachedNotificationEvent cacheNotification);
 
-                Console.WriteLine($"SubscriptionManagerR4.TryNotifySubscription <<<" +
-                    $" attempting to send {subscriptionId}" +
-                    $" event {_idEventCountDict[subscriptionId]}" +
-                    $" via {subscription.Channel.Type}...");
+                if (csContent == null)
+                {
+                    Console.WriteLine($"SubscriptionManagerR4.TryNotifySubscription <<<" +
+                        $" attempting to send {subscriptionId}" +
+                        $" heartbeat ({_idEventCountDict[subscriptionId]})" +
+                        $" via {subscription.Channel.Type}...");
+                }
+                else
+                {
+                    Console.WriteLine($"SubscriptionManagerR4.TryNotifySubscription <<<" +
+                        $" attempting to send {subscriptionId}" +
+                        $" event {_idEventCountDict[subscriptionId]}" +
+                        $" via {subscription.Channel.Type}...");
+                }
 
                 string json = JsonSerializer.Serialize(bundle);
 

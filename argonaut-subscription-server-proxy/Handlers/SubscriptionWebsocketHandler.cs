@@ -267,13 +267,15 @@ namespace argonaut_subscription_server_proxy.Handlers
                 return;
             }
 
+            string message = string.Empty;
+
             while (!cancelToken.IsCancellationRequested)
             {
                 // do not bubble errors here
                 try
                 {
                     // check for a message
-                    if (!client.MessageQ.TryDequeue(out string message))
+                    if (!client.MessageQ.TryDequeue(out message))
                     {
                         try
                         {
@@ -304,6 +306,16 @@ namespace argonaut_subscription_server_proxy.Handlers
                 {
                     Console.WriteLine($"SubscriptionWebsocketHandler.WriteClientMessages" +
                         $" <<< client: {clientGuid} caught exception: {ex.Message}");
+
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($" <<< websocket inner exception: {ex.InnerException.Message}");
+                    }
+
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        Console.WriteLine($" <<< message being written: {message}");
+                    }
 
                     // this socket is borked, exit
                     break;
