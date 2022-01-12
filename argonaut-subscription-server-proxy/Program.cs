@@ -51,8 +51,11 @@ namespace argonaut_subscription_server_proxy
         /// <value>The fhir server URL.</value>
         public static string FhirServerUrlR5 { get; set; }
 
-        /// <summary>Gets or sets URI of the websocket.</summary>
-        public static Uri WebsocketUri { get; set; }
+        /// <summary>Gets or sets URI of the websocket for FHIR R4.</summary>
+        public static Uri WebsocketUriR4 { get; set; }
+
+        /// <summary>Gets or sets the websocket URI for FHIR R5.</summary>
+        public static Uri WebsocketUriR5 { get; set; }
 
         /// <summary>Gets or sets URL of the public.</summary>
         /// <value>The public URL.</value>
@@ -90,7 +93,6 @@ namespace argonaut_subscription_server_proxy
 
             FhirServerUrlR4 = Configuration["Server_FHIR_Url_R4"];
             FhirServerUriR4 = new Uri(FhirServerUrlR4);
-            WebsocketUri = new Uri(FhirServerUriR4, WebsocketUrl);
 
             // update external urls to make sure the DO have trailing slashes
             if (!Configuration["Server_FHIR_Url_R5"].EndsWith('/'))
@@ -100,6 +102,9 @@ namespace argonaut_subscription_server_proxy
 
             FhirServerUrlR5 = Configuration["Server_FHIR_Url_R5"];
             FhirServerUriR5 = new Uri(FhirServerUrlR5);
+
+            WebsocketUriR4 = new Uri(new Uri(PublicUrl), "r4" + WebsocketUrl);
+            WebsocketUriR5 = new Uri(new Uri(PublicUrl), "r5" + WebsocketUrl);
 
             // create our REST client
             RestClient = new HttpClient();

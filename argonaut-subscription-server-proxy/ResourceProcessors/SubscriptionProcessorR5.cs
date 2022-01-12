@@ -231,7 +231,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                 new ()
                 {
                     Name = "websocket-url",
-                    ValueString = Program.WebsocketUri.AbsoluteUri,
+                    ValueString = Program.WebsocketUriR5.AbsoluteUri,
                 },
             };
 

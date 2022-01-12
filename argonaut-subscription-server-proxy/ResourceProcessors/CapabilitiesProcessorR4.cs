@@ -143,7 +143,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                             if (capabilities.Rest[restIndex].Extension[extIndex].Url == ExtensionCapabilityWebsocket)
                             {
                                 foundWebSocketUrl = true;
-                                capabilities.Rest[restIndex].Extension[extIndex].ValueUri = Program.WebsocketUrl;
+                                capabilities.Rest[restIndex].Extension[extIndex].ValueUri = Program.WebsocketUriR4.AbsoluteUri;
                             }
                         }
                     }
@@ -169,7 +169,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                     capabilities.Rest[0].Extension.Add(new fhirCsModels4B.Extension()
                     {
                         Url = ExtensionCapabilityWebsocket,
-                        ValueUri = Program.WebsocketUrl,
+                        ValueUri = Program.WebsocketUriR4.AbsoluteUri,
                     });
                 }
 
