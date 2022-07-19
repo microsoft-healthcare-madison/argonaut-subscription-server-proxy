@@ -3,9 +3,11 @@
 //     Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // </copyright>
 
+using System.Net;
 using System.Threading.Tasks;
 using argonaut_subscription_server_proxy.Managers;
 using Microsoft.AspNetCore.Http;
+using fhirCsModels4B = fhirCsR4B.Models;
 
 namespace argonaut_subscription_server_proxy.ResourceProcessors
 {
@@ -42,7 +44,27 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
         /// <returns>An asynchronous result.</returns>
         internal static async Task ProcessGetAndRespond(HttpContext context)
         {
-            await ProcessorUtils.SerializeR4(context, SubscriptionTopicManagerR4.GetTopicsBundle());
+            // check for an ID
+            string requestUrl = context.Request.Path;
+            if (requestUrl.EndsWith('/'))
+            {
+                requestUrl = requestUrl.Substring(0, requestUrl.Length - 1);
+            }
+
+            string id = requestUrl.Substring(requestUrl.LastIndexOf('/') + 1);
+
+            if (id.ToLowerInvariant() == "subscriptiontopic")
+            {
+                await ProcessorUtils.SerializeR4(context, SubscriptionTopicManagerR4.GetTopicsBundle());
+            }
+            else if (SubscriptionTopicManagerR4.TryGetTopic(id, out fhirCsModels4B.SubscriptionTopic foundST))
+            {
+                await ProcessorUtils.SerializeR4(context, foundST);
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            }
         }
     }
 }
