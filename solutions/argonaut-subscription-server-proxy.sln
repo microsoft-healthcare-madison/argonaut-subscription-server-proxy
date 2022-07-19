@@ -5,13 +5,11 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{754C982F-A534-4183-AF12-AA6B0C5567BA}"
 	ProjectSection(SolutionItems) = preProject
-		..\.editorconfig = ..\.editorconfig
 		..\.gitignore = ..\.gitignore
 		..\CONTRIBUTING.MD = ..\CONTRIBUTING.MD
 		..\Dockerfile = ..\Dockerfile
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
-		..\stylecop.json = ..\stylecop.json
 		..\THIRDPARTYNOTICES.md = ..\THIRDPARTYNOTICES.md
 	EndProjectSection
 EndProject
@@ -22,9 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GH Workflows", "GH Workflow
 		..\.github\workflows\main.yml = ..\.github\workflows\main.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fhirCsR4B", "..\fhirCsR4B\fhirCsR4B.csproj", "{A8BC31A4-3ACD-4C81-83E1-C15CD6DEA599}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fhirCsR4B", "..\fhirCsR4B\fhirCsR4B.csproj", "{A8BC31A4-3ACD-4C81-83E1-C15CD6DEA599}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fhirCsR5", "..\fhirCsR5\fhirCsR5.csproj", "{FCE36B0E-9CAD-452B-9E95-4A7B976EF017}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fhirCsR5", "..\fhirCsR5\fhirCsR5.csproj", "{FCE36B0E-9CAD-452B-9E95-4A7B976EF017}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

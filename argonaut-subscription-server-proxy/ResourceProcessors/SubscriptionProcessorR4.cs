@@ -286,6 +286,7 @@ namespace argonaut_subscription_server_proxy.ResourceProcessors
                         id,
                         out fhirCsModels4B.SubscriptionStatus status,
                         0,
+                        string.Empty,
                         true,
                         false))
                 {

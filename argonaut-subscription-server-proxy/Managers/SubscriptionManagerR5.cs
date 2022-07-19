@@ -1261,6 +1261,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="id">                  The identifier.</param>
         /// <param name="status">              [out] The status.</param>
         /// <param name="eventsInNotification">The events in notification.</param>
+        /// <param name="eventFocus">          The event focus.</param>
         /// <param name="isForQuery">          True if is for query, false if not.</param>
         /// <param name="isHandshake">         True if is handshake, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -1268,6 +1269,7 @@ namespace argonaut_subscription_server_proxy.Managers
             string id,
             out fhirCsModels5.SubscriptionStatus status,
             int eventsInNotification,
+            string eventFocus,
             bool isForQuery,
             bool isHandshake)
         {
@@ -1296,6 +1298,28 @@ namespace argonaut_subscription_server_proxy.Managers
                 },
                 Topic = subscription.Topic,
             };
+
+            if (eventsInNotification != 0)
+            {
+                fhirCsModels5.SubscriptionStatusNotificationEvent ne = new()
+                {
+                    EventNumber = eventCount,
+                    Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                };
+
+                if (!string.IsNullOrEmpty(eventFocus))
+                {
+                    ne.Focus = new fhirCsModels5.Reference()
+                    {
+                        ReferenceField = eventFocus,
+                    };
+                }
+
+                status.NotificationEvent = new()
+                {
+                    ne
+                };
+            }
 
             if (isForQuery)
             {
@@ -1368,6 +1392,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.Id,
                     out fhirCsModels5.SubscriptionStatus status,
                     (content == null) ? 0 : 1,
+                    (content == null) ? string.Empty : Program.UrlForR5ResourceId(content.ResourceType, content.Id),
                     false,
                     isHandshake))
             {

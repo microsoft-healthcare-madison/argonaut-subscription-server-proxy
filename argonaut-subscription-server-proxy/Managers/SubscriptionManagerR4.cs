@@ -1177,6 +1177,7 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <param name="id">                  The identifier.</param>
         /// <param name="status">              [out] The status.</param>
         /// <param name="eventsInNotification">The events in notification.</param>
+        /// <param name="eventFocus">          The event focus.</param>
         /// <param name="isForQuery">          True if is for query, false if not.</param>
         /// <param name="isHandshake">         True if is handshake, false if not.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
@@ -1184,6 +1185,7 @@ namespace argonaut_subscription_server_proxy.Managers
             string id,
             out fhirCsModels4B.SubscriptionStatus status,
             int eventsInNotification,
+            string eventFocus,
             bool isForQuery,
             bool isHandshake)
         {
@@ -1204,7 +1206,6 @@ namespace argonaut_subscription_server_proxy.Managers
             status = new fhirCsModels4B.SubscriptionStatus()
             {
                 EventsSinceSubscriptionStart = eventCount.ToString(),
-                EventsInNotification = eventsInNotification,
                 Status = subscription.Status.ToString().ToLowerInvariant(),
                 Subscription = new fhirCsModels4B.Reference()
                 {
@@ -1212,6 +1213,28 @@ namespace argonaut_subscription_server_proxy.Managers
                 },
                 Topic = subscription.BackportTopicGet(),
             };
+
+            if (eventsInNotification != 0)
+            {
+                fhirCsModels4B.SubscriptionStatusNotificationEvent ne = new()
+                {
+                    EventNumber = eventCount.ToString(),
+                    Timestamp = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"),
+                };
+
+                if (!string.IsNullOrEmpty(eventFocus))
+                {
+                    ne.Focus = new fhirCsModels4B.Reference()
+                    {
+                        ReferenceField = eventFocus,
+                    };
+                }
+
+                status.NotificationEvent = new()
+                {
+                    ne
+                };
+            }
 
             if (isForQuery)
             {
@@ -1284,6 +1307,7 @@ namespace argonaut_subscription_server_proxy.Managers
                     subscription.Id,
                     out fhirCsModels4B.SubscriptionStatus status,
                     (content == null) ? 0 : 1,
+                    (content == null) ? string.Empty : Program.UrlForR4ResourceId(content.ResourceType, content.Id),
                     false,
                     isHandshake))
             {
@@ -1394,7 +1418,6 @@ namespace argonaut_subscription_server_proxy.Managers
                 if (TryGetRelatedResources(
                         subscription,
                         content,
-                        subscriptionEventCount,
                         ref bundle,
                         out cachedNotification))
                 {
@@ -1423,14 +1446,12 @@ namespace argonaut_subscription_server_proxy.Managers
         /// <summary>Attempts to get related resources.</summary>
         /// <param name="subscription">      [out] The subscription.</param>
         /// <param name="content">           The content.</param>
-        /// <param name="eventNumber">       The event number.</param>
         /// <param name="bundle">            [out] The bundle.</param>
         /// <param name="cachedNotification">[out] The cached notification.</param>
         /// <returns>True if it succeeds, false if it fails.</returns>
         private static bool TryGetRelatedResources(
             fhirCsModels4B.Subscription subscription,
             fhirCsModels4B.Resource content,
-            long eventNumber,
             ref fhirCsModels4B.Bundle bundle,
             out CachedNotificationEvent cachedNotification)
         {
@@ -1672,7 +1693,6 @@ namespace argonaut_subscription_server_proxy.Managers
             fhirCsModels4B.SubscriptionStatus status = new ()
             {
                 EventsSinceSubscriptionStart = _idEventCountDict[subscriptionId].ToString(),
-                EventsInNotification = 0,
                 Status = subscription.Status.ToString().ToLowerInvariant(),
                 Type = fhirCsValueSets4B.SubscriptionNotificationTypeCodes.LiteralQueryEvent,
                 Subscription = new ()
@@ -1814,8 +1834,6 @@ namespace argonaut_subscription_server_proxy.Managers
 
                 status.NotificationEvent.Add(statusEvent);
             }
-
-            status.EventsInNotification = eventsIncluded;
 
             // add the contents of our SubscriptionStatus
             bundle.Entry[0].Resource = status;
